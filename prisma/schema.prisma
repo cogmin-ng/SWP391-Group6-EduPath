@@ -29,16 +29,3 @@ model RefreshToken {
 
   @@index([userId, revoked, expiresAt])
 }
-
-model Role {
-  id         String   @id @default(cuid())
-  name        String   @unique
-  createdAt     DateTime       @default(now())
-createdBy     String
-updatedBy     String
-  updatedAt     DateTime       @updatedAt
-  isDeleted     Boolean  @default(false)
-  users       User[]   @relation("UserRoles")
-}
-
-

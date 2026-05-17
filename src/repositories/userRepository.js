@@ -11,5 +11,3 @@ exports.create = async ({ email, passwordHash }) => {
 exports.findById = async (id) => {
   return prisma.user.findUnique({ where: { id } });
 };
-
-

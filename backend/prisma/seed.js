@@ -1,22 +1,40 @@
 const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const hash = await bcrypt.hash('password123', 10);
-  await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
+
+  // tạo role USER nếu chưa có
+  const userRole = await prisma.role.upsert({
+    where: {
+      name: 'USER'
+    },
     update: {},
-    create: { email: 'admin@example.com', passwordHash: hash },
+    create: {
+      name: 'USER',
+      description: 'Normal user'
+    }
   });
-  console.log('Seed complete');
+
+  console.log("ROLE:", userRole);
+
+  // tạo user
+  const user = await prisma.user.create({
+    data: {
+      name: 'Dang Tran Minh Dang',
+      email: 'dang@example.com',
+      password: '123456',
+      roleId: userRole.id,
+      status: 'ACTIVE'
+    }
+  });
+
+  console.log("USER:", user);
 }
 
 main()
   .catch((e) => {
     console.error(e);
-    process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();

@@ -7,37 +7,493 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  ADMIN
+  MENTEE
+  MENTOR
+}
+
+enum LearningPathStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum TipStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
-  passwordHash  String
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  refreshTokens RefreshToken[]
-  roles         Role[]        @relation("UserRoles")
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(100)
+  email       String   @unique @db.VarChar(150)
+  password    String   @db.VarChar(255)
+
+  role        UserRole @default(MENTEE)
+
+  avatar      String?
+  bio         String?
+
+  xp          Int      @default(0)
+
+  status      String   @default("ACTIVE") @db.VarChar(20)
+
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  mentorApplications MentorApplication[]
+
+  mentorSubjects MentorSubject[]
+
+  learningPaths LearningPath[] @relation("MentorLearningPaths")
+
+  enrollments Enrollment[]
+
+  reviews Review[]
+
+  nodeProgresses NodeProgress[]
+
+  checklistProgresses ChecklistProgress[]
+
+  quizAttempts QuizAttempt[]
+
+  tips Tip[] @relation("TipAuthor")
+
+  notifications Notification[]
+
+  xpTransactions XPTransaction[]
+
+  badges UserBadge[]
+
+  certificates Certificate[]
+
+  @@map("users")
 }
 
-model RefreshToken {
-  id        String   @id @default(cuid())
-  tokenId   String?  @unique
-  tokenHash String
-  revoked   Boolean  @default(false)
-  expiresAt DateTime
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  createdAt DateTime @default(now())
+model Subject {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique @db.VarChar(100)
+  description String?
 
-  @@index([userId, revoked, expiresAt])
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  learningPaths LearningPath[]
+
+  mentors MentorSubject[]
+
+  @@map("subjects")
 }
 
-model Role {
+model MentorSubject {
+  id          String @id @default(uuid()) @db.Uuid
 
-  id         String   @id @default(cuid()) 
-  name        String   @unique
-  createdAt     DateTime       @default(now())
-createdBy     String
-updatedBy     String
-  updatedAt     DateTime       @updatedAt
-  isDeleted     Boolean  @default(false)
-  users       User[]   @relation("UserRoles")
+  mentorId    String @map("mentor_id") @db.Uuid
+
+  subjectId   String @map("subject_id") @db.Uuid
+
+  mentor      User    @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+
+  subject     Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([mentorId, subjectId])
+
+  @@map("mentor_subjects")
+}
+
+model MentorApplication {
+  id             String   @id @default(uuid()) @db.Uuid
+
+  userId         String   @map("user_id") @db.Uuid
+
+  cvUrl          String?  @map("cv_url")
+
+  portfolioUrl   String?  @map("portfolio_url")
+
+  reason         String?
+
+  status         String   @default("PENDING") @db.VarChar(20)
+
+  reviewedBy     String?  @map("reviewed_by") @db.Uuid
+
+  reviewedAt     DateTime? @map("reviewed_at")
+
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("mentor_applications")
+}
+
+model LearningPath {
+  id            String   @id @default(uuid()) @db.Uuid
+
+  title         String   @db.VarChar(200)
+
+  description   String?
+
+  thumbnail     String?
+
+  difficulty    String?  @db.VarChar(20)
+
+  status        LearningPathStatus @default(DRAFT)
+
+  isPublic      Boolean  @default(false) @map("is_public")
+
+  mentorId      String   @map("mentor_id") @db.Uuid
+
+  subjectId     String   @map("subject_id") @db.Uuid
+
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  mentor        User @relation("MentorLearningPaths", fields: [mentorId], references: [id])
+
+  subject       Subject @relation(fields: [subjectId], references: [id])
+
+  nodes         Node[]
+
+  enrollments   Enrollment[]
+
+  reviews       Review[]
+
+  certificates  Certificate[]
+
+  @@map("learning_paths")
+}
+
+model Node {
+  id              String @id @default(uuid()) @db.Uuid
+
+  learningPathId  String @map("learning_path_id") @db.Uuid
+
+  title           String @db.VarChar(200)
+
+  description     String?
+
+  orderIndex      Int @map("order_index")
+
+  xpReward        Int @default(10) @map("xp_reward")
+
+  learningPath    LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+
+  checklists      Checklist[]
+
+  materials       Material[]
+
+  quizzes         Quiz[]
+
+  tips            Tip[]
+
+  progresses      NodeProgress[]
+
+  @@map("nodes")
+}
+
+model Checklist {
+  id            String @id @default(uuid()) @db.Uuid
+
+  nodeId        String @map("node_id") @db.Uuid
+
+  title         String @db.VarChar(200)
+
+  description   String?
+
+  orderIndex    Int @map("order_index")
+
+  xpReward      Int @default(5) @map("xp_reward")
+
+  node          Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  progresses    ChecklistProgress[]
+
+  @@map("checklists")
+}
+
+model Material {
+  id          String @id @default(uuid()) @db.Uuid
+
+  nodeId      String @map("node_id") @db.Uuid
+
+  title       String @db.VarChar(200)
+
+  url         String
+
+  type        String @db.VarChar(50)
+
+  node        Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  @@map("materials")
+}
+
+model Quiz {
+  id                String @id @default(uuid()) @db.Uuid
+
+  nodeId            String @map("node_id") @db.Uuid
+
+  title             String @db.VarChar(200)
+
+  passingScore      Int @map("passing_score")
+
+  maxAttempts       Int @default(3) @map("max_attempts")
+
+  unlockHintAfter   Int @default(3) @map("unlock_hint_after")
+
+  skipCostXP        Int @default(50) @map("skip_cost_xp")
+
+  node              Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  questions         QuizQuestion[]
+
+  attempts          QuizAttempt[]
+
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id            String @id @default(uuid()) @db.Uuid
+
+  quizId        String @map("quiz_id") @db.Uuid
+
+  question      String
+
+  explanation   String?
+
+  hint          String?
+
+  quiz          Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  options       QuizOption[]
+
+  @@map("quiz_questions")
+}
+
+model QuizOption {
+  id            String @id @default(uuid()) @db.Uuid
+
+  questionId    String @map("question_id") @db.Uuid
+
+  content       String
+
+  isCorrect     Boolean @default(false) @map("is_correct")
+
+  question      QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("quiz_options")
+}
+
+model Tip {
+  id            String @id @default(uuid()) @db.Uuid
+
+  nodeId        String @map("node_id") @db.Uuid
+
+  authorId      String @map("author_id") @db.Uuid
+
+  content       String
+
+  status        TipStatus @default(PENDING)
+
+  approvedBy    String? @map("approved_by") @db.Uuid
+
+  approvedAt    DateTime? @map("approved_at")
+
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  node          Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  author        User @relation("TipAuthor", fields: [authorId], references: [id])
+
+  @@map("tips")
+}
+
+model Enrollment {
+  id              String @id @default(uuid()) @db.Uuid
+
+  userId          String @map("user_id") @db.Uuid
+
+  learningPathId  String @map("learning_path_id") @db.Uuid
+
+  progressPercent Float @default(0) @map("progress_percent")
+
+  enrolledAt      DateTime @default(now()) @map("enrolled_at")
+
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  learningPath    LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, learningPathId])
+
+  @@map("enrollments")
+}
+
+model NodeProgress {
+  id            String @id @default(uuid()) @db.Uuid
+
+  userId        String @map("user_id") @db.Uuid
+
+  nodeId        String @map("node_id") @db.Uuid
+
+  completed     Boolean @default(false)
+
+  completedAt   DateTime? @map("completed_at")
+
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  node          Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, nodeId])
+
+  @@map("node_progresses")
+}
+
+model ChecklistProgress {
+  id              String @id @default(uuid()) @db.Uuid
+
+  checklistId     String @map("checklist_id") @db.Uuid
+
+  userId          String @map("user_id") @db.Uuid
+
+  completed       Boolean @default(false)
+
+  completedAt     DateTime? @map("completed_at")
+
+  checklist       Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([checklistId, userId])
+
+  @@map("checklist_progresses")
+}
+
+model QuizAttempt {
+  id            String @id @default(uuid()) @db.Uuid
+
+  quizId        String @map("quiz_id") @db.Uuid
+
+  userId        String @map("user_id") @db.Uuid
+
+  score         Int
+
+  passed        Boolean
+
+  attemptNumber Int @map("attempt_number")
+
+  attemptedAt   DateTime @default(now()) @map("attempted_at")
+
+  quiz          Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("quiz_attempts")
+}
+
+model Review {
+  id              String @id @default(uuid()) @db.Uuid
+
+  userId          String @map("user_id") @db.Uuid
+
+  learningPathId  String @map("learning_path_id") @db.Uuid
+
+  rating          Int
+
+  comment         String?
+
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  learningPath    LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, learningPathId])
+
+  @@map("reviews")
+}
+
+model XPTransaction {
+  id            String @id @default(uuid()) @db.Uuid
+
+  userId        String @map("user_id") @db.Uuid
+
+  amount        Int
+
+  reason        String
+
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("xp_transactions")
+}
+
+model Badge {
+  id            String @id @default(uuid()) @db.Uuid
+
+  name          String @unique
+
+  description   String?
+
+  icon          String?
+
+  users         UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id            String @id @default(uuid()) @db.Uuid
+
+  userId        String @map("user_id") @db.Uuid
+
+  badgeId       String @map("badge_id") @db.Uuid
+
+  earnedAt      DateTime @default(now()) @map("earned_at")
+
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  badge         Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+
+  @@map("user_badges")
+}
+
+model Notification {
+  id            String @id @default(uuid()) @db.Uuid
+
+  userId        String @map("user_id") @db.Uuid
+
+  title         String
+
+  content       String
+
+  isRead        Boolean @default(false) @map("is_read")
+
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Certificate {
+  id              String @id @default(uuid()) @db.Uuid
+
+  userId          String @map("user_id") @db.Uuid
+
+  learningPathId  String @map("learning_path_id") @db.Uuid
+
+  certificateCode String @unique @map("certificate_code")
+
+  pdfUrl          String? @map("pdf_url")
+
+  issuedAt        DateTime @default(now()) @map("issued_at")
+
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  learningPath    LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, learningPathId])
+
+  @@map("certificates")
 }

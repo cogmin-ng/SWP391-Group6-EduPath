@@ -7,37 +7,413 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BANNED
+  PENDING
+}
+
+enum RoadmapStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+  PUBLISHED
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  DROPPED
+}
+
+enum QuizAttemptStatus {
+  PASS
+  FAIL
+}
+
+enum ContributorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum NotificationType {
+  SYSTEM
+  QUIZ
+  ROADMAP
+  CONTRIBUTION
+  CERTIFICATE
+}
+
 model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
   passwordHash  String
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  avatar        String?
+  bio           String?
+  xp            Int             @default(0)
+  status        UserStatus      @default(ACTIVE)
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
   refreshTokens RefreshToken[]
-  roles         Role[]        @relation("UserRoles")
+
+  roles         Role[]          @relation("UserRoles")
+
+  advisorApplications AdvisorApplication[]
+  learningPaths       LearningPath[]      @relation("MentorLearningPaths")
+
+  enrollments         Enrollment[]
+  nodeProgresses      NodeProgress[]
+  checklistProgress  ChecklistProgress[]
+  quizAttempts       QuizAttempt[]
+  certificates       Certificate[]
+
+  createdTips        Tip[]               @relation("TipCreator")
+  contributionTips   Tip[]               @relation("TipContributor")
+
+  notifications      Notification[]
+
+  reviews            Review[]
 }
 
 model RefreshToken {
-  id        String   @id @default(cuid())
-  tokenId   String?  @unique
-  tokenHash String
-  revoked   Boolean  @default(false)
-  expiresAt DateTime
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  createdAt DateTime @default(now())
+  id          String    @id @default(cuid())
+  tokenId     String?   @unique
+  tokenHash   String
+  revoked     Boolean   @default(false)
+  expiresAt   DateTime
+
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime  @default(now())
 
   @@index([userId, revoked, expiresAt])
 }
 
 model Role {
+  id          String    @id @default(cuid())
+  name        String    @unique
 
-  id         String   @id @default(cuid()) 
-  name        String   @unique
-  createdAt     DateTime       @default(now())
-createdBy     String
-updatedBy     String
-  updatedAt     DateTime       @updatedAt
-  isDeleted     Boolean  @default(false)
-  users       User[]   @relation("UserRoles")
+  createdBy   String?
+  updatedBy   String?
+
+  isDeleted   Boolean   @default(false)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  users       User[]    @relation("UserRoles")
+}
+
+model Subject {
+  id            String          @id @default(cuid())
+
+  name          String          @unique
+  description   String?
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  learningPaths LearningPath[]
+}
+
+model AdvisorApplication {
+  id              String              @id @default(cuid())
+
+  userId          String
+  experience      String?
+  cvUrl           String?
+  portfolioUrl    String?
+
+  specialization  String?
+
+  status          ContributorStatus   @default(PENDING)
+
+  reviewedBy      String?
+  reviewedAt      DateTime?
+
+  createdAt       DateTime            @default(now())
+
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LearningPath {
+  id              String              @id @default(cuid())
+
+  title           String
+  description     String?
+  thumbnail       String?
+
+  status          RoadmapStatus       @default(DRAFT)
+
+  isPublic        Boolean             @default(false)
+
+  xpReward        Int                 @default(0)
+
+  mentorId        String
+  mentor          User                @relation("MentorLearningPaths", fields: [mentorId], references: [id])
+
+  subjectId       String
+  subject         Subject             @relation(fields: [subjectId], references: [id])
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  nodes           Node[]
+
+  enrollments     Enrollment[]
+  certificates    Certificate[]
+  reviews         Review[]
+}
+
+model Node {
+  id              String              @id @default(cuid())
+
+  learningPathId  String
+  learningPath    LearningPath        @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+
+  title           String
+  description     String?
+
+  orderIndex      Int
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  checklists      Checklist[]
+  materials       Material[]
+  quizzes         Quiz[]
+  tips            Tip[]
+
+  nodeProgresses  NodeProgress[]
+}
+
+model Checklist {
+  id              String              @id @default(cuid())
+
+  nodeId          String
+  node            Node                @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  title           String
+  description     String?
+
+  orderIndex      Int
+
+  xpReward        Int                 @default(10)
+
+  createdAt       DateTime            @default(now())
+
+  progresses      ChecklistProgress[]
+}
+
+model ChecklistProgress {
+  id              String              @id @default(cuid())
+
+  checklistId     String
+  userId          String
+
+  completed       Boolean             @default(false)
+  completedAt     DateTime?
+
+  checklist       Checklist           @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([checklistId, userId])
+}
+
+model Material {
+  id              String              @id @default(cuid())
+
+  nodeId          String
+  node            Node                @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  title           String
+  description     String?
+
+  url             String
+  type            String
+
+  createdAt       DateTime            @default(now())
+}
+
+model Quiz {
+  id              String              @id @default(cuid())
+
+  nodeId          String
+  node            Node                @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  title           String
+
+  description     String?
+
+  passingScore    Int
+
+  xpReward        Int                 @default(50)
+
+  createdAt       DateTime            @default(now())
+
+  questions       QuizQuestion[]
+  attempts        QuizAttempt[]
+}
+
+model QuizQuestion {
+  id              String              @id @default(cuid())
+
+  quizId          String
+  quiz            Quiz                @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  question        String
+  explanation     String?
+
+  createdAt       DateTime            @default(now())
+
+  options         QuizOption[]
+}
+
+model QuizOption {
+  id              String              @id @default(cuid())
+
+  questionId      String
+  question        QuizQuestion        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  content         String
+
+  isCorrect       Boolean             @default(false)
+}
+
+model QuizAttempt {
+  id              String              @id @default(cuid())
+
+  quizId          String
+  userId          String
+
+  score           Int
+
+  status          QuizAttemptStatus
+
+  attemptCount    Int                 @default(1)
+
+  createdAt       DateTime            @default(now())
+
+  quiz            Quiz                @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Tip {
+  id              String              @id @default(cuid())
+
+  nodeId          String
+  node            Node                @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  createdById     String
+  createdBy       User                @relation("TipCreator", fields: [createdById], references: [id])
+
+  contributorId   String?
+  contributor     User?               @relation("TipContributor", fields: [contributorId], references: [id])
+
+  title           String?
+  content         String
+
+  status          ContributorStatus   @default(PENDING)
+
+  isPublished     Boolean             @default(false)
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+}
+
+model Enrollment {
+  id              String              @id @default(cuid())
+
+  userId          String
+  learningPathId  String
+
+  progressPercent Float               @default(0)
+
+  status          EnrollmentStatus    @default(ACTIVE)
+
+  enrolledAt      DateTime            @default(now())
+
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  learningPath    LearningPath        @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, learningPathId])
+}
+
+model NodeProgress {
+  id              String              @id @default(cuid())
+
+  userId          String
+  nodeId          String
+
+  completed       Boolean             @default(false)
+
+  completedAt     DateTime?
+
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  node            Node                @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, nodeId])
+}
+
+model Certificate {
+  id              String              @id @default(cuid())
+
+  userId          String
+  learningPathId  String
+
+  certificateUrl  String?
+
+  issuedAt        DateTime            @default(now())
+
+  verificationId  String              @unique
+
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  learningPath    LearningPath        @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, learningPathId])
+}
+
+model Review {
+  id              String              @id @default(cuid())
+
+  userId          String
+  learningPathId  String
+
+  rating          Int
+  comment         String?
+
+  createdAt       DateTime            @default(now())
+
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  learningPath    LearningPath        @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, learningPathId])
+}
+
+model Notification {
+  id              String              @id @default(cuid())
+
+  userId          String
+
+  title           String
+  content         String
+
+  type            NotificationType
+
+  isRead          Boolean             @default(false)
+
+  createdAt       DateTime            @default(now())
+
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { randomUUID } = require('node:crypto');
 const userRepo = require('../repositories/userRepository');
+const roleRepo = require('../repositories/roleRepository');
 const refreshTokenRepo = require('../repositories/refreshTokenRepository');
 const config = require('../config');
 const ApiError = require('../utils/ApiError');
@@ -27,16 +28,34 @@ const refreshTokenExpiresAt = () => {
 };
 
 const getUserRoles = async (userId) => {
-  const userWithRoles = await userRepo.findByIdWithRoles(userId);
-  if (!userWithRoles) return [];
-  return userWithRoles.roles.map((r) => r.name);
+  const userWithRole = await userRepo.findByIdWithRole(userId);
+  if (!userWithRole || !userWithRole.role) return [];
+  return [userWithRole.role.name];
+};
+
+const getDefaultRole = async () => {
+  const defaultRoleName = 'Mentee';
+  let defaultRole = await roleRepo.findByName(defaultRoleName);
+  if (!defaultRole) {
+    defaultRole = await roleRepo.create({ name: defaultRoleName });
+  }
+  return defaultRole;
 };
 
 exports.register = async ({ email, password, name }) => {
   const existing = await userRepo.findByEmail(email);
   if (existing) throw new ApiError(400, authMessages.emailAlreadyInUse);
+
   const hash = await bcrypt.hash(password, 10);
-  const user = await userRepo.create({ email, passwordHash: hash, name });
+  const defaultRole = await getDefaultRole();
+
+  const user = await userRepo.create({
+    email,
+    passwordHash: hash,
+    name,
+    roleId: defaultRole.id,
+  });
+
   return user;
 };
 

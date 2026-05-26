@@ -4,12 +4,43 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
-  const hash = await bcrypt.hash('password123', 10);
-  await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
-    update: {},
-    create: { email: 'admin@example.com', passwordHash: hash },
-  });
+  const password = 'password123';
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const roleNames = ['Mentee', 'Mentor', 'Admin'];
+
+  const roles = {};
+  for (const name of roleNames) {
+    const role = await prisma.role.upsert({
+      where: { name },
+      update: {},
+      create: { name },
+    });
+    roles[name] = role;
+  }
+
+  for (const name of roleNames) {
+    const email = `${name.toLowerCase()}@example.com`;
+    await prisma.user.upsert({
+      where: { email },
+      update: {
+        name,
+        passwordHash,
+        role: {
+          connect: { id: roles[name].id },
+        },
+      },
+      create: {
+        email,
+        name,
+        passwordHash,
+        role: {
+          connect: { id: roles[name].id },
+        },
+      },
+    });
+  }
+
   console.log('Seed complete');
 }
 

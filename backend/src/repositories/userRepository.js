@@ -4,17 +4,21 @@ exports.findByEmail = async (email) => {
   return prisma.user.findUnique({ where: { email } });
 };
 
-exports.create = async ({ email, passwordHash, name }) => {
-  return prisma.user.create({ data: { email, passwordHash, name } });
+exports.create = async ({ email, passwordHash, name, roleId }) => {
+  const data = { email, passwordHash, name };
+  if (roleId) {
+    data.role = { connect: { id: roleId } };
+  }
+  return prisma.user.create({ data });
 };
 
 exports.findById = async (id) => {
   return prisma.user.findUnique({ where: { id } });
 };
 
-exports.findByIdWithRoles = async (id) => {
+exports.findByIdWithRole = async (id) => {
   return prisma.user.findUnique({
     where: { id },
-    include: { roles: { select: { name: true } } },
+    include: { role: { select: { name: true } } },
   });
 };

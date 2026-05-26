@@ -6,9 +6,14 @@
     "description": "API documentation for EduPath backend"
   },
   "servers": [{ "url": "http://localhost:4000" }],
+  "tags": [
+    { "name": "Auth", "description": "Authentication and authorization endpoints" },
+    { "name": "Role", "description": "Role management endpoints" }
+  ],
   "paths": {
     "/api/auth/register": {
       "post": {
+        "tags": ["Auth"],
         "summary": "Register new user",
         "requestBody": {
           "required": true,
@@ -23,6 +28,7 @@
     },
     "/api/auth/login": {
       "post": {
+        "tags": ["Auth"],
         "summary": "Login user",
         "requestBody": {
           "required": true,
@@ -37,6 +43,7 @@
     },
     "/api/auth/refresh": {
       "post": {
+        "tags": ["Auth"],
         "summary": "Refresh tokens",
         "requestBody": {
           "required": true,
@@ -51,6 +58,7 @@
     },
     "/api/auth/logout": {
       "post": {
+        "tags": ["Auth"],
         "summary": "Logout user",
         "requestBody": {
           "required": true,
@@ -62,9 +70,179 @@
         },
         "responses": { "200": { "description": "Logout success response" } }
       }
+    },
+    "/api/roles": {
+      "get": {
+        "tags": ["Role"],
+        "security": [{ "BearerAuth": [] }],
+        "summary": "List roles",
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 0 }
+          },
+          {
+            "name": "take",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 10 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Roles list",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RoleListResponse" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Role"],
+        "security": [{ "BearerAuth": [] }],
+        "summary": "Create a new role",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RoleCreateRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Role created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RoleResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/roles/search": {
+      "get": {
+        "tags": ["Role"],
+        "security": [{ "BearerAuth": [] }],
+        "summary": "Search roles",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 0 }
+          },
+          {
+            "name": "take",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 10 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RoleListResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/roles/{id}": {
+      "get": {
+        "tags": ["Role"],
+        "security": [{ "BearerAuth": [] }],
+        "summary": "Get role by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RoleResponse" }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Role"],
+        "security": [{ "BearerAuth": [] }],
+        "summary": "Update role by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RoleUpdateRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Role updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RoleResponse" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Role"],
+        "security": [{ "BearerAuth": [] }],
+        "summary": "Soft delete role by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Role deleted successfully" }
+        }
+      }
     }
   },
   "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
     "schemas": {
       "RegisterRequest": {
         "type": "object",
@@ -86,6 +264,42 @@
         "type": "object",
         "properties": { "refreshToken": { "type": "string" } },
         "required": ["refreshToken"]
+      },
+      "RoleCreateRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 2, "maxLength": 50 }
+        },
+        "required": ["name"]
+      },
+      "RoleUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 2, "maxLength": 50 }
+        }
+      },
+      "RoleResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "createdBy": { "type": ["string", "null"] },
+          "updatedBy": { "type": ["string", "null"] },
+          "isDeleted": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "userCount": { "type": "integer" }
+        }
+      },
+      "RoleListResponse": {
+        "type": "object",
+        "properties": {
+          "roles": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/RoleResponse" }
+          },
+          "total": { "type": "integer" }
+        }
       }
     }
   }

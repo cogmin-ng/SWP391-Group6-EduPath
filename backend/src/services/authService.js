@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { randomUUID } = require('crypto');
+const { randomUUID } = require('node:crypto');
 const userRepo = require('../repositories/userRepository');
 const refreshTokenRepo = require('../repositories/refreshTokenRepository');
 const config = require('../config');
@@ -145,7 +145,9 @@ exports.logout = async ({ refreshToken }) => {
 
     await refreshTokenRepo.revokeById(existingToken.id);
     return;
+    // eslint-disable-next-line no-unused-vars, no-empty
   } catch (err) {
+    // Silently ignore JWT verification errors for logout
     return;
   }
 };

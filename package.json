@@ -1,0 +1,13 @@
+{
+  "name": "edupath",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n BE,FE -c blue,green \"pnpm dev:be\" \"pnpm dev:fe\"",
+    "dev:be": "pnpm --filter edupath-backend dev",
+    "dev:fe": "pnpm --filter frontend dev"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

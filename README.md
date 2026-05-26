@@ -1,8 +1,12 @@
-# EduPath Backend (Node + Express + Prisma)
+# EduPath (Monorepo with Frontend and Backend)
+
+This project is managed as a monorepo using pnpm workspaces. The `frontend` and `backend` are located in their respective folders.
+
+**Important:** All commands below should be run from the root directory of the project.
 
 Quickstart:
 
-1. Install dependencies:
+1. Install all dependencies for both frontend and backend:
 
 ```bash
 pnpm install

@@ -8,9 +8,9 @@ const ApiError = require('../utils/ApiError');
 const { auth: authMessages } = require('../constants/messages');
 const prisma = require('../lib/prisma');
 
-const createAccessToken = (user) => {
+const createAccessToken = (user, roles) => {
   return jwt.sign(
-    { sub: user.id, email: user.email },
+    { sub: user.id, email: user.email, roles },
     config.jwt.accessSecret,
     { expiresIn: '15m' }
   );
@@ -26,11 +26,17 @@ const refreshTokenExpiresAt = () => {
   return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 };
 
-exports.register = async ({ email, password }) => {
+const getUserRoles = async (userId) => {
+  const userWithRoles = await userRepo.findByIdWithRoles(userId);
+  if (!userWithRoles) return [];
+  return userWithRoles.roles.map((r) => r.name);
+};
+
+exports.register = async ({ email, password, name }) => {
   const existing = await userRepo.findByEmail(email);
   if (existing) throw new ApiError(400, authMessages.emailAlreadyInUse);
   const hash = await bcrypt.hash(password, 10);
-  const user = await userRepo.create({ email, passwordHash: hash });
+  const user = await userRepo.create({ email, passwordHash: hash, name });
   return user;
 };
 
@@ -39,7 +45,9 @@ exports.login = async ({ email, password }) => {
   if (!user) throw new ApiError(401, authMessages.invalidCredentials);
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) throw new ApiError(401, authMessages.invalidCredentials);
-  const accessToken = createAccessToken(user);
+
+  const roles = await getUserRoles(user.id);
+  const accessToken = createAccessToken(user, roles);
   const tokenId = randomUUID();
   const refreshToken = createRefreshToken(user, tokenId);
   const tokenHash = await bcrypt.hash(refreshToken, 10);
@@ -49,7 +57,16 @@ exports.login = async ({ email, password }) => {
     tokenHash,
     expiresAt: refreshTokenExpiresAt(),
   });
-  return { accessToken, refreshToken };
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      roles,
+    },
+  };
 };
 
 exports.refresh = async ({ refreshToken }) => {
@@ -75,6 +92,7 @@ exports.refresh = async ({ refreshToken }) => {
     const user = await userRepo.findById(userId);
     if (!user) throw new ApiError(404, authMessages.userNotFound);
 
+    const roles = await getUserRoles(user.id);
     const newTokenId = randomUUID();
     const newRefreshToken = createRefreshToken(user, newTokenId);
     const newTokenHash = await bcrypt.hash(newRefreshToken, 10);
@@ -92,8 +110,17 @@ exports.refresh = async ({ refreshToken }) => {
       );
     });
 
-    const accessToken = createAccessToken(user);
-    return { accessToken, refreshToken: newRefreshToken };
+    const accessToken = createAccessToken(user, roles);
+    return {
+      accessToken,
+      refreshToken: newRefreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        roles,
+      },
+    };
   } catch (err) {
     if (err instanceof ApiError) throw err;
     throw new ApiError(401, authMessages.invalidRefreshToken);
@@ -121,4 +148,18 @@ exports.logout = async ({ refreshToken }) => {
   } catch (err) {
     return;
   }
+};
+
+exports.getMe = async (userId) => {
+  const user = await userRepo.findByIdWithRoles(userId);
+  if (!user) throw new ApiError(404, authMessages.userNotFound);
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    avatar: user.avatar,
+    bio: user.bio,
+    xp: user.xp,
+    roles: user.roles.map((r) => r.name),
+  };
 };

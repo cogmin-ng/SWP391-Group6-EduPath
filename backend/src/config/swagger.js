@@ -1,0 +1,163 @@
+const swaggerJsdoc = require('swagger-jsdoc');
+
+const options = {
+  definition: {
+    openapi: '3.0.1',
+    info: {
+      title: 'EduPath API',
+      version: '0.1.0',
+      description: 'API documentation for EduPath backend',
+    },
+    servers: [
+      {
+        url: 'http://localhost:4000',
+        description: 'Development server',
+      },
+    ],
+    components: {
+      securitySchemes: {
+        BearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+      schemas: {
+        RegisterRequest: {
+          type: 'object',
+          properties: {
+            email: { type: 'string', format: 'email' },
+            password: { type: 'string', minLength: 6 },
+          },
+          required: ['email', 'password'],
+        },
+        LoginRequest: {
+          type: 'object',
+          properties: {
+            email: { type: 'string', format: 'email' },
+            password: { type: 'string' },
+          },
+          required: ['email', 'password'],
+        },
+        RefreshRequest: {
+          type: 'object',
+          properties: { refreshToken: { type: 'string' } },
+          required: ['refreshToken'],
+        },
+        AuthResponse: {
+          type: 'object',
+          properties: {
+            accessToken: { type: 'string' },
+            refreshToken: { type: 'string' },
+          },
+        },
+        RoleCreateRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2, maxLength: 50 },
+          },
+          required: ['name'],
+        },
+        RoleUpdateRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2, maxLength: 50 },
+          },
+        },
+        RoleResponse: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: 'string' },
+            createdBy: { type: ['string', 'null'] },
+            updatedBy: { type: ['string', 'null'] },
+            isDeleted: { type: 'boolean' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+            userCount: { type: 'integer' },
+          },
+        },
+        RoleListResponse: {
+          type: 'object',
+          properties: {
+            roles: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/RoleResponse' },
+            },
+            total: { type: 'integer' },
+          },
+        },
+        UserUpdateRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2, maxLength: 100 },
+            avatar: { type: 'string', format: 'uri' },
+            bio: { type: 'string', maxLength: 500 },
+            status: {
+              type: 'string',
+              enum: ['ACTIVE', 'INACTIVE', 'BANNED', 'PENDING'],
+            },
+          },
+        },
+        UserRoleUpdateRequest: {
+          type: 'object',
+          properties: {
+            roleId: { type: 'string' },
+          },
+          required: ['roleId'],
+        },
+        UserResponse: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: ['string', 'null'] },
+            email: { type: 'string' },
+            avatar: { type: ['string', 'null'] },
+            bio: { type: ['string', 'null'] },
+            xp: { type: 'integer' },
+            status: {
+              type: 'string',
+              enum: ['ACTIVE', 'INACTIVE', 'BANNED', 'PENDING'],
+            },
+            role: { type: ['string', 'null'] },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        UserListResponse: {
+          type: 'object',
+          properties: {
+            users: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/UserResponse' },
+            },
+            total: { type: 'integer' },
+          },
+        },
+      },
+    },
+    tags: [
+      {
+        name: 'Auth',
+        description: 'Authentication and authorization endpoints',
+      },
+      {
+        name: 'Role',
+        description: 'Role management endpoints',
+      },
+      {
+        name: 'User',
+        description: 'User management endpoints',
+      },
+    ],
+  },
+  apis: [
+    './src/routes/auth.js',
+    './src/routes/role.js',
+    './src/routes/user.js',
+  ],
+};
+
+const specs = swaggerJsdoc(options);
+
+module.exports = specs;

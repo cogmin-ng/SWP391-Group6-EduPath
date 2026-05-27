@@ -8,7 +8,7 @@ const routes = require('./routes');
 const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
 const config = require('./config');
 const swaggerUi = require('swagger-ui-express');
-const openapi = require('../docs/openapi.json');
+const swaggerSpecs = require('./config/swagger');
 
 const app = express();
 
@@ -35,7 +35,7 @@ if (config.nodeEnv === 'development') app.use(morgan('dev'));
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 // Swagger UI
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapi));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 app.use('/api', routes);
 

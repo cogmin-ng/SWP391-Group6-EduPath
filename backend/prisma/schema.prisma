@@ -56,6 +56,7 @@ model User {
   bio          String?
   xp           Int        @default(0)
   status       UserStatus @default(ACTIVE)
+  isDeleted    Boolean    @default(false)
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
@@ -113,6 +114,7 @@ model Subject {
   name        String  @unique
   description String?
 
+  isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -134,6 +136,7 @@ model AdvisorApplication {
   reviewedBy String?
   reviewedAt DateTime?
 
+  isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -158,6 +161,7 @@ model LearningPath {
   subjectId String
   subject   Subject @relation(fields: [subjectId], references: [id])
 
+  isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -179,6 +183,7 @@ model Node {
 
   orderIndex Int
 
+  isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -203,6 +208,7 @@ model Checklist {
 
   xpReward Int @default(10)
 
+  isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
 
   progresses ChecklistProgress[]
@@ -220,6 +226,8 @@ model ChecklistProgress {
   checklist Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  isDeleted Boolean @default(false)
+
   @@unique([checklistId, userId])
 }
 
@@ -235,6 +243,7 @@ model Material {
   url  String
   type String
 
+  isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
 }
 
@@ -252,6 +261,7 @@ model Quiz {
 
   xpReward Int @default(50)
 
+  isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
 
   questions QuizQuestion[]
@@ -267,6 +277,7 @@ model QuizQuestion {
   question    String
   explanation String?
 
+  isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
 
   options QuizOption[]
@@ -281,6 +292,7 @@ model QuizOption {
   content String
 
   isCorrect Boolean @default(false)
+  isDeleted Boolean @default(false)
 }
 
 model QuizAttempt {
@@ -295,6 +307,7 @@ model QuizAttempt {
 
   attemptCount Int @default(1)
 
+  isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
 
   quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
@@ -320,6 +333,7 @@ model Tip {
 
   isPublished Boolean @default(false)
 
+  isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -335,6 +349,8 @@ model Enrollment {
   status EnrollmentStatus @default(ACTIVE)
 
   enrolledAt DateTime @default(now())
+
+  isDeleted Boolean @default(false)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -352,6 +368,8 @@ model NodeProgress {
   completed Boolean @default(false)
 
   completedAt DateTime?
+
+  isDeleted Boolean @default(false)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -372,7 +390,8 @@ model Certificate {
 
   verificationId String @unique
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isDeleted Boolean @default(false)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   learningPath LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
 
@@ -388,6 +407,7 @@ model Review {
   rating  Int
   comment String?
 
+  isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -409,6 +429,7 @@ model Notification {
 
   isRead Boolean @default(false)
 
+  isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

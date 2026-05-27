@@ -1,6 +1,7 @@
 const Router = require('express').Router;
 const authController = require('../controllers/authController');
 const validateSchema = require('../middleware/validateSchema');
+const { requireAuth } = require('../middleware/auth');
 const {
   registerSchema,
   loginSchema,
@@ -28,5 +29,7 @@ router.post(
   validateSchema(refreshTokenSchema),
   authController.logout
 );
+
+router.get('/me', requireAuth, authController.getMe);
 
 module.exports = router;

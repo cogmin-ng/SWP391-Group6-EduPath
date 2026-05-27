@@ -1,48 +1,38 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import AdminLayout from './layouts/AdminLayout';
-import DashboardPage from './pages/admin/DashboardPage';
+import { Toaster } from 'react-hot-toast';
+import AppRoutes from './routes/AppRoutes';
 
-// Placeholder components for other pages
-const PlaceholderPage = ({ title }) => (
-  <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
-    <h1 className="text-2xl font-bold text-slate-800 mb-4">{title}</h1>
-    <p className="text-slate-500">This page is currently under development.</p>
-  </div>
-);
-
-function App() {
+export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Redirect from root to admin dashboard for now */}
-        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="users" element={<PlaceholderPage title="User Management" />} />
-          <Route path="categories" element={<PlaceholderPage title="Category Management" />} />
-          <Route path="roadmaps" element={<PlaceholderPage title="Roadmap Approval" />} />
-          <Route path="mentors" element={<PlaceholderPage title="Mentor Requests" />} />
-          <Route path="reports" element={<PlaceholderPage title="Reports" />} />
-          <Route path="settings" element={<PlaceholderPage title="Settings" />} />
-        </Route>
-
-        {/* 404 Route */}
-        <Route path="*" element={
-          <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="text-center">
-              <h1 className="text-6xl font-bold text-slate-900 mb-4">404</h1>
-              <p className="text-slate-500 mb-6">Oops! The page you're looking for doesn't exist.</p>
-              <a href="/admin/dashboard" className="text-indigo-600 font-semibold hover:underline">Go back to Dashboard</a>
-            </div>
-          </div>
-        } />
-      </Routes>
-    </BrowserRouter>
+    <>
+      <AppRoutes />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#fff',
+            color: '#1e293b',
+            border: '1px solid #e2e8f0',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            fontSize: '14px',
+            fontFamily: 'Inter, sans-serif',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+          },
+          success: {
+            iconTheme: {
+              primary: '#4F46E5',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
+    </>
   );
 }
-
-export default App;

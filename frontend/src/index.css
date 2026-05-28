@@ -19,10 +19,14 @@ body {
   text-rendering: optimizeLegibility;
   color: #1e293b;
   background: #ffffff;
+  margin: 0;
+  display: flex;
+  min-width: 320px;
 }
 
 #root {
   min-height: 100svh;
+  width: 100%;
 }
 
 /* Scrollbar */

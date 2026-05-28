@@ -10,9 +10,8 @@ const ROLE_DASHBOARD_MAP = {
 };
 
 export function getDashboardByRole(roles = []) {
-  const upperRoles = roles.map(r => typeof r === 'string' ? r.toUpperCase() : r);
-  if (upperRoles.includes('ADMIN')) return ROLE_DASHBOARD_MAP.ADMIN;
-  if (upperRoles.includes('MENTOR')) return ROLE_DASHBOARD_MAP.MENTOR;
+  if (roles.includes('ADMIN')) return ROLE_DASHBOARD_MAP.ADMIN;
+  if (roles.includes('MENTOR')) return ROLE_DASHBOARD_MAP.MENTOR;
   return ROLE_DASHBOARD_MAP.LEARNER;
 }
 

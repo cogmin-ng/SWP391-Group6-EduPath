@@ -9,7 +9,6 @@ import AuthLayout from '../layouts/AuthLayout';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { useAuth } from '../hooks/useAuth';
-import { getDashboardByRole } from '../context/AuthContext';
 
 const loginSchema = z.object({
   email: z
@@ -38,9 +37,7 @@ export default function LoginPage() {
     try {
       const user = await login(data.email, data.password);
       toast.success('Đăng nhập thành công!');
-      
-      const redirectPath = getDashboardByRole(user?.roles || []);
-      navigate(redirectPath, { replace: true });
+      navigate('/', { replace: true });
     } catch (error) {
       const message =
         error.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại.';

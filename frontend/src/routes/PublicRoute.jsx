@@ -1,9 +1,8 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { getDashboardByRole } from '../context/AuthContext';
 
 export default function PublicRoute({ children }) {
-  const { isAuthenticated, loading, user } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
     return (
@@ -17,8 +16,7 @@ export default function PublicRoute({ children }) {
   }
 
   if (isAuthenticated) {
-    const redirectPath = getDashboardByRole(user?.roles || []);
-    return <Navigate to={redirectPath} replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;

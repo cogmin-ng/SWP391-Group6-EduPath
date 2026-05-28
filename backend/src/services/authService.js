@@ -172,7 +172,7 @@ exports.logout = async ({ refreshToken }) => {
 };
 
 exports.getMe = async (userId) => {
-  const user = await userRepo.findByIdWithRole(userId);
+  const user = await userRepo.findByIdWithRoles(userId);
   if (!user) throw new ApiError(404, authMessages.userNotFound);
   return {
     id: user.id,
@@ -181,6 +181,6 @@ exports.getMe = async (userId) => {
     avatar: user.avatar,
     bio: user.bio,
     xp: user.xp,
-    roles: user.role ? [user.role.name] : [],
+    roles: user.roles.map((r) => r.name),
   };
 };

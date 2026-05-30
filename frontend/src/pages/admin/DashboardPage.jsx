@@ -1,4 +1,3 @@
-import React from 'react';
 import StatsCard from '../../components/admin/StatsCard';
 import DashboardCharts from '../../components/admin/DashboardCharts';
 import ActivityTable from '../../components/admin/ActivityTable';

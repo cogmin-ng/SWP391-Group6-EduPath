@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Search, Bell, Menu, User, ChevronDown } from 'lucide-react';
 
 const Topbar = ({ toggleSidebar }) => {

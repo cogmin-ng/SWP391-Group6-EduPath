@@ -1,4 +1,3 @@
-import React from 'react';
 import { recentActivities } from '../../mock/dashboardData';
 
 const ActivityTable = () => {

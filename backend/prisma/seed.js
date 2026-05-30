@@ -7,7 +7,7 @@ async function main() {
   const password = 'password123';
   const passwordHash = await bcrypt.hash(password, 10);
 
-  const roleNames = ['Mentee', 'Mentor', 'Admin'];
+  const roleNames = ['MENTEE', 'MENTOR', 'ADMIN'];
 
   const roles = {};
   for (const name of roleNames) {

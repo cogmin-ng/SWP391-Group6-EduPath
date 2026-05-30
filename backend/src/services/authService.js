@@ -8,6 +8,7 @@ const config = require('../config');
 const ApiError = require('../utils/ApiError');
 const { auth: authMessages } = require('../constants/messages');
 const prisma = require('../lib/prisma');
+const ROLES = require('../constants/roles');
 
 const createAccessToken = (user, roles) => {
   return jwt.sign(
@@ -34,7 +35,7 @@ const getUserRoles = async (userId) => {
 };
 
 const getDefaultRole = async () => {
-  const defaultRoleName = 'Mentee';
+  const defaultRoleName = ROLES.MENTEE;
   let defaultRole = await roleRepo.findByName(defaultRoleName);
   if (!defaultRole) {
     defaultRole = await roleRepo.create({ name: defaultRoleName });
@@ -172,7 +173,7 @@ exports.logout = async ({ refreshToken }) => {
 };
 
 exports.getMe = async (userId) => {
-  const user = await userRepo.findByIdWithRoles(userId);
+  const user = await userRepo.findByIdWithRole(userId);
   if (!user) throw new ApiError(404, authMessages.userNotFound);
   return {
     id: user.id,
@@ -181,6 +182,6 @@ exports.getMe = async (userId) => {
     avatar: user.avatar,
     bio: user.bio,
     xp: user.xp,
-    roles: user.roles.map((r) => r.name),
+    roles: await getUserRoles(user.id),
   };
 };

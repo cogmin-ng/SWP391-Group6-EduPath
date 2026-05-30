@@ -1,21 +1,19 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import toast from 'react-hot-toast';
-import { Mail, Lock, Sparkles, Route } from 'lucide-react';
-import AuthLayout from '../layouts/AuthLayout';
-import Button from '../components/ui/Button';
-import Input from '../components/ui/Input';
-import { useAuth } from '../hooks/useAuth';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Lock, Mail, Route, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { Link, useNavigate } from "react-router-dom";
+import { z } from "zod";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
+import { useAuth } from "../hooks/useAuth";
+import AuthLayout from "../layouts/AuthLayout";
+import { getDashboardByRole } from "../utils/authRoles";
 
 const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, 'Vui lòng nhập email')
-    .email('Email không hợp lệ'),
-  password: z.string().min(1, 'Vui lòng nhập mật khẩu'),
+  email: z.string().min(1, "Vui lòng nhập email").email("Email không hợp lệ"),
+  password: z.string().min(1, "Vui lòng nhập mật khẩu"),
 });
 
 export default function LoginPage() {
@@ -29,18 +27,20 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '' },
+    defaultValues: { email: "", password: "" },
   });
 
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
       const user = await login(data.email, data.password);
-      toast.success('Đăng nhập thành công!');
-      navigate('/', { replace: true });
+      toast.success("Đăng nhập thành công!");
+      const redirectTo = getDashboardByRole(user?.roles || []);
+      navigate(redirectTo || "/", { replace: true });
     } catch (error) {
       const message =
-        error.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại.';
+        error.response?.data?.message ||
+        "Đăng nhập thất bại. Vui lòng thử lại.";
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -89,7 +89,7 @@ export default function LoginPage() {
             placeholder="ten.ho@example.com"
             icon={Mail}
             error={errors.email?.message}
-            {...register('email')}
+            {...register("email")}
           />
 
           <Input
@@ -98,7 +98,7 @@ export default function LoginPage() {
             placeholder="••••••••"
             icon={Lock}
             error={errors.password?.message}
-            {...register('password')}
+            {...register("password")}
           />
 
           <div className="flex items-center justify-between">
@@ -131,7 +131,7 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center text-sm text-slate-500 mt-6">
-          Chưa có tài khoản?{' '}
+          Chưa có tài khoản?{" "}
           <Link
             to="/register"
             className="font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"

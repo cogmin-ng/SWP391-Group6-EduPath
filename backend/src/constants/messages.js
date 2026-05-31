@@ -11,4 +11,12 @@ module.exports = {
     refreshTokenRevoked: 'Refresh token revoked or not found',
     userNotFound: 'User not found',
   },
+  upload: {
+    invalidFileType: 'Only image and video files are allowed',
+    fileTooLarge: 'File is too large',
+    fileRequired: 'File is required',
+    cloudinaryNotConfigured: 'Cloudinary is not configured',
+    uploadSuccess: 'Media uploaded successfully',
+    deleteSuccess: 'Media deleted successfully',
+  },
 };

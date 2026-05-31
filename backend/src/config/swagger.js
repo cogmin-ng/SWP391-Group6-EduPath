@@ -134,6 +134,31 @@ const options = {
             total: { type: 'integer' },
           },
         },
+        MediaUploadResponse: {
+          type: 'object',
+          properties: {
+            url: { type: 'string' },
+            publicId: { type: 'string' },
+            resourceType: { type: 'string' },
+            format: { type: ['string', 'null'] },
+            bytes: { type: ['integer', 'null'] },
+            width: { type: ['integer', 'null'] },
+            height: { type: ['integer', 'null'] },
+            originalName: { type: ['string', 'null'] },
+          },
+        },
+        MediaDeleteRequest: {
+          type: 'object',
+          properties: {
+            publicId: { type: 'string' },
+            resourceType: {
+              type: 'string',
+              enum: ['image', 'video', 'raw'],
+              default: 'image',
+            },
+          },
+          required: ['publicId'],
+        },
       },
     },
     tags: [
@@ -149,10 +174,15 @@ const options = {
         name: 'User',
         description: 'User management endpoints',
       },
+      {
+        name: 'Media',
+        description: 'Media upload endpoints',
+      },
     ],
   },
   apis: [
     './src/routes/auth.js',
+    './src/routes/upload.js',
     './src/routes/role.js',
     './src/routes/user.js',
   ],

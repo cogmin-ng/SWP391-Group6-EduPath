@@ -49,6 +49,16 @@ exports.updateUser = asyncHandler(async (req, res) => {
   });
 });
 
+exports.updateUserAvatar = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const user = await userService.updateUserAvatar(id, req.file, req.user?.id);
+
+  return sendSuccess(res, {
+    message: 'User avatar updated successfully',
+    data: user,
+  });
+});
+
 exports.updateUserRole = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const user = await userService.updateUserRole(id, req.body, req.user?.id);

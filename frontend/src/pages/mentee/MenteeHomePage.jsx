@@ -1,15 +1,21 @@
 import {
   ChevronDown,
+  BarChart2,
+  Compass,
+  Award,
   FileText,
+  Home,
   GraduationCap,
   Lightbulb,
   LogOut,
   Map,
   Menu,
+  Settings,
   Sparkles,
   User,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import HomeView from "../../components/mentee/HomeView";
 
@@ -34,6 +40,7 @@ const readStoredState = (key, fallback) => {
 
 export default function MenteeHomePage() {
   const { logout, user: authUser } = useAuth();
+  const navigate = useNavigate();
 
   const [user, setUser] = useState(() =>
     readStoredState("edupath_user", INITIAL_USER),
@@ -254,26 +261,37 @@ export default function MenteeHomePage() {
 
   const accountMenuItems = useMemo(
     () => [
-      { label: "Hồ sơ cá nhân", icon: User, action: "placeholder" },
+      { label: "Trang chủ", icon: Home, to: "/mentee/homepage" },
+      { label: "Hồ sơ cá nhân", icon: User, to: "/mentee/profile" },
       { label: "Lộ trình của tôi", icon: Map, action: "placeholder" },
+      { label: "Kho lộ trình", icon: Compass, action: "placeholder" },
+      { label: "Tiến độ học tập", icon: BarChart2, action: "placeholder" },
+      { label: "Quiz Center", icon: GraduationCap, action: "placeholder" },
       { label: "Đóng góp", icon: Lightbulb, action: "placeholder" },
+      { label: "Thành tích", icon: Award, action: "placeholder" },
       { label: "Chứng chỉ của tôi", icon: FileText, action: "placeholder" },
+      { label: "Cài đặt", icon: Settings, action: "placeholder" },
       { label: "Đăng xuất", icon: LogOut, action: "logout" },
     ],
     [],
   );
 
-  const handleAccountMenuAction = async (action, label) => {
+  const handleAccountMenuAction = async (item) => {
     setAccountMenuOpen(false);
     setMobileMenuOpen(false);
 
-    if (action === "logout") {
+    if (item.to) {
+      navigate(item.to);
+      return;
+    }
+
+    if (item.action === "logout") {
       triggerToast("Bạn đã đăng xuất khỏi EduPath.", "success");
       await logout();
       return;
     }
 
-    triggerToast(`${label} sẽ được bạn tự triển khai sau.`, "success");
+    triggerToast(`${item.label} sẽ được bạn tự triển khai sau.`, "success");
   };
 
   return (
@@ -365,7 +383,7 @@ export default function MenteeHomePage() {
               </button>
 
               {accountMenuOpen && (
-                <div className="absolute right-0 top-14 w-72 rounded-2xl border border-slate-200 bg-white shadow-xl p-2 z-50">
+                <div className="absolute right-0 top-14 z-50 w-[min(20rem,calc(100vw-2rem))] max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
                   <div className="px-3 py-2 border-b border-slate-100 mb-1">
                     <p className="text-sm font-semibold text-slate-800">
                       {displayUser.name}
@@ -381,9 +399,7 @@ export default function MenteeHomePage() {
                       <button
                         key={item.label}
                         type="button"
-                        onClick={() =>
-                          handleAccountMenuAction(item.action, item.label)
-                        }
+                        onClick={() => handleAccountMenuAction(item)}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
                       >
                         <item.icon className="w-4.5 h-4.5 text-slate-400" />
@@ -414,9 +430,7 @@ export default function MenteeHomePage() {
                   <button
                     key={item.label}
                     type="button"
-                    onClick={() =>
-                      handleAccountMenuAction(item.action, item.label)
-                    }
+                    onClick={() => handleAccountMenuAction(item)}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
                   >
                     <item.icon className="w-4.5 h-4.5 text-slate-400" />

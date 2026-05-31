@@ -1,4 +1,3 @@
-import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -9,7 +8,6 @@ import {
   BarChart3, 
   Settings,
   LogOut,
-  Menu
 } from 'lucide-react';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {

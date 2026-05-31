@@ -27,7 +27,7 @@ const Input = forwardRef(
         <div className="relative">
           {Icon && (
             <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-              <Icon className="w-[18px] h-[18px]" />
+              <Icon className="w-4.5 h-4.5" />
             </div>
           )}
           <input
@@ -56,9 +56,9 @@ const Input = forwardRef(
               tabIndex={-1}
             >
               {showPassword ? (
-                <EyeOff className="w-[18px] h-[18px]" />
+                <EyeOff className="w-4.5 h-4.5" />
               ) : (
-                <Eye className="w-[18px] h-[18px]" />
+                <Eye className="w-4.5 h-4.5" />
               )}
             </button>
           )}

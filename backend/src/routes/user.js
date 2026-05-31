@@ -2,6 +2,7 @@ const Router = require('express').Router;
 const userController = require('../controllers/userController');
 const validateSchema = require('../middleware/validateSchema');
 const { requireAuth } = require('../middleware/auth');
+const { singleMediaUpload } = require('../middleware/upload');
 const {
   updateUserSchema,
   updateUserRoleSchema,
@@ -147,6 +148,54 @@ router.put(
   requireAuth,
   validateSchema(updateUserSchema),
   userController.updateUser
+);
+
+/**
+ * @swagger
+ * /api/users/{id}/avatar:
+ *   patch:
+ *     tags:
+ *       - User
+ *     summary: Update user avatar
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: User avatar updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UserResponse'
+ *       400:
+ *         description: Invalid file or request payload
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: User not found
+ */
+router.patch(
+  '/:id/avatar',
+  requireAuth,
+  singleMediaUpload,
+  userController.updateUserAvatar
 );
 
 /**

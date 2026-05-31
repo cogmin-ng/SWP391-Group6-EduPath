@@ -1,8 +1,7 @@
-const bcrypt = require('bcryptjs');
 const userRepository = require('../repositories/userRepository');
 const roleRepository = require('../repositories/roleRepository');
 const ApiError = require('../utils/ApiError');
-const prisma = require('../lib/prisma');
+const cloudinaryService = require('./externalService/cloudinary/cloudinaryService');
 
 const userMessages = {
   notFound: 'User not found',
@@ -11,6 +10,7 @@ const userMessages = {
   invalidEmail: 'Invalid email format',
   cannotUpdateOwnRole: 'Cannot update your own role',
   cannotDeleteOwnAccount: 'Cannot delete your own account',
+  cannotUpdateAnotherAvatar: 'Cannot update another user avatar',
 };
 
 exports.getUsers = async ({ skip = 0, take = 10 }) => {
@@ -56,11 +56,7 @@ exports.getUserById = async (id) => {
   };
 };
 
-exports.updateUser = async (
-  id,
-  { name, avatar, bio, status },
-  currentUserId
-) => {
+exports.updateUser = async (id, { name, avatar, bio, status }) => {
   if (!id || typeof id !== 'string') {
     throw new ApiError(400, userMessages.invalidId);
   }
@@ -83,6 +79,45 @@ exports.updateUser = async (
   updateData.updatedAt = new Date();
 
   const updated = await userRepository.update(id, updateData);
+
+  const userWithRole = await userRepository.findByIdWithRoles(id);
+  return {
+    id: updated.id,
+    name: updated.name,
+    email: updated.email,
+    avatar: updated.avatar,
+    bio: updated.bio,
+    xp: updated.xp,
+    status: updated.status,
+    role: userWithRole?.role?.name || null,
+    createdAt: updated.createdAt,
+    updatedAt: updated.updatedAt,
+  };
+};
+
+exports.updateUserAvatar = async (id, file, currentUserId) => {
+  if (!id || typeof id !== 'string') {
+    throw new ApiError(400, userMessages.invalidId);
+  }
+
+  if (currentUserId && currentUserId !== id) {
+    throw new ApiError(403, userMessages.cannotUpdateAnotherAvatar);
+  }
+
+  const user = await userRepository.findByIdActive(id);
+  if (!user) {
+    throw new ApiError(404, userMessages.notFound);
+  }
+
+  const uploaded = await cloudinaryService.uploadMedia(file, {
+    folder: 'avatars',
+    resourceType: 'image',
+  });
+
+  const updated = await userRepository.update(id, {
+    avatar: uploaded.url,
+    updatedAt: new Date(),
+  });
 
   const userWithRole = await userRepository.findByIdWithRoles(id);
   return {

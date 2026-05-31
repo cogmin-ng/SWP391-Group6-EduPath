@@ -7,6 +7,7 @@ import AdminLayout from "../layouts/AdminLayout";
 import DashboardPage from "../pages/admin/DashboardPage";
 import ProtectedRoute from "./ProtectedRoute";
 import MenteeLayout from "../layouts/MenteeLayout";
+import MenteeProfilePage from "../pages/mentee/MenteeProfilePage";
 
 // Placeholder component for pages that are not yet implemented
 function PlaceholderPage({ title }) {
@@ -23,7 +24,14 @@ function PlaceholderPage({ title }) {
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route
+        path="/"
+        element={
+          <PublicRoute>
+            <LandingPage />
+          </PublicRoute>
+        }
+      />
 
       <Route
         path="/login"
@@ -59,6 +67,15 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["MENTEE"]}>
             <MenteeLayout />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/mentee/profile"
+        element={
+          <ProtectedRoute allowedRoles={["MENTEE"]}>
+            <MenteeProfilePage />
           </ProtectedRoute>
         }
       />

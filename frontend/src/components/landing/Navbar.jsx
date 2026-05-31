@@ -59,8 +59,14 @@ export default function Navbar() {
             {isAuthenticated ? (
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2.5 px-3 py-1.5 bg-indigo-50/60 border border-indigo-100/50 rounded-xl">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
-                    {user?.name ? (
+                  <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-semibold text-sm overflow-hidden">
+                    {user?.avatarUrl || user?.avatar ? (
+                      <img
+                        src={user.avatarUrl || user.avatar}
+                        alt={user?.name || "User"}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : user?.name ? (
                       user.name.charAt(0).toUpperCase()
                     ) : (
                       <User className="w-4 h-4" />
@@ -138,8 +144,14 @@ export default function Navbar() {
             {isAuthenticated ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 rounded-xl">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-base">
-                    {user?.name ? (
+                  <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-base overflow-hidden">
+                    {user?.avatarUrl || user?.avatar ? (
+                      <img
+                        src={user.avatarUrl || user.avatar}
+                        alt={user?.name || "User"}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : user?.name ? (
                       user.name.charAt(0).toUpperCase()
                     ) : (
                       <User className="w-5 h-5" />

@@ -59,6 +59,53 @@ export function AuthProvider({ children }) {
     return res;
   }, []);
 
+  const updateUser = useCallback((nextUser) => {
+    setUser((currentUser) => {
+      if (!nextUser) {
+        return currentUser;
+      }
+
+      if (!currentUser) {
+        const initialUser = { ...nextUser };
+
+        if (initialUser.avatar && !initialUser.avatarUrl) {
+          initialUser.avatarUrl = initialUser.avatar;
+        }
+
+        if (initialUser.avatarUrl && !initialUser.avatar) {
+          initialUser.avatar = initialUser.avatarUrl;
+        }
+
+        if (Array.isArray(initialUser.roles)) {
+          initialUser.roles = normalizeRoles(initialUser.roles);
+        }
+
+        localStorage.setItem("user", JSON.stringify(initialUser));
+        return initialUser;
+      }
+
+      const mergedUser = {
+        ...currentUser,
+        ...nextUser,
+      };
+
+      if (mergedUser.avatar && !mergedUser.avatarUrl) {
+        mergedUser.avatarUrl = mergedUser.avatar;
+      }
+
+      if (mergedUser.avatarUrl && !mergedUser.avatar) {
+        mergedUser.avatar = mergedUser.avatarUrl;
+      }
+
+      if (Array.isArray(mergedUser.roles)) {
+        mergedUser.roles = normalizeRoles(mergedUser.roles);
+      }
+
+      localStorage.setItem("user", JSON.stringify(mergedUser));
+      return mergedUser;
+    });
+  }, []);
+
   const logout = useCallback(async () => {
     const refreshToken = localStorage.getItem("refreshToken");
     try {
@@ -101,6 +148,7 @@ export function AuthProvider({ children }) {
     register,
     logout,
     refreshSession,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

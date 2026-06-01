@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Users, 
@@ -9,8 +9,20 @@ import {
   Settings,
   LogOut,
 } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
   const menuItems = [
     { title: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
     { title: 'User Management', icon: Users, path: '/admin/users' },
@@ -72,7 +84,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
           {/* Logout */}
           <div className="p-4 border-t border-white/10">
-            <button className={`
+            <button 
+              onClick={handleLogout}
+              className={`
               flex items-center gap-3 px-3 py-3 rounded-lg w-full text-slate-400 hover:bg-red-500/10 hover:text-red-500 transition-all duration-200 group
               ${isOpen ? '' : 'justify-center'}
             `}>

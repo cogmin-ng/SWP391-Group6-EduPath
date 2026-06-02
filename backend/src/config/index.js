@@ -26,6 +26,11 @@ if (error) {
 }
 
 const corsOrigins = value.CORS_ORIGINS.split(',').map((item) => item.trim());
+const cloudinaryCloudName =
+  value.CLOUDINARY_CLOUD_NAME || value.CLOUD_NAME || '';
+const cloudinaryApiKey = value.CLOUDINARY_API_KEY || value.API_KEY || '';
+const cloudinaryApiSecret =
+  value.CLOUDINARY_API_SECRET || value.API_SECRET || '';
 
 module.exports = {
   databaseUrl: value.DATABASE_URL,
@@ -41,5 +46,14 @@ module.exports = {
   rateLimit: {
     windowMs: value.RATE_LIMIT_WINDOW_MS,
     max: value.RATE_LIMIT_MAX,
+  },
+  cloudinary: {
+    cloudName: cloudinaryCloudName || null,
+    apiKey: cloudinaryApiKey || null,
+    apiSecret: cloudinaryApiSecret || null,
+    uploadFolder: value.CLOUDINARY_UPLOAD_FOLDER || 'edupath',
+    enabled: Boolean(
+      cloudinaryCloudName && cloudinaryApiKey && cloudinaryApiSecret
+    ),
   },
 };

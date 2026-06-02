@@ -1,7 +1,7 @@
 const Router = require('express').Router;
 const roleController = require('../controllers/roleController');
 const validateSchema = require('../middleware/validateSchema');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireRole } = require('../middleware/auth');
 const {
   createRoleSchema,
   updateRoleSchema,
@@ -137,6 +137,7 @@ router.get('/:id', requireAuth, roleController.getRoleById);
 router.post(
   '/',
   requireAuth,
+  requireRole(['ADMIN']),
   validateSchema(createRoleSchema),
   roleController.createRole
 );
@@ -179,6 +180,7 @@ router.post(
 router.put(
   '/:id',
   requireAuth,
+  requireRole(['ADMIN']),
   validateSchema(updateRoleSchema),
   roleController.updateRole
 );
@@ -206,6 +208,6 @@ router.put(
  *       404:
  *         description: Role not found
  */
-router.delete('/:id', requireAuth, roleController.deleteRole);
+router.delete('/:id', requireAuth, requireRole(['ADMIN']), roleController.deleteRole);
 
 module.exports = router;

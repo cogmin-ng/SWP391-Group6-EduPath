@@ -9,6 +9,7 @@ import RoadmapLearningPage from "../pages/mentee/RoadmapLearningPage";
 import PublicRoute from "./PublicRoute";
 import AdminLayout from "../layouts/AdminLayout";
 import DashboardPage from "../pages/admin/DashboardPage";
+import RoadmapApprovalPage from "../pages/admin/RoadmapApprovalPage";
 import UserManagementPage from "../pages/admin/UserManagementPage";
 import ProtectedRoute from "./ProtectedRoute";
 import MenteeLayout from "../layouts/MenteeLayout";
@@ -174,7 +175,7 @@ export default function AppRoutes() {
         />
         <Route
           path="roadmaps"
-          element={<PlaceholderPage title="Roadmap Approval" />}
+          element={<RoadmapApprovalPage />}
         />
         <Route
           path="mentors"

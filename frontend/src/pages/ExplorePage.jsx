@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import MenteeHeader from '../components/mentee/MenteeHeader';
-import Footer from '../components/landing/Footer';
 import ExploreFilters from './mentee/features/explore/components/ExploreFilters';
 import RoadmapCard from './mentee/features/explore/components/RoadmapCard';
 import { categories, mentors, roadmaps } from './mentee/features/explore/data/roadmaps';
@@ -36,7 +35,7 @@ export default function ExplorePage() {
     <div className="min-h-screen bg-slate-50">
       <MenteeHeader />
 
-      <main className="mx-auto flex w-full max-w-7xl pt-20">
+      <main className="mx-auto flex w-full max-w-420 px-4 sm:px-6 lg:px-8 xl:px-10 pt-20">
         <ExploreFilters
           categories={categories}
           mentors={mentors}
@@ -55,7 +54,6 @@ export default function ExplorePage() {
         </section>
       </main>
 
-      <Footer />
     </div>
   );
 }

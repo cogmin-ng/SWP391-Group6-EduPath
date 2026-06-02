@@ -3,18 +3,25 @@ import { BrainCircuit, HelpCircle, Clock } from 'lucide-react';
 
 /**
  * Quiz section — displays a single quiz card with metadata.
- * Clicking "Start" navigates to the quiz page.
+ * Clicking "Start" navigates to the full quiz page or fires onStart.
  *
  * Props:
  * - quiz: { id, title, questionCount, durationMinutes }
+ * - roadmapId: string — parent roadmap ID for the quiz route
+ * - nodeId: string — current node ID for the quiz route
+ * - onStart: function — callback to handle start inline (overrides navigation)
  */
-export default function QuizSection({ quiz }) {
+export default function QuizSection({ quiz, roadmapId, nodeId, onStart }) {
   const navigate = useNavigate();
 
   if (!quiz) return null;
 
   const handleStart = () => {
-    navigate(`/quiz/${quiz.id}`);
+    if (onStart) {
+      onStart();
+    } else if (roadmapId && nodeId) {
+      navigate(`/mentee/roadmaps/${roadmapId}/nodes/${nodeId}/quiz`);
+    }
   };
 
   return (
@@ -57,7 +64,8 @@ export default function QuizSection({ quiz }) {
         {/* Start button */}
         <button
           onClick={handleStart}
-          className="px-6 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 active:scale-95 transition-all duration-200 shadow-sm shadow-indigo-200 cursor-pointer"
+          disabled={!onStart && (!roadmapId || !nodeId)}
+          className="px-6 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 active:scale-95 transition-all duration-200 shadow-sm shadow-indigo-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-indigo-600"
         >
           Start
         </button>

@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Heart, Map, User } from 'lucide-react';
 import MenteeHeader from '../../components/mentee/MenteeHeader';
 import { getEnrollments } from './features/enrollments/storage';
+import { getFavorites, toggleFavorite } from './features/enrollments/favorites';
 import { roadmaps } from './features/explore/data/roadmaps';
 
 export default function MyRoadmapsPage() {
   const [activeTab, setActiveTab] = useState('ongoing');
+  const [favVersion, setFavVersion] = useState(0);
 
   const enrollments = getEnrollments();
   const enrolledRoadmaps = useMemo(
@@ -23,7 +25,11 @@ export default function MyRoadmapsPage() {
 
   const ongoing = enrolledRoadmaps.filter((r) => r.progress > 0 && r.progress < 100);
   const completed = enrolledRoadmaps.filter((r) => r.progress >= 100);
-  const favorite = [];
+  const favoriteSlugs = useMemo(() => getFavorites(), [favVersion]);
+  const favorite = useMemo(
+    () => roadmaps.filter((r) => favoriteSlugs.includes(r.slug)),
+    [favoriteSlugs],
+  );
 
   const tabItems = [
     { key: 'ongoing', label: 'Đang học', count: ongoing.length },
@@ -148,6 +154,17 @@ export default function MyRoadmapsPage() {
                   <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-indigo-600 shadow-sm backdrop-blur-md">
                     {roadmap.category}
                   </span>
+                  {activeTab === 'favorite' && (
+                    <button
+                      onClick={() => {
+                        toggleFavorite(roadmap.slug);
+                        setFavVersion((v) => v + 1);
+                      }}
+                      className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 shadow-sm backdrop-blur-sm transition-all hover:bg-white active:scale-90"
+                    >
+                      <Heart className="h-4 w-4 fill-rose-500 text-rose-500" />
+                    </button>
+                  )}
                 </div>
 
                 <div className="flex flex-1 flex-col p-6">
@@ -163,23 +180,35 @@ export default function MyRoadmapsPage() {
                   </div>
 
                   <div className="mt-auto">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-xs text-slate-500">Tiến độ</span>
-                      <span className="text-xs font-bold text-indigo-600">{roadmap.progress}%</span>
-                    </div>
-                    <div className="mb-6 h-2 overflow-hidden rounded-full bg-slate-100">
-                      <div
-                        className="h-full rounded-full bg-indigo-600 transition-all duration-1000"
-                        style={{ width: `${roadmap.progress}%` }}
-                      />
-                    </div>
-                    <Link
-                      to={`/roadmaps/${roadmap.slug}/learn`}
-                      className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 py-3 text-sm font-medium text-white transition-all active:scale-95"
-                    >
-                      Tiếp tục học
-                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </Link>
+                    {activeTab === 'favorite' ? (
+                      <Link
+                        to={`/explore/${roadmap.slug}`}
+                        className="flex w-full items-center justify-center gap-2 rounded-lg border border-indigo-600 py-3 text-sm font-medium text-indigo-600 transition-all hover:bg-indigo-50 active:scale-95"
+                      >
+                        Xem chi tiết
+                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      </Link>
+                    ) : (
+                      <>
+                        <div className="mb-2 flex items-center justify-between">
+                          <span className="text-xs text-slate-500">Tiến độ</span>
+                          <span className="text-xs font-bold text-indigo-600">{roadmap.progress}%</span>
+                        </div>
+                        <div className="mb-6 h-2 overflow-hidden rounded-full bg-slate-100">
+                          <div
+                            className="h-full rounded-full bg-indigo-600 transition-all duration-1000"
+                            style={{ width: `${roadmap.progress}%` }}
+                          />
+                        </div>
+                        <Link
+                          to={`/roadmaps/${roadmap.slug}/learn`}
+                          className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 py-3 text-sm font-medium text-white transition-all active:scale-95"
+                        >
+                          Tiếp tục học
+                          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                        </Link>
+                      </>
+                    )}
                   </div>
                 </div>
               </article>

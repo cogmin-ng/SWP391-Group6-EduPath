@@ -1,8 +1,7 @@
-import { useMemo, useState, useEffect } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { Link, Navigate, useParams, useNavigate } from 'react-router-dom';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import MenteeHeader from '../../components/mentee/MenteeHeader';
-import Footer from '../../components/landing/Footer';
 import Button from '../../components/ui/Button';
 import {
   NodeSidebar,
@@ -15,6 +14,7 @@ import {
 } from '../../components/mentee/node';
 import { getRoadmapBySlug } from './features/explore/data/roadmaps';
 import { getEnrollmentBySlug, isEnrolled, updateEnrollmentProgress } from './features/enrollments/storage';
+import { jsQuizQuestions } from '../../mock/quizQuestions';
 
 function generateNodeData(phase, phaseIndex, totalPhases) {
   return {
@@ -50,16 +50,22 @@ function generateMaterials(phase) {
 }
 
 function generateQuiz(phase) {
+  const questions = jsQuizQuestions.map((q) => ({
+    ...q,
+    id: `${phase.name}-${q.id}`,
+  }));
   return {
     id: `quiz-${phase.name}`,
     title: `${phase.name} Quiz`,
-    questionCount: 10,
-    durationMinutes: 10,
+    questionCount: questions.length,
+    durationMinutes: 15,
+    questions,
   };
 }
 
 export default function RoadmapLearningPage() {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const roadmap = getRoadmapBySlug(slug);
   const enrollment = getEnrollmentBySlug(slug);
   const [progress, setProgress] = useState(enrollment?.progress ?? 0);
@@ -173,7 +179,7 @@ export default function RoadmapLearningPage() {
               <div className="min-w-0 flex-1 space-y-6">
                 <ChecklistSection items={checklist} onToggle={() => {}} />
                 <MaterialsSection materials={materials} />
-                <QuizSection quiz={quiz} />
+                <QuizSection quiz={quiz} onStart={() => navigate(`/roadmaps/${slug}/learn/quiz?phase=${currentPhaseIndex}`)} />
                 <TipsSection tips={[]} onSubmitTip={async () => {}} />
 
                 {/* Continue button */}
@@ -204,7 +210,6 @@ export default function RoadmapLearningPage() {
         </div>
       </main>
 
-      <Footer />
     </div>
   );
 }

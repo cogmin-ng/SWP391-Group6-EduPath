@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { ArrowRight, Clock3, Star, StarHalf, User } from 'lucide-react';
+import { ArrowRight, Clock3, Heart, Star, StarHalf, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import MenteeHeader from '../components/mentee/MenteeHeader';
-import Footer from '../components/landing/Footer';
 import Button from '../components/ui/Button';
 import RoadmapTimeline from './mentee/features/explore/components/RoadmapTimeline';
 import { getRoadmapBySlug } from './mentee/features/explore/data/roadmaps';
 import { enrollRoadmap, isEnrolled } from './mentee/features/enrollments/storage';
+import { isFavorited, toggleFavorite } from './mentee/features/enrollments/favorites';
 
 const initialReviews = [
   {
@@ -30,6 +30,7 @@ export default function RoadmapDetailPage() {
   const { slug } = useParams();
   const roadmap = getRoadmapBySlug(slug);
   const [enrolled, setEnrolled] = useState(false);
+  const [favorited, setFavorited] = useState(false);
   const [reviews, setReviews] = useState(initialReviews);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
@@ -38,6 +39,7 @@ export default function RoadmapDetailPage() {
   useEffect(() => {
     if (roadmap?.slug) {
       setEnrolled(isEnrolled(roadmap.slug));
+      setFavorited(isFavorited(roadmap.slug));
     }
   }, [roadmap?.slug]);
 
@@ -62,6 +64,13 @@ export default function RoadmapDetailPage() {
     toast.success('Đã đăng ký thành công. Xem lộ trình của tôi.');
   };
 
+  const handleToggleFavorite = () => {
+    toggleFavorite(roadmap.slug);
+    const next = !favorited;
+    setFavorited(next);
+    toast.success(next ? 'Đã lưu vào yêu thích.' : 'Đã bỏ yêu thích.');
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <MenteeHeader />
@@ -82,7 +91,7 @@ export default function RoadmapDetailPage() {
               <h1 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">{roadmap.title}</h1>
               <p className="mt-4 text-base leading-7 text-slate-600">{roadmap.description}</p>
 
-              <div className="mt-6 flex flex-wrap gap-3">
+              <div className="mt-6 flex flex-wrap items-center gap-3">
                 {enrolled ? (
                   <Link to={`/roadmaps/${roadmap.slug}/learn`}>
                     <Button className="gap-2">Học tập ngay <ArrowRight className="h-4 w-4" /></Button>
@@ -90,6 +99,19 @@ export default function RoadmapDetailPage() {
                 ) : (
                   <Button className="gap-2" onClick={handleEnroll}>Đăng ký <ArrowRight className="h-4 w-4" /></Button>
                 )}
+                <button
+                  onClick={handleToggleFavorite}
+                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all active:scale-95 ${
+                    favorited
+                      ? 'bg-rose-50 text-rose-600 border border-rose-200'
+                      : 'text-slate-600 border border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  <Heart
+                    className={`h-4 w-4 ${favorited ? 'fill-rose-500 text-rose-500' : ''}`}
+                  />
+                  {favorited ? 'Đã lưu' : 'Lưu vào yêu thích'}
+                </button>
               </div>
             </div>
           </div>
@@ -203,7 +225,6 @@ export default function RoadmapDetailPage() {
         </section>
       </main>
 
-      <Footer />
     </div>
   );
 }

@@ -186,5 +186,5 @@ exports.deleteUser = async (id, currentUserId) => {
     throw new ApiError(404, userMessages.notFound);
   }
 
-  await userRepository.softDelete(id);
+  await userRepository.hardDelete(id);
 };

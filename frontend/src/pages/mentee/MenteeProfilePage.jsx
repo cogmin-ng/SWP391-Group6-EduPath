@@ -1,41 +1,12 @@
-import {
-  Award,
-  BarChart3,
-  BookOpen,
-  CalendarDays,
-  CheckCircle2,
-  ChevronDown,
-  ChevronRight,
-  Compass,
-  Camera,
-  Edit3,
-  FileText,
-  Flame,
-  GraduationCap,
-  Home,
-  Lightbulb,
-  LogOut,
-  Map,
-  MapPin,
-  Menu,
-  Settings,
-  Sparkles,
-  Star,
-  Target,
-  TrendingUp,
-  X,
-  User,
-} from "lucide-react";
+import { Award, BarChart3, BookOpen, CalendarDays, CheckCircle2, ChevronRight, Camera, Edit3, Flame, Lightbulb, MapPin, Settings, Sparkles, Star, Target, TrendingUp, X, User } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
+import MenteeHeader from "../../components/mentee/MenteeHeader";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import { useAuth } from "../../hooks/useAuth";
 import { userService } from "../../services/userService";
-
-const profileMenuClass =
-  "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors";
 
 const getRoleLabel = (roles = []) => {
   if (!Array.isArray(roles) || roles.length === 0) return "Mentee";
@@ -66,29 +37,14 @@ const readStoredProfile = (fallback) => {
 };
 
 export default function MenteeProfilePage() {
-  const { user: authUser, logout, updateUser } = useAuth();
-  const navigate = useNavigate();
+  const { user: authUser, updateUser } = useAuth();
   const avatarInputRef = useRef(null);
 
-  const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [toast, setToast] = useState(null);
-
-  useEffect(() => {
-    const onKeyDown = (event) => {
-      if (event.key === "Escape") {
-        setIsDesktopMenuOpen(false);
-        setIsMobileMenuOpen(false);
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
 
   useEffect(() => {
     if (!toast) return undefined;
@@ -154,55 +110,6 @@ export default function MenteeProfilePage() {
 
   const displayedAvatarUrl =
     avatarPreview || authUser?.avatarUrl || authUser?.avatar || "";
-
-  const headerNavItems = useMemo(
-    () => [
-      { label: "Khám phá" },
-      { label: "Lộ trình" },
-      { label: "Mentor" },
-      { label: "Bảng giá" },
-      { label: "Cộng đồng" },
-    ],
-    [],
-  );
-
-  const menuItems = useMemo(
-    () => [
-      { label: "Trang chủ", icon: Home, to: "/mentee/homepage" },
-      { label: "Hồ sơ cá nhân", icon: User, to: "/mentee/profile" },
-      { label: "Lộ trình của tôi", icon: Map, placeholder: true },
-      { label: "Kho lộ trình", icon: Compass, placeholder: true },
-      { label: "Tiến độ học tập", icon: BarChart3, placeholder: true },
-      { label: "Quiz Center", icon: GraduationCap, placeholder: true },
-      { label: "Đóng góp", icon: Lightbulb, placeholder: true },
-      { label: "Thành tích", icon: Award, placeholder: true },
-      { label: "Chứng chỉ của tôi", icon: FileText, placeholder: true },
-      { label: "Cài đặt", icon: Settings, placeholder: true },
-      { label: "Đăng xuất", icon: LogOut, action: "logout" },
-    ],
-    [],
-  );
-
-  const handleMenuAction = async (item) => {
-    setIsDesktopMenuOpen(false);
-    setIsMobileMenuOpen(false);
-
-    if (item.to) {
-      navigate(item.to);
-      return;
-    }
-
-    if (item.action === "logout") {
-      setToast({ type: "success", message: "Bạn đã đăng xuất khỏi EduPath." });
-      await logout();
-      return;
-    }
-
-    setToast({
-      type: "info",
-      message: `${item.label} sẽ được hoàn thiện sau.`,
-    });
-  };
 
   const handleProfileAction = (label) => {
     if (label === "Chỉnh sửa hồ sơ" || label === "Cập nhật ảnh đại diện") {
@@ -338,167 +245,12 @@ export default function MenteeProfilePage() {
         </div>
       ) : null}
 
-      <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/90 backdrop-blur-xl shadow-sm">
-        <div className="max-w-400 mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
-          <div className="h-16 lg:h-18 flex items-center justify-between gap-4 relative">
-            <div className="flex items-center gap-3 shrink-0">
-              <button
-                type="button"
-                className="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
-                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-              >
-                <Menu className="w-5 h-5" />
-              </button>
-              <Link
-                to="/mentee/homepage"
-                className="flex items-center gap-2 group select-none"
-              >
-                <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-600/20">
-                  <GraduationCap className="w-5 h-5" />
-                </div>
-                <span className="text-xl font-bold tracking-tight text-slate-900">
-                  EduPath
-                </span>
-              </Link>
-            </div>
-
-            <nav className="hidden lg:flex items-center gap-1">
-              {headerNavItems.map((item) => (
-                <button
-                  key={item.label}
-                  type="button"
-                  className="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 rounded-lg hover:bg-indigo-50/60 transition-all duration-200"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </nav>
-
-            <div className="flex items-center gap-3 shrink-0 relative">
-              <button
-                type="button"
-                onClick={() => setIsDesktopMenuOpen((prev) => !prev)}
-                className="flex items-center gap-2 p-1.5 pl-2 rounded-2xl border border-slate-200 bg-white/80 hover:bg-slate-50 transition-shadow shadow-sm"
-              >
-                <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold overflow-hidden shrink-0">
-                  {displayedAvatarUrl ? (
-                    <img
-                      src={displayedAvatarUrl}
-                      alt={profile.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <User className="w-4.5 h-4.5" />
-                  )}
-                </div>
-                <div className="hidden sm:block text-left pr-1">
-                  <p className="text-sm font-semibold text-slate-800 leading-none">
-                    {profile.name}
-                  </p>
-                  <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider mt-1">
-                    {profile.role}
-                  </p>
-                </div>
-                <ChevronDown className="w-4 h-4 text-slate-400 hidden sm:block" />
-              </button>
-
-              {isDesktopMenuOpen ? (
-                <div className="absolute right-0 top-14 z-50 hidden w-[min(20rem,calc(100vw-2rem))] max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-xl sm:block">
-                  <div className="mb-1 border-b border-slate-100 px-3 py-2">
-                    <p className="text-sm font-semibold text-slate-800">
-                      {profile.name}
-                    </p>
-                    <p className="text-xs text-slate-500">{profile.email}</p>
-                  </div>
-                  <div className="space-y-1">
-                    {menuItems.map((item) => {
-                      const Icon = item.icon;
-
-                      if (item.to) {
-                        return (
-                          <Link
-                            key={item.label}
-                            to={item.to}
-                            onClick={() => setIsDesktopMenuOpen(false)}
-                            className={profileMenuClass}
-                          >
-                            <Icon className="h-4.5 w-4.5 text-slate-400" />
-                            <span>{item.label}</span>
-                          </Link>
-                        );
-                      }
-
-                      return (
-                        <button
-                          key={item.label}
-                          type="button"
-                          onClick={() => handleMenuAction(item)}
-                          className={profileMenuClass}
-                        >
-                          <Icon className="h-4.5 w-4.5 text-slate-400" />
-                          <span>{item.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          </div>
-
-          {isMobileMenuOpen ? (
-            <div className="lg:hidden pb-4 border-t border-slate-100 mt-2 pt-3 space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                {headerNavItems.map((item) => (
-                  <button
-                    key={item.label}
-                    type="button"
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600"
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-              <div className="rounded-2xl border border-slate-200 bg-white p-2">
-                {menuItems.map((item) => {
-                  const Icon = item.icon;
-
-                  if (item.to) {
-                    return (
-                      <Link
-                        key={item.label}
-                        to={item.to}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className={profileMenuClass}
-                      >
-                        <Icon className="h-4.5 w-4.5 text-slate-400" />
-                        <span>{item.label}</span>
-                      </Link>
-                    );
-                  }
-
-                  return (
-                    <button
-                      key={item.label}
-                      type="button"
-                      onClick={() => handleMenuAction(item)}
-                      className={profileMenuClass}
-                    >
-                      <Icon className="h-4.5 w-4.5 text-slate-400" />
-                      <span>{item.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ) : null}
-        </div>
-      </header>
+      <MenteeHeader />
 
       <main className="max-w-400 mx-auto w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-6 sm:py-8 lg:py-10">
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_320px]">
           <div className="space-y-6">
-            <section className="relative overflow-hidden rounded-3xl bg-linear-to-r from-blue-700 via-indigo-600 to-violet-700 p-5 text-white shadow-xl sm:p-6 lg:p-8">
+            <section className="relative overflow-hidden rounded-3xl bg-[#635BFF] p-5 text-white shadow-xl sm:p-6 lg:p-8">
               <div className="absolute -right-12 -top-12 h-56 w-56 rounded-full bg-indigo-500/15 blur-3xl" />
               <div className="absolute bottom-[-24%] left-[28%] h-56 w-56 rounded-full bg-violet-400/20 blur-2xl" />
 

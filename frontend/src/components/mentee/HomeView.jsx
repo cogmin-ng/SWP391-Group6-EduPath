@@ -51,7 +51,7 @@ export default function HomeView({
       id="home_view_container"
       className="w-full space-y-6 sm:space-y-7 lg:space-y-8"
     >
-      <div className="relative overflow-hidden bg-linear-to-r from-blue-700 via-indigo-600 to-violet-700 rounded-3xl text-white p-5 sm:p-6 md:p-8 shadow-xl">
+      <div className="relative overflow-hidden bg-[#635BFF] rounded-3xl text-white p-5 sm:p-6 md:p-8 shadow-xl">
         <div className="absolute -right-10 -top-10 w-64 h-64 rounded-full bg-indigo-500/10 blur-3xl" />
         <div className="absolute left-[30%] bottom-[-20%] w-56 h-56 rounded-full bg-violet-400/20 blur-2xl" />
 

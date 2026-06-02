@@ -173,7 +173,7 @@ export default function MenteeProfilePage() {
       { label: "Lộ trình của tôi", icon: Map, placeholder: true },
       { label: "Kho lộ trình", icon: Compass, placeholder: true },
       { label: "Tiến độ học tập", icon: BarChart3, placeholder: true },
-      { label: "Quiz Center", icon: GraduationCap, placeholder: true },
+      { label: "Đăng kí mentor", icon: GraduationCap, to: "/profile/become-mentor" },
       { label: "Đóng góp", icon: Lightbulb, placeholder: true },
       { label: "Thành tích", icon: Award, placeholder: true },
       { label: "Chứng chỉ của tôi", icon: FileText, placeholder: true },
@@ -498,7 +498,7 @@ export default function MenteeProfilePage() {
       <main className="max-w-400 mx-auto w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-6 sm:py-8 lg:py-10">
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_320px]">
           <div className="space-y-6">
-            <section className="relative overflow-hidden rounded-3xl bg-linear-to-r from-blue-700 via-indigo-600 to-violet-700 p-5 text-white shadow-xl sm:p-6 lg:p-8">
+            <section className="relative overflow-hidden rounded-3xl bg-[#635BFF] p-5 text-white shadow-xl sm:p-6 lg:p-8">
               <div className="absolute -right-12 -top-12 h-56 w-56 rounded-full bg-indigo-500/15 blur-3xl" />
               <div className="absolute bottom-[-24%] left-[28%] h-56 w-56 rounded-full bg-violet-400/20 blur-2xl" />
 

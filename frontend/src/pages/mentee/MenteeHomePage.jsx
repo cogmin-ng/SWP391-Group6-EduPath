@@ -1,21 +1,7 @@
-import {
-  ChevronDown,
-  BarChart2,
-  Compass,
-  Award,
-  FileText,
-  Home,
-  GraduationCap,
-  Lightbulb,
-  LogOut,
-  Map,
-  Menu,
-  Settings,
-  Sparkles,
-  User,
-} from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import MenteeHeader from "../../components/mentee/MenteeHeader";
 
 import HomeView from "../../components/mentee/HomeView";
 
@@ -62,9 +48,6 @@ export default function MenteeHomePage() {
   );
 
   const [toast, setToast] = useState(null);
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
   const displayUser = useMemo(
     () => ({
@@ -74,13 +57,6 @@ export default function MenteeHomePage() {
     }),
     [authUser, user],
   );
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 16);
-    onScroll();
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   const triggerToast = (message, type = "success") => {
     setToast({ message, type });
@@ -248,52 +224,6 @@ export default function MenteeHomePage() {
     });
   };
 
-  const headerNavItems = useMemo(
-    () => [
-      { label: "Khám phá" },
-      { label: "Lộ trình" },
-      { label: "Mentor" },
-      { label: "Bảng giá" },
-      { label: "Cộng đồng" },
-    ],
-    [],
-  );
-
-  const accountMenuItems = useMemo(
-    () => [
-      { label: "Trang chủ", icon: Home, to: "/mentee/homepage" },
-      { label: "Hồ sơ cá nhân", icon: User, to: "/mentee/profile" },
-      { label: "Lộ trình của tôi", icon: Map, action: "placeholder" },
-      { label: "Kho lộ trình", icon: Compass, action: "placeholder" },
-      { label: "Tiến độ học tập", icon: BarChart2, action: "placeholder" },
-      { label: "Quiz Center", icon: GraduationCap, action: "placeholder" },
-      { label: "Đóng góp", icon: Lightbulb, action: "placeholder" },
-      { label: "Thành tích", icon: Award, action: "placeholder" },
-      { label: "Chứng chỉ của tôi", icon: FileText, action: "placeholder" },
-      { label: "Cài đặt", icon: Settings, action: "placeholder" },
-      { label: "Đăng xuất", icon: LogOut, action: "logout" },
-    ],
-    [],
-  );
-
-  const handleAccountMenuAction = async (item) => {
-    setAccountMenuOpen(false);
-    setMobileMenuOpen(false);
-
-    if (item.to) {
-      navigate(item.to);
-      return;
-    }
-
-    if (item.action === "logout") {
-      triggerToast("Bạn đã đăng xuất khỏi EduPath.", "success");
-      await logout();
-      return;
-    }
-
-    triggerToast(`${item.label} sẽ được bạn tự triển khai sau.`, "success");
-  };
-
   return (
     <div
       id="edupath_application_root"
@@ -315,133 +245,7 @@ export default function MenteeHomePage() {
         </div>
       )}
 
-      <header
-        className={`sticky top-0 z-40 border-b border-slate-200/70 transition-all ${
-          scrolled
-            ? "bg-white/90 backdrop-blur-xl shadow-sm"
-            : "bg-white/80 backdrop-blur-xl"
-        }`}
-      >
-        <div className="max-w-400 mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
-          <div className="h-16 lg:h-18 flex items-center justify-between gap-4 relative">
-            <div className="flex items-center gap-3 shrink-0">
-              <button
-                type="button"
-                className="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
-                onClick={() => setMobileMenuOpen((prev) => !prev)}
-              >
-                <Menu className="w-5 h-5" />
-              </button>
-              <div className="flex items-center gap-2 group select-none">
-                <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-600/20">
-                  <GraduationCap className="w-5 h-5" />
-                </div>
-                <span className="text-xl font-bold tracking-tight text-slate-900">
-                  EduPath
-                </span>
-              </div>
-            </div>
-
-            <nav className="hidden lg:flex items-center gap-1">
-              {headerNavItems.map((item) => (
-                <button
-                  key={item.label}
-                  type="button"
-                  className="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 rounded-lg hover:bg-indigo-50/60 transition-all duration-200"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </nav>
-
-            <div className="flex items-center gap-3 shrink-0 relative">
-              <button
-                type="button"
-                onClick={() => setAccountMenuOpen((prev) => !prev)}
-                className="flex items-center gap-2 p-1.5 pl-2 rounded-2xl border border-slate-200 bg-white/80 hover:bg-slate-50 transition-shadow shadow-sm"
-              >
-                <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold overflow-hidden shrink-0">
-                  {displayUser?.avatarUrl ? (
-                    <img
-                      src={displayUser.avatarUrl}
-                      alt={displayUser.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <User className="w-4.5 h-4.5" />
-                  )}
-                </div>
-                <div className="hidden sm:block text-left pr-1">
-                  <p className="text-sm font-semibold text-slate-800 leading-none">
-                    {displayUser.name}
-                  </p>
-                  <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider mt-1">
-                    Mentee
-                  </p>
-                </div>
-                <ChevronDown className="w-4 h-4 text-slate-400 hidden sm:block" />
-              </button>
-
-              {accountMenuOpen && (
-                <div className="absolute right-0 top-14 z-50 w-[min(20rem,calc(100vw-2rem))] max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
-                  <div className="px-3 py-2 border-b border-slate-100 mb-1">
-                    <p className="text-sm font-semibold text-slate-800">
-                      {displayUser.name}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {displayUser.level
-                        ? `Level ${displayUser.level}`
-                        : "Tài khoản học viên"}
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    {accountMenuItems.map((item) => (
-                      <button
-                        key={item.label}
-                        type="button"
-                        onClick={() => handleAccountMenuAction(item)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                      >
-                        <item.icon className="w-4.5 h-4.5 text-slate-400" />
-                        <span>{item.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {mobileMenuOpen && (
-            <div className="lg:hidden pb-4 border-t border-slate-100 mt-2 pt-3 space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                {headerNavItems.map((item) => (
-                  <button
-                    key={item.label}
-                    type="button"
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600"
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-              <div className="rounded-2xl border border-slate-200 bg-white p-2">
-                {accountMenuItems.map((item) => (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={() => handleAccountMenuAction(item)}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                  >
-                    <item.icon className="w-4.5 h-4.5 text-slate-400" />
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </header>
+      <MenteeHeader />
 
       <main
         id="main_layout_workspace"

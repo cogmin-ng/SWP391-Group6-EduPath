@@ -1,21 +1,30 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { GraduationCap, Menu, X, LogOut, User } from "lucide-react";
-import Button from "../ui/Button";
-import { useAuth } from "../../hooks/useAuth";
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { GraduationCap, Menu, X, LogOut, User } from 'lucide-react';
+import Button from '../ui/Button';
+import { useAuth } from '../../hooks/useAuth';
 
 const navLinks = [
-  { label: "Khám phá", href: "#" },
-  { label: "Lộ trình", href: "#roadmaps" },
-  { label: "Mentor", href: "#" },
-  { label: "Bảng giá", href: "#" },
-  { label: "Cộng đồng", href: "#" },
+  { label: 'Khám phá', to: '/explore' },
+  { label: 'Lộ trình', to: '/roadmaps' },
+  { label: 'Mentors', href: '#' },
+  { label: 'Bảng giá', href: '#' },
+  { label: 'Cộng đồng', href: '#' },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { isAuthenticated, user, logout } = useAuth();
+  const location = useLocation();
+
+  const isExplorePage = location.pathname === '/explore';
+
+  const isLinkActive = (to) => {
+    if (!to) return false;
+    if (to === '/roadmaps') return location.pathname.startsWith('/roadmaps');
+    return location.pathname === to;
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -27,8 +36,10 @@ export default function Navbar() {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-white/80 backdrop-blur-xl shadow-sm border-b border-slate-100"
-          : "bg-transparent"
+          ? 'bg-white/80 backdrop-blur-xl shadow-sm border-b border-slate-100'
+          : isExplorePage
+            ? 'bg-white/95 border-b border-slate-100'
+            : 'bg-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -44,13 +55,27 @@ export default function Navbar() {
           {/* Desktop Nav */}
           <div className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 rounded-lg hover:bg-indigo-50/50 transition-all duration-200"
-              >
-                {link.label}
-              </a>
+              link.to ? (
+                <Link
+                  key={link.label}
+                  to={link.to}
+                  className={`px-3.5 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                    isLinkActive(link.to)
+                      ? 'text-indigo-600 bg-indigo-50'
+                      : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 rounded-lg hover:bg-indigo-50/50 transition-all duration-200"
+                >
+                  {link.label}
+                </a>
+              )
             ))}
           </div>
 
@@ -131,14 +156,29 @@ export default function Navbar() {
       >
         <div className="px-4 py-4 space-y-1">
           {navLinks.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="block px-4 py-2.5 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors"
-              onClick={() => setMobileOpen(false)}
-            >
-              {link.label}
-            </a>
+            link.to ? (
+              <Link
+                key={link.label}
+                to={link.to}
+                className={`block px-4 py-2.5 text-sm font-medium rounded-xl transition-colors ${
+                  isLinkActive(link.to)
+                    ? 'text-indigo-600 bg-indigo-50'
+                    : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'
+                }`}
+                onClick={() => setMobileOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ) : (
+              <a
+                key={link.label}
+                href={link.href}
+                className="block px-4 py-2.5 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                {link.label}
+              </a>
+            )
           ))}
           <div className="pt-3 space-y-2 border-t border-slate-100 mt-2">
             {isAuthenticated ? (

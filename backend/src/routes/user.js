@@ -1,7 +1,7 @@
 const Router = require('express').Router;
 const userController = require('../controllers/userController');
 const validateSchema = require('../middleware/validateSchema');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireRole } = require('../middleware/auth');
 const { singleMediaUpload } = require('../middleware/upload');
 const {
   updateUserSchema,
@@ -236,6 +236,7 @@ router.patch(
 router.put(
   '/:id/role',
   requireAuth,
+  requireRole(['ADMIN']),
   validateSchema(updateUserRoleSchema),
   userController.updateUserRole
 );
@@ -263,6 +264,6 @@ router.put(
  *       404:
  *         description: User not found
  */
-router.delete('/:id', requireAuth, userController.deleteUser);
+router.delete('/:id', requireAuth, requireRole(['ADMIN']), userController.deleteUser);
 
 module.exports = router;

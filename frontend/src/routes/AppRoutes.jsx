@@ -2,6 +2,10 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "../pages/LandingPage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
+import ExplorePage from "../pages/ExplorePage";
+import RoadmapDetailPage from "../pages/RoadmapDetailPage";
+import MyRoadmapsPage from "../pages/mentee/MyRoadmapsPage";
+import RoadmapLearningPage from "../pages/mentee/RoadmapLearningPage";
 import PublicRoute from "./PublicRoute";
 import AdminLayout from "../layouts/AdminLayout";
 import DashboardPage from "../pages/admin/DashboardPage";
@@ -14,6 +18,8 @@ import CreateRoadmapPage from "../pages/mentor/CreateRoadmapPage";
 import NodeDetailsPage from "../pages/mentor/NodeDetailsPage";
 import BecomeMentorPage from "../pages/mentee/BecomeMentorPage";
 import MenteeNodeDetailsPage from "../pages/mentee/MenteeNodeDetailsPage";
+import QuizPage from "../pages/mentee/QuizPage";
+import RoadmapQuizPage from "../pages/mentee/RoadmapQuizPage";
 
 // Placeholder component for pages that are not yet implemented
 function PlaceholderPage({ title }) {
@@ -101,6 +107,16 @@ export default function AppRoutes() {
         }
       />
 
+      {/* Mentee Quiz */}
+      <Route
+        path="/mentee/roadmaps/:roadmapId/nodes/:nodeId/quiz"
+        element={
+          <ProtectedRoute allowedRoles={["MENTEE"]}>
+            <QuizPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Mentor Routes */}
       <Route
         path="/mentor"
@@ -166,6 +182,13 @@ export default function AppRoutes() {
         <Route path="reports" element={<PlaceholderPage title="Reports" />} />
         <Route path="settings" element={<PlaceholderPage title="Settings" />} />
       </Route>
+
+      {/* Explore & Roadmap Routes */}
+      <Route path="/explore" element={<ExplorePage />} />
+      <Route path="/explore/:slug" element={<RoadmapDetailPage />} />
+      <Route path="/roadmaps" element={<MyRoadmapsPage />} />
+      <Route path="/roadmaps/:slug/learn" element={<RoadmapLearningPage />} />
+      <Route path="/roadmaps/:slug/learn/quiz" element={<RoadmapQuizPage />} />
 
       {/* 404 Route */}
       <Route

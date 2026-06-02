@@ -5,6 +5,7 @@ import RegisterPage from "../pages/RegisterPage";
 import PublicRoute from "./PublicRoute";
 import AdminLayout from "../layouts/AdminLayout";
 import DashboardPage from "../pages/admin/DashboardPage";
+import UserManagementPage from "../pages/admin/UserManagementPage";
 import ProtectedRoute from "./ProtectedRoute";
 import MenteeLayout from "../layouts/MenteeLayout";
 import MenteeProfilePage from "../pages/mentee/MenteeProfilePage";
@@ -86,7 +87,7 @@ export default function AppRoutes() {
         <Route path="dashboard" element={<DashboardPage />} />
         <Route
           path="users"
-          element={<PlaceholderPage title="User Management" />}
+          element={<UserManagementPage />}
         />
         <Route
           path="categories"

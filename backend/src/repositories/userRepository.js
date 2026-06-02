@@ -47,17 +47,8 @@ exports.findByIdWithRoles = async (id) => {
 exports.findAll = async ({ skip = 0, take = 10 } = {}) => {
   return prisma.user.findMany({
     where: ACTIVE_USER_FILTER,
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      avatar: true,
-      bio: true,
-      xp: true,
-      status: true,
-      role: { select: { name: true } },
-      createdAt: true,
-      updatedAt: true,
+    include: {
+      role: true,
     },
     skip,
     take,
@@ -78,16 +69,8 @@ exports.search = async ({ query, skip = 0, take = 10 }) => {
         { name: { contains: query, mode: 'insensitive' } },
       ],
     },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      avatar: true,
-      bio: true,
-      xp: true,
-      status: true,
-      role: { select: { name: true } },
-      createdAt: true,
+    include: {
+      role: true,
     },
     skip,
     take,

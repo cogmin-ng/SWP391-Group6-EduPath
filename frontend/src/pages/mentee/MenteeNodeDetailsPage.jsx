@@ -143,7 +143,7 @@ export default function MenteeNodeDetailsPage() {
                   onToggle={handleChecklistToggle}
                 />
                 <MaterialsSection materials={materials} />
-                <QuizSection quiz={quiz} />
+                <QuizSection quiz={quiz} roadmapId={roadmapId} nodeId={nodeId} />
                 <TipsSection tips={tips} onSubmitTip={handleSubmitTip} />
               </div>
 

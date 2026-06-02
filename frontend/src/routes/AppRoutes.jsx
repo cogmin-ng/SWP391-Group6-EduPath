@@ -14,6 +14,7 @@ import CreateRoadmapPage from "../pages/mentor/CreateRoadmapPage";
 import NodeDetailsPage from "../pages/mentor/NodeDetailsPage";
 import BecomeMentorPage from "../pages/mentee/BecomeMentorPage";
 import MenteeNodeDetailsPage from "../pages/mentee/MenteeNodeDetailsPage";
+import QuizPage from "../pages/mentee/QuizPage";
 
 // Placeholder component for pages that are not yet implemented
 function PlaceholderPage({ title }) {
@@ -97,6 +98,16 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["MENTEE"]}>
             <MenteeNodeDetailsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Mentee Quiz */}
+      <Route
+        path="/mentee/roadmaps/:roadmapId/nodes/:nodeId/quiz"
+        element={
+          <ProtectedRoute allowedRoles={["MENTEE"]}>
+            <QuizPage />
           </ProtectedRoute>
         }
       />

@@ -3,18 +3,20 @@ import { BrainCircuit, HelpCircle, Clock } from 'lucide-react';
 
 /**
  * Quiz section — displays a single quiz card with metadata.
- * Clicking "Start" navigates to the quiz page.
+ * Clicking "Start" navigates to the full quiz page.
  *
  * Props:
  * - quiz: { id, title, questionCount, durationMinutes }
+ * - roadmapId: string — parent roadmap ID for the quiz route
+ * - nodeId: string — current node ID for the quiz route
  */
-export default function QuizSection({ quiz }) {
+export default function QuizSection({ quiz, roadmapId, nodeId }) {
   const navigate = useNavigate();
 
   if (!quiz) return null;
 
   const handleStart = () => {
-    navigate(`/quiz/${quiz.id}`);
+    navigate(`/mentee/roadmaps/${roadmapId}/nodes/${nodeId}/quiz`);
   };
 
   return (
@@ -44,7 +46,7 @@ export default function QuizSection({ quiz }) {
             <div className="flex items-center gap-3 text-xs text-slate-400">
               <span className="flex items-center gap-1">
                 <HelpCircle className="w-3.5 h-3.5" />
-                {quiz.questionCount} Questions
+                {quiz.questions?.length || quiz.questionCount || 0} Questions
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5" />

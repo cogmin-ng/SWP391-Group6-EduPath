@@ -12,6 +12,7 @@ import DashboardPage from "../pages/admin/DashboardPage";
 import RoadmapApprovalPage from "../pages/admin/RoadmapApprovalPage";
 import UserManagementPage from "../pages/admin/UserManagementPage";
 import ProtectedRoute from "./ProtectedRoute";
+import MentorRequestPage from "../pages/admin/MentorRequestPage";
 import MenteeLayout from "../layouts/MenteeLayout";
 import MenteeProfilePage from "../pages/mentee/MenteeProfilePage";
 import MentorLayout from "../layouts/MentorLayout";
@@ -179,7 +180,7 @@ export default function AppRoutes() {
         />
         <Route
           path="mentors"
-          element={<PlaceholderPage title="Mentor Requests" />}
+          element={<MentorRequestPage />}
         />
         <Route path="reports" element={<PlaceholderPage title="Reports" />} />
         <Route path="settings" element={<PlaceholderPage title="Settings" />} />

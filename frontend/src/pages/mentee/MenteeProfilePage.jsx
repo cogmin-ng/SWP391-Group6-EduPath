@@ -1,4 +1,4 @@
-import { Award, BookOpen, CalendarDays, CheckCircle2, ChevronRight, Camera, Edit3, Flame, MapPin, Sparkles, Star, Target, TrendingUp, X, User } from "lucide-react";
+import { Award, BarChart3, BookOpen, CalendarDays, CheckCircle2, ChevronRight, Camera, Edit3, Flame, Lightbulb, MapPin, Settings, Sparkles, Star, Target, TrendingUp, X, User } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 

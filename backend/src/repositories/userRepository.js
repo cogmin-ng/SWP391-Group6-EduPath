@@ -103,3 +103,9 @@ exports.softDelete = async (id, data = {}, tx = prisma) => {
     data: { isDeleted: true, updatedAt: new Date(), ...data },
   });
 };
+
+exports.hardDelete = async (id, tx = prisma) => {
+  return tx.user.delete({
+    where: { id },
+  });
+};

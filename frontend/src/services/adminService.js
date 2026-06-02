@@ -13,5 +13,22 @@ export const adminService = {
       params: { q, skip, take }
     });
     return data.data;
+  },
+
+  updateUserRole: async (userId, roleId) => {
+    const { data } = await api.put(`/users/${userId}/role`, { roleId });
+    return data.data;
+  },
+
+  deleteUser: async (userId) => {
+    const { data } = await api.delete(`/users/${userId}`);
+    return data.data;
+  },
+
+  getRoles: async () => {
+    const { data } = await api.get('/roles', {
+      params: { take: 100 } // Get all roles
+    });
+    return data.data;
   }
 };

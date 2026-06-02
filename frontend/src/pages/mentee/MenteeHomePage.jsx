@@ -266,7 +266,7 @@ export default function MenteeHomePage() {
       { label: "Lộ trình của tôi", icon: Map, action: "placeholder" },
       { label: "Kho lộ trình", icon: Compass, action: "placeholder" },
       { label: "Tiến độ học tập", icon: BarChart2, action: "placeholder" },
-      { label: "Quiz Center", icon: GraduationCap, action: "placeholder" },
+      { label: "Đăng kí mentor", icon: GraduationCap, to: "/profile/become-mentor" },
       { label: "Đóng góp", icon: Lightbulb, action: "placeholder" },
       { label: "Thành tích", icon: Award, action: "placeholder" },
       { label: "Chứng chỉ của tôi", icon: FileText, action: "placeholder" },

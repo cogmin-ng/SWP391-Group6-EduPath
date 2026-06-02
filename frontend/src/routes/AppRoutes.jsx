@@ -12,6 +12,7 @@ import MentorLayout from "../layouts/MentorLayout";
 import MentorDashboardPage from "../pages/mentor/MentorDashboardPage";
 import CreateRoadmapPage from "../pages/mentor/CreateRoadmapPage";
 import NodeDetailsPage from "../pages/mentor/NodeDetailsPage";
+import BecomeMentorPage from "../pages/mentee/BecomeMentorPage";
 
 // Placeholder component for pages that are not yet implemented
 function PlaceholderPage({ title }) {
@@ -122,6 +123,14 @@ export default function AppRoutes() {
           element={<PlaceholderPage title="Settings" />}
         />
       </Route>
+      <Route
+        path="/profile/become-mentor"
+        element={
+          <ProtectedRoute allowedRoles={["MENTEE"]}>
+            <BecomeMentorPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Admin Routes */}
       <Route path="/admin" element={<AdminLayout />}>

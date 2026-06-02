@@ -2,6 +2,10 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "../pages/LandingPage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
+import ExplorePage from "../pages/ExplorePage";
+import RoadmapDetailPage from "../pages/RoadmapDetailPage";
+import MyRoadmapsPage from "../pages/mentee/MyRoadmapsPage";
+import RoadmapLearningPage from "../pages/mentee/RoadmapLearningPage";
 import PublicRoute from "./PublicRoute";
 import AdminLayout from "../layouts/AdminLayout";
 import DashboardPage from "../pages/admin/DashboardPage";
@@ -166,6 +170,12 @@ export default function AppRoutes() {
         <Route path="reports" element={<PlaceholderPage title="Reports" />} />
         <Route path="settings" element={<PlaceholderPage title="Settings" />} />
       </Route>
+
+      {/* Explore & Roadmap Routes */}
+      <Route path="/explore" element={<ExplorePage />} />
+      <Route path="/explore/:slug" element={<RoadmapDetailPage />} />
+      <Route path="/roadmaps" element={<MyRoadmapsPage />} />
+      <Route path="/roadmaps/:slug/learn" element={<RoadmapLearningPage />} />
 
       {/* 404 Route */}
       <Route

@@ -8,6 +8,10 @@ import DashboardPage from "../pages/admin/DashboardPage";
 import ProtectedRoute from "./ProtectedRoute";
 import MenteeLayout from "../layouts/MenteeLayout";
 import MenteeProfilePage from "../pages/mentee/MenteeProfilePage";
+import MentorLayout from "../layouts/MentorLayout";
+import MentorDashboardPage from "../pages/mentor/MentorDashboardPage";
+import CreateRoadmapPage from "../pages/mentor/CreateRoadmapPage";
+import NodeDetailsPage from "../pages/mentor/NodeDetailsPage";
 
 // Placeholder component for pages that are not yet implemented
 function PlaceholderPage({ title }) {
@@ -63,6 +67,11 @@ export default function AppRoutes() {
       />
 
       <Route
+        path="/mentor"
+        element={<Navigate to="/mentor/dashboard" replace />}
+      />
+
+      <Route
         path="/mentee/homepage"
         element={
           <ProtectedRoute allowedRoles={["MENTEE"]}>
@@ -79,6 +88,40 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      {/* Mentor Routes */}
+      <Route
+        path="/mentor"
+        element={
+          <ProtectedRoute allowedRoles={["MENTOR"]}>
+            <MentorLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<MentorDashboardPage />} />
+        <Route path="create-roadmap" element={<CreateRoadmapPage />} />
+        <Route
+          path="roadmaps/:roadmapId/nodes/:nodeId"
+          element={<NodeDetailsPage />}
+        />
+        <Route
+          path="roadmaps"
+          element={<PlaceholderPage title="Manage My Roadmaps" />}
+        />
+        <Route
+          path="reviews"
+          element={<PlaceholderPage title="Pending Reviews" />}
+        />
+        <Route
+          path="analytics"
+          element={<PlaceholderPage title="Analytics" />}
+        />
+        <Route
+          path="settings"
+          element={<PlaceholderPage title="Settings" />}
+        />
+      </Route>
 
       {/* Admin Routes */}
       <Route path="/admin" element={<AdminLayout />}>

@@ -1,0 +1,148 @@
+export const mentorStats = [
+  {
+    id: 1,
+    label: 'Total Roadmaps',
+    value: '8',
+    icon: 'Map',
+    color: 'bg-indigo-500',
+    trend: '+2 this month',
+  },
+  {
+    id: 2,
+    label: 'Pending Reviews',
+    value: '3',
+    icon: 'Clock',
+    color: 'bg-amber-500',
+    trend: '-1 this week',
+  },
+  {
+    id: 3,
+    label: 'Active Students',
+    value: '124',
+    icon: 'Users',
+    color: 'bg-emerald-500',
+    trend: '+12%',
+  },
+  {
+    id: 4,
+    label: 'Average Rating',
+    value: '4.8',
+    icon: 'Star',
+    color: 'bg-blue-500',
+    trend: '+0.2',
+  },
+];
+
+export const myRoadmaps = [
+  {
+    id: 1,
+    title: 'Fullstack Developer',
+    status: 'Approved',
+    nodeCount: 12,
+    studentCount: 45,
+    updatedAt: '2 days ago',
+    description: 'Complete roadmap for fullstack web development',
+  },
+  {
+    id: 2,
+    title: 'Backend Developer',
+    status: 'Pending',
+    nodeCount: 9,
+    studentCount: 38,
+    updatedAt: 'Today',
+    description: 'Comprehensive backend development path',
+  },
+  {
+    id: 3,
+    title: 'Frontend Developer',
+    status: 'Approved',
+    nodeCount: 10,
+    studentCount: 52,
+    updatedAt: '1 day ago',
+    description: 'Modern frontend development with React',
+  },
+  {
+    id: 4,
+    title: 'Mobile App Development',
+    status: 'Draft',
+    nodeCount: 8,
+    studentCount: 0,
+    updatedAt: '3 days ago',
+    description: 'React Native mobile development guide',
+  },
+  {
+    id: 5,
+    title: 'Data Science Roadmap',
+    status: 'Approved',
+    nodeCount: 14,
+    studentCount: 31,
+    updatedAt: '5 days ago',
+    description: 'From basics to advanced data science',
+  },
+  {
+    id: 6,
+    title: 'DevOps Engineer',
+    status: 'Pending',
+    nodeCount: 11,
+    studentCount: 25,
+    updatedAt: '4 days ago',
+    description: 'Complete DevOps and cloud infrastructure',
+  },
+];
+
+export const pendingReviews = [
+  {
+    id: 1,
+    title: 'Backend Developer',
+    submittedDate: 'May 20, 2026',
+    status: 'Pending Approval',
+    nodeCount: 9,
+    studentCount: 38,
+    reviewDate: 'Awaiting review',
+  },
+  {
+    id: 2,
+    title: 'DevOps Engineer',
+    submittedDate: 'May 25, 2026',
+    status: 'Pending Approval',
+    nodeCount: 11,
+    studentCount: 25,
+    reviewDate: 'Awaiting review',
+  },
+  {
+    id: 3,
+    title: 'React Advanced Roadmap',
+    submittedDate: 'May 22, 2026',
+    status: 'Pending Approval',
+    nodeCount: 13,
+    studentCount: 0,
+    reviewDate: 'Awaiting review',
+  },
+];
+
+export const recentMentorActivities = [
+  {
+    id: 1,
+    activity: 'Added new node to Fullstack roadmap',
+    date: '2026-05-25',
+    type: 'Added',
+  },
+  {
+    id: 2,
+    activity: '45 students joined Fullstack Developer',
+    date: '2026-05-24',
+    type: 'Milestone',
+  },
+  {
+    id: 3,
+    activity: 'Submitted Backend Developer for review',
+    date: '2026-05-23',
+    type: 'Submitted',
+  },
+  {
+    id: 4,
+    activity: 'Received feedback on React Advanced',
+    date: '2026-05-22',
+    type: 'Feedback',
+  },
+];

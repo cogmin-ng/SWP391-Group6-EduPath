@@ -316,26 +316,37 @@ model QuizAttempt {
 
 model Tip {
   id String @id @default(cuid())
-
   nodeId String
-  node   Node   @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  node   Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)
 
+  // Tip gốc của mentor
   createdById String
-  createdBy   User   @relation("TipCreator", fields: [createdById], references: [id])
+  createdBy   User @relation("TipCreator", fields: [createdById], references: [id])
 
+  // Contributor (mentee)
   contributorId String?
-  contributor   User?   @relation("TipContributor", fields: [contributorId], references: [id])
+  contributor   User? @relation("TipContributor", fields: [contributorId], references: [id])
 
   title   String?
-  content String
+  content String  @db.Text
 
   status ContributorStatus @default(PENDING)
 
-  isPublished Boolean @default(false)
+  // REVIEW FLOW
+  reviewedBy   String?
+  reviewedAt   DateTime?
+  rejectReason String?
 
-  isDeleted Boolean  @default(false)
+  // chỉ publish khi approved
+  publishedAt DateTime?
+  isPublished  Boolean   @default(false)
+
+  isDeleted Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  notifications Notification[]
 }
 
 model Enrollment {
@@ -407,6 +418,7 @@ model Review {
   rating  Int
   comment String?
 
+  updatedAt DateTime @updatedAt
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
 
@@ -426,6 +438,9 @@ model Notification {
   content String
 
   type NotificationType
+
+  relatedTipId String?
+  relatedTip   Tip?    @relation(fields: [relatedTipId], references: [id], onDelete: SetNull)
 
   isRead Boolean @default(false)
 

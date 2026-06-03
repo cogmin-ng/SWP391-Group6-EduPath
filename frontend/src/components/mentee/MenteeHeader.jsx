@@ -25,7 +25,7 @@ const accountMenuItems = [
   { label: 'Kho lộ trình', icon: Compass, to: '/explore' },
   { label: 'Tiến độ học tập', icon: BarChart3, action: 'placeholder' },
   { label: 'Đăng kí mentor', icon: GraduationCap, to: '/profile/become-mentor' },
-  { label: 'Đóng góp', icon: Lightbulb, action: 'placeholder' },
+  { label: 'Đóng góp', icon: Lightbulb, to: '/mentee/contributions' },
   { label: 'Thành tích', icon: Award, action: 'placeholder' },
   { label: 'Chứng chỉ của tôi', icon: FileText, action: 'placeholder' },
   { label: 'Cài đặt', icon: Settings, action: 'placeholder' },

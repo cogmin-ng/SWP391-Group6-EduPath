@@ -159,6 +159,89 @@ const options = {
           },
           required: ['publicId'],
         },
+        UserInfo: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: ['string', 'null'] },
+            email: { type: 'string' },
+            avatar: { type: ['string', 'null'] },
+          },
+        },
+        TipSubmitRequest: {
+          type: 'object',
+          properties: {
+            nodeId: { type: 'string' },
+            title: { type: 'string', minLength: 1, maxLength: 200 },
+            content: { type: 'string', minLength: 10, maxLength: 5000 },
+          },
+          required: ['nodeId', 'title', 'content'],
+        },
+        TipRejectRequest: {
+          type: 'object',
+          properties: {
+            rejectReason: { type: 'string', minLength: 5, maxLength: 500 },
+          },
+          required: ['rejectReason'],
+        },
+        TipResponse: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            nodeId: { type: 'string' },
+            title: { type: ['string', 'null'] },
+            content: { type: 'string' },
+            status: {
+              type: 'string',
+              enum: ['PENDING', 'APPROVED', 'REJECTED'],
+            },
+            createdBy: { $ref: '#/components/schemas/UserInfo' },
+            contributor: { $ref: '#/components/schemas/UserInfo' },
+            reviewedBy: { type: ['string', 'null'] },
+            reviewedAt: { type: ['string', 'null'], format: 'date-time' },
+            rejectReason: { type: ['string', 'null'] },
+            isPublished: { type: 'boolean' },
+            publishedAt: { type: ['string', 'null'], format: 'date-time' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        TipListResponse: {
+          type: 'object',
+          properties: {
+            tips: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/TipResponse' },
+            },
+            total: { type: 'integer' },
+          },
+        },
+        NotificationResponse: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            userId: { type: 'string' },
+            title: { type: 'string' },
+            content: { type: 'string' },
+            type: {
+              type: 'string',
+              enum: ['SYSTEM', 'QUIZ', 'ROADMAP', 'CONTRIBUTION', 'CERTIFICATE'],
+            },
+            relatedTipId: { type: ['string', 'null'] },
+            isRead: { type: 'boolean' },
+            createdAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        NotificationListResponse: {
+          type: 'object',
+          properties: {
+            notifications: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/NotificationResponse' },
+            },
+            total: { type: 'integer' },
+          },
+        },
       },
     },
     tags: [
@@ -178,6 +261,14 @@ const options = {
         name: 'Media',
         description: 'Media upload endpoints',
       },
+      {
+        name: 'Tip',
+        description: 'Tip contribution and management endpoints',
+      },
+      {
+        name: 'Notification',
+        description: 'Notification management endpoints',
+      },
     ],
   },
   apis: [
@@ -185,6 +276,8 @@ const options = {
     './src/routes/upload.js',
     './src/routes/role.js',
     './src/routes/user.js',
+    './src/routes/tip.js',
+    './src/routes/notification.js',
   ],
 };
 

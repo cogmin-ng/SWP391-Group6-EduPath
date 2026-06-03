@@ -1,6 +1,14 @@
 import { Plus, Lightbulb } from 'lucide-react';
+import { useState } from 'react';
+import TipContributionModal from '../ui/TipContributionModal';
+import { useAuth } from '../../hooks/useAuth';
 
-const TipsSection = ({ tips }) => {
+const TipsSection = ({ tips, nodeId, onRefresh }) => {
+  const { user } = useAuth();
+  const [open, setOpen] = useState(false);
+
+  const isMentee = user && Array.isArray(user.roles) && user.roles.includes('MENTEE');
+
   return (
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 mb-6">
       {/* Header */}
@@ -11,10 +19,17 @@ const TipsSection = ({ tips }) => {
           </div>
           <h2 className="text-xl font-bold text-slate-900">Kinh nghiệm & Bí kíp</h2>
         </div>
-        <button className="text-indigo-600 hover:text-indigo-700 font-medium text-sm flex items-center gap-1">
-          <Plus className="w-4 h-4" />
-          Thêm Tip
-        </button>
+        {isMentee ? (
+          <button
+            onClick={() => setOpen(true)}
+            className="text-indigo-600 hover:text-indigo-700 font-medium text-sm flex items-center gap-1"
+          >
+            <Plus className="w-4 h-4" />
+            Thêm Tip
+          </button>
+        ) : (
+          <span className="text-sm text-slate-400">Chỉ mentee mới có thể đóng góp</span>
+        )}
       </div>
 
       {/* Tips List */}
@@ -28,6 +43,16 @@ const TipsSection = ({ tips }) => {
           </div>
         ))}
       </div>
+
+      {open && (
+        <TipContributionModal
+          nodeId={nodeId}
+          onClose={() => setOpen(false)}
+          onSubmitted={() => {
+            if (onRefresh) onRefresh();
+          }}
+        />
+      )}
     </div>
   );
 };

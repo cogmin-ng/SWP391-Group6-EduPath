@@ -43,6 +43,14 @@ const getDefaultRole = async () => {
   return defaultRole;
 };
 
+const buildAuthUser = (user, roles) => ({
+  id: user.id,
+  email: user.email,
+  name: user.name,
+  avatarUrl: user.avatar,
+  roles,
+});
+
 exports.register = async ({ email, password, name }) => {
   const existing = await userRepo.findByEmail(email);
   if (existing) throw new ApiError(400, authMessages.emailAlreadyInUse);
@@ -80,12 +88,7 @@ exports.login = async ({ email, password }) => {
   return {
     accessToken,
     refreshToken,
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      roles,
-    },
+    user: buildAuthUser(user, roles),
   };
 };
 
@@ -134,12 +137,7 @@ exports.refresh = async ({ refreshToken }) => {
     return {
       accessToken,
       refreshToken: newRefreshToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        roles,
-      },
+      user: buildAuthUser(user, roles),
     };
   } catch (err) {
     if (err instanceof ApiError) throw err;

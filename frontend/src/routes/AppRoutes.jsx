@@ -23,6 +23,8 @@ import BecomeMentorPage from "../pages/mentee/BecomeMentorPage";
 import MenteeNodeDetailsPage from "../pages/mentee/MenteeNodeDetailsPage";
 import QuizPage from "../pages/mentee/QuizPage";
 import RoadmapQuizPage from "../pages/mentee/RoadmapQuizPage";
+import ContributionHistoryPage from "../pages/mentee/ContributionHistoryPage";
+import PendingTipsPage from "../pages/mentor/PendingTipsPage";
 
 // Placeholder component for pages that are not yet implemented
 function PlaceholderPage({ title }) {
@@ -100,6 +102,15 @@ export default function AppRoutes() {
         }
       />
 
+      <Route
+        path="/mentee/contributions"
+        element={
+          <ProtectedRoute allowedRoles={["MENTEE"]}>
+            <ContributionHistoryPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Mentee Node Details */}
       <Route
         path="/mentee/roadmaps/:roadmapId/nodes/:nodeId"
@@ -142,7 +153,7 @@ export default function AppRoutes() {
         />
         <Route
           path="reviews"
-          element={<PlaceholderPage title="Pending Reviews" />}
+          element={<PendingTipsPage />}
         />
         <Route
           path="analytics"

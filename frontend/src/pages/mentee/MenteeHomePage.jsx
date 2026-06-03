@@ -1,5 +1,5 @@
 import { Sparkles } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MenteeHeader from "../../components/mentee/MenteeHeader";
 
@@ -25,7 +25,7 @@ const readStoredState = (key, fallback) => {
 };
 
 export default function MenteeHomePage() {
-  const { logout, user: authUser } = useAuth();
+  const { user: authUser } = useAuth();
   const navigate = useNavigate();
 
   const [user, setUser] = useState(() =>
@@ -62,6 +62,46 @@ export default function MenteeHomePage() {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   };
+
+  const firstCourse = useMemo(
+    () => courses.find((course) => course.isEnrolled),
+    [courses],
+  );
+
+  const handleGoToRoadmaps = () => navigate("/roadmaps");
+  const handleGoToProfile = () => navigate("/mentee/profile");
+  const handleGoToCourse = (course) => {
+    if (course?.id) {
+      navigate(`/roadmaps/${course.id}/learn`);
+    } else {
+      handleGoToRoadmaps();
+    }
+  };
+  const handleGoToQuiz = () => {
+    if (firstCourse?.id) {
+      navigate(`/roadmaps/${firstCourse.id}/learn/quiz`);
+    } else {
+      handleGoToRoadmaps();
+    }
+  };
+  const handleGoToNodeView = () => {
+    if (firstCourse?.id) {
+      navigate(`/roadmaps/${firstCourse.id}/learn`);
+    } else {
+      handleGoToRoadmaps();
+    }
+  };
+  const handleGoToTipContribution = () => {
+    const firstNodeId = firstCourse?.nodes?.[0]?.id;
+    if (firstCourse?.id && firstNodeId) {
+      navigate(`/mentee/roadmaps/${firstCourse.id}/nodes/${firstNodeId}`);
+    } else {
+      handleGoToRoadmaps();
+    }
+  };
+  const handleViewSuggestedCourses = () => navigate("/roadmaps");
+  const handleViewAllActivities = () => navigate("/roadmaps");
+  const handleViewAllAchievements = () => navigate("/mentee/profile");
 
   const handleUpdateXp = (xpGained, message) => {
     if (xpGained <= 0) return;
@@ -259,7 +299,20 @@ export default function MenteeHomePage() {
           suggestedCourses={suggestedCourses}
           onEnrollGame={handleEnrollCourse}
           onUpdateXp={handleUpdateXp}
-          onPlaceholderClick={() => {}}
+          onContinueStudy={handleGoToRoadmaps}
+          onViewMyPath={handleGoToRoadmaps}
+          onViewAllLearning={handleGoToRoadmaps}
+          onContinueCourse={handleGoToCourse}
+          onViewRoadmap={handleGoToCourse}
+          onViewAllActivities={handleViewAllActivities}
+          onViewAllAchievements={handleViewAllAchievements}
+          onQuickPath={handleGoToRoadmaps}
+          onQuickNode={handleGoToNodeView}
+          onQuickQuiz={handleGoToQuiz}
+          onQuickTip={handleGoToTipContribution}
+          onViewXP={handleGoToProfile}
+          onViewCertificates={handleGoToProfile}
+          onViewSuggestedCourses={handleViewSuggestedCourses}
         />
       </main>
     </div>

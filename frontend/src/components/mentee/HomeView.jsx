@@ -21,10 +21,37 @@ export default function HomeView({
   badges,
   suggestedCourses,
   onEnrollGame,
-  onPlaceholderClick,
+  onContinueStudy,
+  onViewMyPath,
+  onViewAllLearning,
+  onContinueCourse,
+  onViewRoadmap,
+  onViewAllActivities,
+  onViewAllAchievements,
+  onQuickPath,
+  onQuickNode,
+  onQuickQuiz,
+  onQuickTip,
+  onViewXP,
+  onViewCertificates,
+  onViewSuggestedCourses,
   onUpdateXp,
 }) {
-  const handlePlaceholder = onPlaceholderClick ?? (() => {});
+  const noOp = () => {};
+  const handleContinueStudy = onContinueStudy ?? noOp;
+  const handleViewMyPath = onViewMyPath ?? noOp;
+  const handleViewAllLearning = onViewAllLearning ?? noOp;
+  const handleContinueCourse = onContinueCourse ?? noOp;
+  const handleViewRoadmap = onViewRoadmap ?? noOp;
+  const handleViewAllActivities = onViewAllActivities ?? noOp;
+  const handleViewAllAchievements = onViewAllAchievements ?? noOp;
+  const handleQuickPath = onQuickPath ?? noOp;
+  const handleQuickNode = onQuickNode ?? noOp;
+  const handleQuickQuiz = onQuickQuiz ?? noOp;
+  const handleQuickTip = onQuickTip ?? noOp;
+  const handleViewXP = onViewXP ?? noOp;
+  const handleViewCertificates = onViewCertificates ?? noOp;
+  const handleViewSuggestedCourses = onViewSuggestedCourses ?? noOp;
   const [welcomeTip, setWelcomeTip] = useState(
     '"Mỗi dòng code bạn viết hôm nay là một bước đệm vững chắc cho sự nghiệp tương lai!"',
   );
@@ -86,7 +113,7 @@ export default function HomeView({
             <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 pt-2">
               <button
                 id="btn_banner_continue"
-                onClick={handlePlaceholder}
+                onClick={handleContinueStudy}
                 className="w-full sm:w-auto bg-white hover:bg-blue-50 text-indigo-700 font-semibold py-2.5 px-5 rounded-xl text-sm transition duration-200 flex items-center justify-center gap-1.5 shadow-md"
               >
                 Tiếp tục học
@@ -94,7 +121,7 @@ export default function HomeView({
               </button>
               <button
                 id="btn_banner_catalog"
-                onClick={handlePlaceholder}
+                onClick={handleViewMyPath}
                 className="w-full sm:w-auto bg-transparent hover:bg-white/10 border border-white/30 hover:border-white text-white font-medium py-2.5 px-5 rounded-xl text-sm transition duration-200"
               >
                 Xem lộ trình của tôi
@@ -138,7 +165,7 @@ export default function HomeView({
       >
         <div
           id="stat_card_courses"
-          onClick={handlePlaceholder}
+          onClick={handleViewMyPath}
           className="min-h-38 bg-white hover:bg-slate-50 border border-slate-100 hover:border-indigo-100 p-4 rounded-2xl shadow-sm cursor-pointer transition duration-300 group"
         >
           <div className="flex justify-between items-start">
@@ -194,7 +221,7 @@ export default function HomeView({
 
         <div
           id="stat_card_xp"
-          onClick={handlePlaceholder}
+          onClick={handleViewXP}
           className="min-h-38 bg-white hover:bg-slate-50 border border-slate-100 hover:border-amber-100 p-4 rounded-2xl shadow-sm cursor-pointer transition duration-300 group"
         >
           <div className="flex justify-between items-start">
@@ -219,7 +246,7 @@ export default function HomeView({
 
         <div
           id="stat_card_certificates"
-          onClick={handlePlaceholder}
+          onClick={handleViewCertificates}
           className="min-h-38 bg-white hover:bg-slate-50 border border-slate-100 hover:border-violet-100 p-4 rounded-2xl shadow-sm cursor-pointer transition duration-300 group"
         >
           <div className="flex justify-between items-start">
@@ -252,7 +279,7 @@ export default function HomeView({
         </h2>
         <button
           id="btn_view_all_learning"
-          onClick={handlePlaceholder}
+          onClick={handleViewAllLearning}
           className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition"
         >
           Xem tất cả
@@ -319,14 +346,14 @@ export default function HomeView({
             <div className="flex gap-3">
               <button
                 id="btn_continue_fullstack"
-                onClick={handlePlaceholder}
+                onClick={() => handleContinueCourse(activeEnrolled[0])}
                 className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-xs sm:text-sm transition duration-200 flex items-center justify-center gap-1.5"
               >
                 Tiếp tục học
               </button>
               <button
                 id="btn_view_roadmap_fullstack"
-                onClick={handlePlaceholder}
+                onClick={() => handleViewRoadmap(activeEnrolled[0])}
                 className="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-800 border border-slate-200/80 font-medium py-2.5 rounded-xl text-xs sm:text-sm transition duration-200 flex items-center justify-center gap-1"
               >
                 Xem roadmap
@@ -347,7 +374,7 @@ export default function HomeView({
         >
           <div
             id="quick_acc_path"
-            onClick={handlePlaceholder}
+            onClick={handleQuickPath}
             className="bg-white hover:bg-blue-50 border border-blue-200/80 rounded-2xl p-5 text-center cursor-pointer hover:shadow-md transition duration-200 group flex flex-col items-center justify-center space-y-2.5 shadow-sm"
           >
             <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 shadow-inner">
@@ -364,7 +391,7 @@ export default function HomeView({
 
           <div
             id="quick_acc_node"
-            onClick={handlePlaceholder}
+            onClick={handleQuickNode}
             className="bg-white hover:bg-emerald-50 border border-emerald-200/80 rounded-2xl p-5 text-center cursor-pointer hover:shadow-md transition duration-200 group flex flex-col items-center justify-center space-y-2.5 shadow-sm"
           >
             <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 shadow-inner">
@@ -383,7 +410,7 @@ export default function HomeView({
 
           <div
             id="quick_acc_quiz"
-            onClick={handlePlaceholder}
+            onClick={handleQuickQuiz}
             className="bg-white hover:bg-amber-50 border border-amber-200/80 rounded-2xl p-5 text-center cursor-pointer hover:shadow-md transition duration-200 group flex flex-col items-center justify-center space-y-2.5 shadow-sm"
           >
             <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 shadow-inner">
@@ -400,7 +427,7 @@ export default function HomeView({
 
           <div
             id="quick_acc_tip"
-            onClick={handlePlaceholder}
+            onClick={handleQuickTip}
             className="bg-white hover:bg-red-50 border border-red-200/80 rounded-2xl p-5 text-center cursor-pointer hover:shadow-md transition duration-200 group flex flex-col items-center justify-center space-y-2.5 shadow-sm"
           >
             <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-700 shadow-inner">
@@ -484,7 +511,7 @@ export default function HomeView({
               <div className="p-3 bg-slate-50 border-t border-slate-100">
                 <button
                   id={`btn_goto_course_${course.id}`}
-                  onClick={handlePlaceholder}
+                  onClick={() => handleContinueCourse(course)}
                   className="w-full bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 py-1.5 text-xs rounded-xl font-semibold transition"
                 >
                   Tiếp tục học
@@ -503,7 +530,7 @@ export default function HomeView({
               Hoạt động gần đây
             </h3>
             <button
-              onClick={handlePlaceholder}
+              onClick={handleViewAllActivities}
               className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
             >
               Xem tất cả
@@ -575,7 +602,7 @@ export default function HomeView({
               Thành tích của bạn
             </h3>
             <button
-              onClick={handlePlaceholder}
+              onClick={handleViewAllAchievements}
               className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
             >
               Xem tất cả
@@ -647,7 +674,7 @@ export default function HomeView({
             Đề xuất dành cho bạn
           </h3>
           <button
-            onClick={handlePlaceholder}
+            onClick={handleViewSuggestedCourses}
             className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
           >
             Xem tất cả

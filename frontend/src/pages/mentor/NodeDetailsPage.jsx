@@ -1,15 +1,21 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import NodeDetailHeader from '../../components/mentor/NodeDetailHeader';
 import ChecklistSection from '../../components/mentor/ChecklistSection';
 import MaterialsSection from '../../components/mentor/MaterialsSection';
 import TipsSection from '../../components/mentor/TipsSection';
 import QuizSection from '../../components/mentor/QuizSection';
+import { getTips } from '../../services/roadmapService';
 
 const NodeDetailsPage = () => {
   const { roadmapId, nodeId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // State for tips
+  const [tips, setTips] = useState([]);
+  const [tipsLoading, setTipsLoading] = useState(true);
 
   // Get node data from state if available, otherwise use mock data
   const stateNodeData = location.state?.nodeData;
@@ -30,6 +36,25 @@ const NodeDetailsPage = () => {
     nodeNumber: 2,
     totalNodes: 3,
   };
+
+  // Fetch tips on component mount
+  useEffect(() => {
+    const fetchTips = async () => {
+      setTipsLoading(true);
+      try {
+        const data = await getTips(nodeId);
+        setTips(data || []);
+      } catch (err) {
+        console.error('Failed to fetch tips:', err);
+        // Fallback to empty array on error
+        setTips([]);
+      } finally {
+        setTipsLoading(false);
+      }
+    };
+
+    fetchTips();
+  }, [nodeId]);
 
   const checklistItems = [
     { id: 1, title: 'Hiểu ExpressJS', completed: true },
@@ -52,11 +77,6 @@ const NodeDetailsPage = () => {
       icon: 'BookOpen',
       description: 'Reference guide for Prisma ORM schema and client usage.',
     },
-  ];
-
-  const tips = [
-    { id: 1, title: 'Luôn tách Controller và Service để code dễ bảo trì và dễ viết unit test hơn.' },
-    { id: 2, title: 'Đừng bao giờ lưu mật khẩu dưới dạng plain-text, hãy sử dụng thư viện bcrypt để hash.' },
   ];
 
   const quizzes = [
@@ -83,6 +103,22 @@ const NodeDetailsPage = () => {
     }
   };
 
+  const handleRefreshTips = () => {
+    const fetchTips = async () => {
+      setTipsLoading(true);
+      try {
+        const data = await getTips(nodeId);
+        setTips(data || []);
+      } catch (err) {
+        console.error('Failed to refresh tips:', err);
+      } finally {
+        setTipsLoading(false);
+      }
+    };
+
+    fetchTips();
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
@@ -104,7 +140,7 @@ const NodeDetailsPage = () => {
           <div className="lg:col-span-2 space-y-6">
             <ChecklistSection items={checklistItems} />
             <MaterialsSection materials={materials} />
-            <TipsSection tips={tips} />
+            <TipsSection tips={tips} nodeId={nodeData.id} onRefresh={handleRefreshTips} />
             <QuizSection quizzes={quizzes} />
           </div>
 

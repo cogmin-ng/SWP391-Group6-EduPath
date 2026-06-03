@@ -41,18 +41,27 @@ export default function MenteeNodeDetailsPage() {
   const [loading, setLoading] = useState(true);
 
   // ─── Data fetching ──────────────────────────────────────
+  const fetchTips = async () => {
+    try {
+      const tipsData = await getTips(nodeId);
+      setTips(tipsData || []);
+    } catch (err) {
+      console.error('Failed to fetch tips:', err);
+      setTips([]);
+    }
+  };
+
   useEffect(() => {
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const [roadmapData, nodeData, checklistData, materialsData, quizData, tipsData] =
+        const [roadmapData, nodeData, checklistData, materialsData, quizData] =
           await Promise.all([
             getRoadmapById(roadmapId),
             getNodeDetails(roadmapId, nodeId),
             getChecklist(nodeId),
             getMaterials(nodeId),
             getQuiz(nodeId),
-            getTips(nodeId),
           ]);
 
         setRoadmap(roadmapData);
@@ -60,7 +69,9 @@ export default function MenteeNodeDetailsPage() {
         setChecklist(checklistData);
         setMaterials(materialsData);
         setQuiz(quizData);
-        setTips(tipsData);
+
+        // fetch tips separately to allow refresh
+        await fetchTips();
       } catch (err) {
         console.error('Failed to load node details:', err);
       } finally {
@@ -88,6 +99,8 @@ export default function MenteeNodeDetailsPage() {
   const handleSubmitTip = async (content) => {
     try {
       await submitTip(nodeId, content);
+      // Refresh tips list after submission
+      await fetchTips();
     } catch (err) {
       console.error('Failed to submit tip:', err);
     }

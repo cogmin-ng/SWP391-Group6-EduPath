@@ -248,7 +248,7 @@ export default function MenteeProfilePage() {
       <MenteeHeader />
 
       <main className="max-w-400 mx-auto w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-6 sm:py-8 lg:py-10">
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_320px]">
+        <div className="grid gap-6">
           <div className="space-y-6">
             <section className="relative overflow-hidden rounded-3xl bg-[#635BFF] p-5 text-white shadow-xl sm:p-6 lg:p-8">
               <div className="absolute -right-12 -top-12 h-56 w-56 rounded-full bg-indigo-500/15 blur-3xl" />
@@ -530,99 +530,7 @@ export default function MenteeProfilePage() {
             </div>
           </div>
 
-          <aside className="space-y-6">
-            <section className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                    Trạng thái học tập
-                  </p>
-                  <h2 className="mt-1 text-lg font-bold tracking-tight text-slate-900">
-                    Mentee profile
-                  </h2>
-                </div>
-                <div className="rounded-2xl bg-indigo-50 p-2 text-indigo-600">
-                  <TrendingUp className="h-5 w-5" />
-                </div>
-              </div>
-
-              <div className="mt-5 space-y-3">
-                <MiniMetric
-                  label="Level hiện tại"
-                  value={`Lv. ${profile.level}`}
-                />
-                <MiniMetric
-                  label="XP tới mốc tiếp theo"
-                  value={`${(profile.xpTarget - profile.xp).toLocaleString()} XP`}
-                />
-                <MiniMetric
-                  label="Chứng chỉ nhận được"
-                  value={`${profile.certificates}`}
-                />
-                <MiniMetric
-                  label="Chuỗi học tập"
-                  value={`${profile.streak} ngày`}
-                />
-              </div>
-            </section>
-
-            <section className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                    Ghi chú
-                  </p>
-                  <h2 className="mt-1 text-lg font-bold tracking-tight text-slate-900">
-                    Định hướng cá nhân
-                  </h2>
-                </div>
-                <Sparkles className="h-5 w-5 text-amber-500" />
-              </div>
-
-              <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-600">
-                Màn hình hồ sơ chỉ giữ lại dữ liệu nhận diện, trạng thái tài
-                khoản và các hành động nhanh. Các khối lộ trình, tiến độ và
-                thành tích đã nằm ở homepage nên không được lặp lại ở đây.
-              </div>
-
-              <div className="mt-4 space-y-2">
-                <KeyValueRow
-                  label="Đồng bộ hồ sơ"
-                  value="Tự động"
-                  valueClassName="text-emerald-600"
-                />
-                <KeyValueRow
-                  label="Chế độ hiển thị"
-                  value="Công khai"
-                  valueClassName="text-indigo-600"
-                />
-                <KeyValueRow
-                  label="Bảo mật tài khoản"
-                  value="Tốt"
-                  valueClassName="text-amber-600"
-                />
-              </div>
-            </section>
-
-            <section className="rounded-3xl border border-slate-100 bg-linear-to-br from-slate-900 to-indigo-950 p-5 text-white shadow-sm">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/60">
-                <BookOpen className="h-4 w-4" />
-                Tiêu điểm
-              </div>
-              <p className="mt-4 text-lg font-semibold leading-relaxed text-white/95">
-                "Mỗi dòng code bạn viết hôm nay là một bước đệm vững chắc cho sự
-                nghiệp tương lai."
-              </p>
-              <button
-                type="button"
-                onClick={() => handleProfileAction("Thay đổi tiêu điểm")}
-                className="mt-4 inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
-              >
-                Đổi tiêu điểm
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </section>
-          </aside>
+          {/* Right sidebar removed to center profile content */}
         </div>
       </main>
 

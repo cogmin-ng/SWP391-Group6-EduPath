@@ -7,11 +7,15 @@ import Button from "../../components/ui/Button";
 import { useAuth } from "../../hooks/useAuth";
 import { mentorApplicationService } from "../../services/mentorApplicationService";
 
-import BecomeMentorHero from "../../components/mentee/BecomeMentorHero";
-import BecomeMentorInfoForm from "../../components/mentee/BecomeMentorInfoForm";
-import BecomeMentorCertifications from "../../components/mentee/BecomeMentorCertifications";
-import BecomeMentorLinks from "../../components/mentee/BecomeMentorLinks";
-import BecomeMentorUpload from "../../components/mentee/BecomeMentorUpload";
+import {
+  MentorHero,
+  MentorInfoSection,
+  SubjectMentorSection,
+  AcademicAchievementSection,
+  BioSection,
+  EvidenceUploadSection,
+  CommitmentSection
+} from "../../components/mentee/become_mentor";
 
 /* ------------------------------------------------------------------ */
 /*  Page Component                                                     */
@@ -29,32 +33,60 @@ export default function BecomeMentorPage() {
   } = useForm({
     defaultValues: {
       fullName: user?.name || "",
-      experienceYears: "",
       specialization: "",
-      description: "",
-      linkedinUrl: "",
-      githubUrl: "",
-      portfolioUrl: "",
-      personalWebsiteUrl: "",
+      semester: "",
+      bio: "",
+      supportExperience: "",
     },
   });
 
   /* ---- component states ---- */
-  const [certifications, setCertifications] = useState([]);
-  
-  const [cvFile, setCvFile] = useState(null);
-  const [cvError, setCvError] = useState("");
+  const [subjects, setSubjects] = useState([]);
+  const [subjectError, setSubjectError] = useState(null);
+
+  const [achievements, setAchievements] = useState([
+    { subject: "", grade: "" },
+  ]);
+
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploadError, setUploadError] = useState("");
+
+  const [commitments, setCommitments] = useState({
+    quality: false,
+    responsibility: false,
+  });
+  const [commitmentError, setCommitmentError] = useState(null);
 
   /* ---- submit ---- */
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState(null); // { type, message }
 
   const onSubmit = async (data) => {
-    // Validate CV
-    if (!cvFile) {
-      setCvError("Vui lòng tải lên CV của bạn.");
-      return;
+    let hasError = false;
+
+    // Validate subjects
+    if (subjects.length === 0) {
+      setSubjectError("Vui lòng thêm ít nhất 1 môn học muốn mentor.");
+      hasError = true;
+    } else {
+      setSubjectError(null);
     }
+
+    // Validate upload file
+    if (!uploadFile) {
+      setUploadError("Vui lòng tải lên bảng điểm hoặc minh chứng học tập.");
+      hasError = true;
+    }
+
+    // Validate commitments
+    if (!commitments.quality || !commitments.responsibility) {
+      setCommitmentError("Vui lòng đồng ý cả 2 cam kết để tiếp tục.");
+      hasError = true;
+    } else {
+      setCommitmentError(null);
+    }
+
+    if (hasError) return;
 
     setIsSubmitting(true);
     setSubmitResult(null);
@@ -62,8 +94,10 @@ export default function BecomeMentorPage() {
     try {
       await mentorApplicationService.submit({
         ...data,
-        certifications,
-        cvFile,
+        subjects,
+        achievements: achievements.filter((a) => a.subject.trim()),
+        uploadFile,
+        commitments,
       });
 
       setSubmitResult({
@@ -72,7 +106,6 @@ export default function BecomeMentorPage() {
           "Đơn đăng ký Mentor của bạn đã được gửi thành công! Chúng tôi sẽ xem xét và phản hồi sớm nhất.",
       });
 
-      // Scroll to top to show the success banner
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       setSubmitResult({
@@ -116,7 +149,7 @@ export default function BecomeMentorPage() {
       {/*  HEADER                                                          */}
       {/* ================================================================ */}
       <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/90 backdrop-blur-xl shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-12">
           <div className="h-16 flex items-center justify-between">
             {/* Logo */}
             <button
@@ -148,25 +181,36 @@ export default function BecomeMentorPage() {
       {/* ================================================================ */}
       {/*  MAIN CONTENT                                                    */}
       {/* ================================================================ */}
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+      <main className="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-10 xl:px-12 py-8 sm:py-12">
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          
-          <BecomeMentorHero />
+          <MentorHero />
 
-          <BecomeMentorInfoForm register={register} errors={errors} />
+          <MentorInfoSection register={register} errors={errors} />
 
-          <BecomeMentorCertifications 
-            certifications={certifications}
-            setCertifications={setCertifications}
+          <SubjectMentorSection
+            subjects={subjects}
+            setSubjects={setSubjects}
+            error={subjectError}
           />
 
-          <BecomeMentorLinks register={register} />
+          <AcademicAchievementSection
+            achievements={achievements}
+            setAchievements={setAchievements}
+          />
 
-          <BecomeMentorUpload 
-            cvFile={cvFile}
-            setCvFile={setCvFile}
-            cvError={cvError}
-            setCvError={setCvError}
+          <BioSection register={register} errors={errors} />
+
+          <EvidenceUploadSection
+            uploadFile={uploadFile}
+            setUploadFile={setUploadFile}
+            uploadError={uploadError}
+            setUploadError={setUploadError}
+          />
+
+          <CommitmentSection
+            commitments={commitments}
+            setCommitments={setCommitments}
+            error={commitmentError}
           />
 
           {/* ---------------------------------------------------------- */}
@@ -178,7 +222,7 @@ export default function BecomeMentorPage() {
               variant="primary"
               size="lg"
               isLoading={isSubmitting}
-              className="min-w-[220px] text-base font-semibold shadow-lg shadow-indigo-200 hover:shadow-indigo-300"
+              className="min-w-[240px] text-base font-semibold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 rounded-2xl"
             >
               Gửi đăng ký Mentor
             </Button>

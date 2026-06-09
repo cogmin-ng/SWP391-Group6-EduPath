@@ -4,32 +4,45 @@
  * (e.g. when they come from an API instead).
  */
 
-export const EXPERIENCE_OPTIONS = [
-  { value: "", label: "Chọn số năm" },
-  { value: "1-2", label: "1-2 năm" },
-  { value: "3-5", label: "3-5 năm" },
-  { value: "5-10", label: "5-10 năm" },
-  { value: "10+", label: "Trên 10 năm" },
-];
+/* ------------------------------------------------------------------ */
+/*  Dropdown options                                                   */
+/* ------------------------------------------------------------------ */
 
 export const SPECIALIZATION_OPTIONS = [
-  { value: "", label: "Chọn lĩnh vực" },
-  { value: "frontend", label: "Frontend" },
-  { value: "backend", label: "Backend" },
-  { value: "fullstack", label: "Fullstack" },
-  { value: "mobile", label: "Mobile" },
-  { value: "uiux", label: "UI/UX" },
-  { value: "data-science", label: "Data Science" },
-  { value: "devops", label: "DevOps" },
+  { value: "", label: "Chọn chuyên ngành" },
+  { value: "software-engineering", label: "Software Engineering" },
+  { value: "information-assurance", label: "Information Assurance" },
+  { value: "artificial-intelligence", label: "Artificial Intelligence" },
+  { value: "digital-art-design", label: "Digital Art & Design" },
+  { value: "information-system", label: "Information System" },
+  { value: "iot", label: "IoT" },
 ];
 
-export const ACCEPTED_FILE_EXTENSIONS = ["pdf", "doc", "docx"];
+export const SEMESTER_OPTIONS = [
+  { value: "", label: "Chọn kỳ học" },
+  { value: "1", label: "Semester 1" },
+  { value: "2", label: "Semester 2" },
+  { value: "3", label: "Semester 3" },
+  { value: "4", label: "Semester 4" },
+  { value: "5", label: "Semester 5" },
+  { value: "6", label: "Semester 6" },
+  { value: "7", label: "Semester 7" },
+  { value: "8", label: "Semester 8" },
+  { value: "9", label: "Semester 9" },
+];
+
+/* ------------------------------------------------------------------ */
+/*  File upload config                                                 */
+/* ------------------------------------------------------------------ */
 
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
+/* ------------------------------------------------------------------ */
+/*  Hero section content                                               */
+/* ------------------------------------------------------------------ */
 
 export const HERO_CONTENT = {
   title: "Trở thành Mentor",
   description:
-    "Chia sẻ kiến thức, kinh nghiệm và đồng hành cùng người học trên hành trình phát triển sự nghiệp. Gia nhập cộng đồng chuyên gia hàng đầu tại EduPath.",
-  image: "/images/mentor-hero.png",
+    "Chia sẻ kiến thức, kinh nghiệm và đồng hành cùng người học trên hành trình phát triển học tập tại EduPath.",
 };

@@ -1,6 +1,6 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Edit2 } from 'lucide-react';
 import NodeDetailHeader from '../../components/mentor/NodeDetailHeader';
 import ChecklistSection from '../../components/mentor/ChecklistSection';
 import MaterialsSection from '../../components/mentor/MaterialsSection';
@@ -119,17 +119,32 @@ const NodeDetailsPage = () => {
     fetchTips();
   };
 
+  const handleEdit = () => {
+    navigate(`/mentor/roadmaps/${roadmapId}/edit`, {
+      state: { nodeData, roadmapId }
+    });
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Back Button */}
-        <button
-          onClick={handleBack}
-          className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium mb-8 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Quay lại
-        </button>
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3 mb-8">
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Quay lại
+          </button>
+          <button
+            onClick={handleEdit}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg transition-colors"
+          >
+            <Edit2 className="w-4 h-4" />
+            Chỉnh Sửa Lộ Trình
+          </button>
+        </div>
 
         {/* Header */}
         <NodeDetailHeader node={nodeData} />

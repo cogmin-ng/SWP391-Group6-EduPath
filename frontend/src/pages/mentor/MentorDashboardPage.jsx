@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import MentorWelcomeBanner from '../../components/mentor/MentorWelcomeBanner';
 import MentorStatsCard from '../../components/mentor/MentorStatsCard';
@@ -12,6 +13,7 @@ import { getPendingTips } from '../../services/roadmapService';
 const MentorDashboardPage = () => {
   const [pendingTips, setPendingTips] = useState([]);
   const [loadingTips, setLoadingTips] = useState(false);
+  const navigate = useNavigate();
 
   // Fetch pending tips on mount
   useEffect(() => {
@@ -45,33 +47,33 @@ const MentorDashboardPage = () => {
   };
 
   const handleCreateNew = () => {
-    toast.success('Redirecting to roadmap creator...');
-    // Navigate to create roadmap page
+    toast.success('Đang chuyển đến trang tạo lộ trình...');
+    navigate('/mentor/create-roadmap');
   };
 
   const handleManageRoadmaps = () => {
-    toast.success('Redirecting to roadmap manager...');
+    toast.success('Đang chuyển đến trình quản lý lộ trình...');
     // Navigate to manage roadmaps page
   };
 
   const handleViewProfile = () => {
-    toast.success('Redirecting to profile...');
-    // Navigate to profile page
+    toast.success('Chuyển đến trang hồ sơ mentor...');
+    navigate('/mentor/profile');
   };
 
   const handleNotifications = () => {
-    toast.success('Opening notifications...');
+    toast.success('Đang mở thông báo...');
     // Open notifications modal or navigate
   };
 
   const handleViewRoadmap = (roadmapId) => {
-    toast.success(`Viewing roadmap ${roadmapId}`);
+    toast.success(`Đang xem lộ trình ${roadmapId}`);
     // Navigate to roadmap view
   };
 
   const handleEditRoadmap = (roadmapId) => {
-    toast.success(`Editing roadmap ${roadmapId}`);
-    // Navigate to roadmap editor
+    toast.success(`Đang chuyển đến trang chỉnh sửa lộ trình...`);
+    navigate(`/mentor/roadmaps/${roadmapId}/edit`);
   };
 
   return (
@@ -94,11 +96,11 @@ const MentorDashboardPage = () => {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900">My Roadmaps</h2>
-                <p className="text-slate-500 text-sm mt-1">{myRoadmaps.length} roadmaps created</p>
+                <h2 className="text-2xl font-bold text-slate-900">Lộ Trình Của Tôi</h2>
+                <p className="text-slate-500 text-sm mt-1">{myRoadmaps.length} lộ trình đã tạo</p>
               </div>
               <button className="text-indigo-600 font-semibold hover:text-indigo-700 transition-colors text-sm">
-                View All →
+                Xem Tất Cả →
               </button>
             </div>
 
@@ -134,7 +136,7 @@ const MentorDashboardPage = () => {
 
           {/* Pending Reviews Section */}
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">Pending Reviews</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Duyệt Lộ Trình</h2>
             <PendingReviewsSection reviews={pendingReviews} />
           </div>
         </div>

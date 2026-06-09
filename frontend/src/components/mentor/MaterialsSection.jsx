@@ -13,7 +13,7 @@ const MaterialsSection = ({ materials }) => {
         <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
           <BookOpen className="w-6 h-6 text-indigo-600" />
         </div>
-        <h2 className="text-xl font-bold text-slate-900">Materials</h2>
+        <h2 className="text-xl font-bold text-slate-900">Tài Liệu</h2>
       </div>
 
       {/* Materials Grid */}
@@ -51,7 +51,7 @@ const MaterialsSection = ({ materials }) => {
       {/* Add Button */}
       <button className="w-full flex items-center justify-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium text-sm py-2 rounded-lg hover:bg-indigo-50 transition-colors">
         <Plus className="w-4 h-4" />
-        Thêm Material
+        Thêm Tài Liệu
       </button>
     </div>
   );

@@ -4,12 +4,16 @@ const MentorRoadmapCard = ({ roadmap, onView, onEdit }) => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'Approved':
+      case 'Đã Phê Duyệt':
         return 'bg-emerald-50 text-emerald-600';
       case 'Pending':
+      case 'Chờ Duyệt':
         return 'bg-amber-50 text-amber-600';
       case 'Draft':
+      case 'Nháp':
         return 'bg-slate-100 text-slate-600';
       case 'Rejected':
+      case 'Từ Chối':
         return 'bg-red-50 text-red-600';
       default:
         return 'bg-slate-50 text-slate-600';
@@ -40,7 +44,7 @@ const MentorRoadmapCard = ({ roadmap, onView, onEdit }) => {
               <Layers className="w-5 h-5 text-indigo-600" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-medium">Nodes</p>
+              <p className="text-xs text-slate-500 font-medium">Nút</p>
               <p className="text-sm font-bold text-slate-900">{roadmap.nodeCount}</p>
             </div>
           </div>
@@ -51,14 +55,14 @@ const MentorRoadmapCard = ({ roadmap, onView, onEdit }) => {
               <Users className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-medium">Students</p>
+              <p className="text-xs text-slate-500 font-medium">Học Viên</p>
               <p className="text-sm font-bold text-slate-900">{roadmap.studentCount}</p>
             </div>
           </div>
         </div>
 
         {/* Updated Date */}
-        <p className="text-xs text-slate-400 mb-4">Updated {roadmap.updatedAt}</p>
+        <p className="text-xs text-slate-400 mb-4">Cập Nhật {roadmap.updatedAt}</p>
       </div>
 
       {/* Card Footer with Actions */}
@@ -68,14 +72,14 @@ const MentorRoadmapCard = ({ roadmap, onView, onEdit }) => {
           className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-medium text-sm"
         >
           <Eye className="w-4 h-4" />
-          View
+          Xem
         </button>
         <button
           onClick={() => onEdit?.(roadmap.id)}
           className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm"
         >
           <Edit2 className="w-4 h-4" />
-          Edit
+          Chỉnh Sửa
         </button>
       </div>
     </div>

@@ -119,27 +119,69 @@ model Subject {
   updatedAt DateTime @updatedAt
 
   learningPaths LearningPath[]
+
+  advisorSubjects AdvisorSubject[]
+
+  academicRecords AdvisorAcademicRecord[]
 }
 
 model AdvisorApplication {
   id String @id @default(cuid())
 
-  userId       String
-  experience   String?
-  cvUrl        String?
-  portfolioUrl String?
+  userId String
 
   specialization String?
+
+  currentSemester String?
+
+  bio String? @db.Text
+
+  experience String? @db.Text
+
+  transcriptUrl String?
 
   status ContributorStatus @default(PENDING)
 
   reviewedBy String?
   reviewedAt DateTime?
 
-  isDeleted Boolean  @default(false)
+  rejectReason String?
+
+  isDeleted Boolean @default(false)
+
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  mentorSubjects AdvisorSubject[]
+
+  academicRecords AdvisorAcademicRecord[]
+}
+
+model AdvisorSubject {
+  id String @id @default(cuid())
+
+  advisorApplicationId String
+  subjectId            String
+
+  application AdvisorApplication @relation(fields: [advisorApplicationId], references: [id], onDelete: Cascade)
+
+  subject Subject @relation(fields: [subjectId], references: [id])
+
+  @@unique([advisorApplicationId, subjectId])
+}
+
+model AdvisorAcademicRecord {
+  id String @id @default(cuid())
+
+  advisorApplicationId String
+  subjectId            String
+
+  grade Float
+
+  application AdvisorApplication @relation(fields: [advisorApplicationId], references: [id], onDelete: Cascade)
+
+  subject Subject @relation(fields: [subjectId], references: [id])
 }
 
 model LearningPath {
@@ -315,17 +357,17 @@ model QuizAttempt {
 }
 
 model Tip {
-  id String @id @default(cuid())
+  id     String @id @default(cuid())
   nodeId String
-  node   Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  node   Node   @relation(fields: [nodeId], references: [id], onDelete: Cascade)
 
   // Tip gốc của mentor
   createdById String
-  createdBy   User @relation("TipCreator", fields: [createdById], references: [id])
+  createdBy   User   @relation("TipCreator", fields: [createdById], references: [id])
 
   // Contributor (mentee)
   contributorId String?
-  contributor   User? @relation("TipContributor", fields: [contributorId], references: [id])
+  contributor   User?   @relation("TipContributor", fields: [contributorId], references: [id])
 
   title   String?
   content String  @db.Text
@@ -339,7 +381,7 @@ model Tip {
 
   // chỉ publish khi approved
   publishedAt DateTime?
-  isPublished  Boolean   @default(false)
+  isPublished Boolean   @default(false)
 
   isDeleted Boolean @default(false)
 

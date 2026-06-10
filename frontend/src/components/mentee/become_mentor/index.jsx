@@ -1,6 +1,5 @@
 export { default as AcademicAchievementSection } from './AcademicAchievementSection';
 export { default as BioSection } from './BioSection';
-export { default as CommitmentSection } from './CommitmentSection';
 export { default as EvidenceUploadSection } from './EvidenceUploadSection';
 export { default as MentorHero } from './MentorHero';
 export { default as MentorInfoSection } from './MentorInfoSection';

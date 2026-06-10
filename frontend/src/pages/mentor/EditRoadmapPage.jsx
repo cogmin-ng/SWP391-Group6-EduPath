@@ -21,7 +21,6 @@ const EditRoadmapPage = () => {
     name: roadmapData?.title || '',
     description: roadmapData?.description || '',
     category: 'programming',
-    level: 'beginner',
     thumbnail: roadmapData?.thumbnail || null,
   });
 
@@ -95,12 +94,6 @@ const EditRoadmapPage = () => {
     { value: 'data', label: 'Dữ liệu' },
   ];
 
-  const levelOptions = [
-    { value: 'beginner', label: 'Cơ bản' },
-    { value: 'intermediate', label: 'Trung cấp' },
-    { value: 'advanced', label: 'Nâng cao' },
-  ];
-
   return (
     <div className="min-h-screen bg-slate-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
@@ -109,14 +102,6 @@ const EditRoadmapPage = () => {
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Chỉnh Sửa Lộ Trình Học Tập</h1>
             <p className="text-slate-600 mt-1">Cập nhật lộ trình học tập của bạn</p>
-          </div>
-          <div className="flex gap-3">
-            <Button variant="secondary" onClick={handleSaveDraft}>
-              Lưu Nháp
-            </Button>
-            <Button variant="primary" onClick={handleSubmitApproval}>
-              Cập Nhật & Gửi
-            </Button>
           </div>
         </div>
 
@@ -149,13 +134,6 @@ const EditRoadmapPage = () => {
                     name="category"
                     options={categoryOptions}
                     value={formData.category}
-                    onChange={handleInputChange}
-                  />
-                  <Select
-                    label="Trình Độ"
-                    name="level"
-                    options={levelOptions}
-                    value={formData.level}
                     onChange={handleInputChange}
                   />
                 </div>
@@ -302,6 +280,15 @@ const EditRoadmapPage = () => {
                 ))}
               </div>
             </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
+              <Button variant="secondary" className="w-full sm:w-auto" onClick={handleSaveDraft}>
+                Lưu Nháp
+              </Button>
+              <Button variant="primary" className="w-full sm:w-auto" onClick={handleSubmitApproval}>
+                Cập Nhật & Gửi
+              </Button>
+            </div>
           </div>
 
           {/* Right Column - Summary (30%) */}
@@ -319,12 +306,6 @@ const EditRoadmapPage = () => {
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">Trình Độ:</span>
-                    <span className="font-semibold text-slate-900">
-                      {levelOptions.find(l => l.value === formData.level)?.label || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
                     <span className="text-sm text-slate-600">Tổng Node:</span>
                     <span className="font-semibold text-slate-900">{nodes.length}</span>
                   </div>
@@ -337,26 +318,6 @@ const EditRoadmapPage = () => {
                   <p className="mb-2">
                     Lộ trình của bạn sẽ cần phê duyệt từ admin trước khi công khai.
                   </p>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => navigate(`/mentor/roadmaps/${roadmapId}`)}
-                    className="flex-1"
-                  >
-                    Hủy
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={handleSubmitApproval}
-                    className="flex-1"
-                  >
-                    Lưu
-                  </Button>
                 </div>
               </div>
             </div>

@@ -106,15 +106,6 @@ const CreateRoadmapPage = () => {
             <h1 className="text-3xl font-bold text-slate-900">Tạo Lộ Trình Học Tập</h1>
             <p className="text-slate-600 mt-1">Thiết kế một lộ trình học tập hiệu quả cho học viên</p>
           </div>
-          <div className="flex gap-3">
-            <Button variant="secondary" onClick={handleSaveDraft}>
-              Lưu Nháp
-            </Button>
-            {/* Preview button removed */}
-            <Button variant="primary" onClick={handleSubmitApproval}>
-              Gửi Phê Duyệt
-            </Button>
-          </div>
         </div>
 
         {/* Main Content */}
@@ -299,6 +290,15 @@ const CreateRoadmapPage = () => {
                 ))}
               </div>
             </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
+              <Button variant="secondary" className="w-full sm:w-auto" onClick={handleSaveDraft}>
+                Lưu Nháp
+              </Button>
+              <Button variant="primary" className="w-full sm:w-auto" onClick={handleSubmitApproval}>
+                Cập nhật & Gửi
+              </Button>
+            </div>
           </div>
 
           {/* Right Column - Summary (30%) */}
@@ -353,17 +353,6 @@ const CreateRoadmapPage = () => {
                     )}%
                   </p>
                 </div>
-
-                <div className="h-px bg-slate-200"></div>
-
-                {/* Action */}
-                <Button
-                  variant="primary"
-                  className="w-full"
-                  onClick={handleSubmitApproval}
-                >
-                  Gửi Phê Duyệt
-                </Button>
               </div>
             </div>
           </div>

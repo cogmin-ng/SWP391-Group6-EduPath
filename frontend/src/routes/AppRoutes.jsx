@@ -17,6 +17,7 @@ import MenteeLayout from "../layouts/MenteeLayout";
 import MenteeProfilePage from "../pages/mentee/MenteeProfilePage";
 import MentorLayout from "../layouts/MentorLayout";
 import MentorDashboardPage from "../pages/mentor/MentorDashboardPage";
+import MentorRoadmapsPage from "../pages/mentor/MentorRoadmapsPage";
 import CreateRoadmapPage from "../pages/mentor/CreateRoadmapPage";
 import EditRoadmapPage from "../pages/mentor/EditRoadmapPage";
 import MentorProfilePage from "../pages/mentor/MentorProfilePage";
@@ -153,7 +154,7 @@ export default function AppRoutes() {
         />
         <Route
           path="roadmaps"
-          element={<PlaceholderPage title="Manage My Roadmaps" />}
+          element={<MentorRoadmapsPage />}
         />
         <Route
           path="reviews"

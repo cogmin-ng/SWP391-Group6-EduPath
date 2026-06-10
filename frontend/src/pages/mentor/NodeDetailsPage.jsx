@@ -1,6 +1,6 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Edit2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import NodeDetailHeader from '../../components/mentor/NodeDetailHeader';
 import ChecklistSection from '../../components/mentor/ChecklistSection';
 import MaterialsSection from '../../components/mentor/MaterialsSection';
@@ -119,12 +119,6 @@ const NodeDetailsPage = () => {
     fetchTips();
   };
 
-  const handleEdit = () => {
-    navigate(`/mentor/roadmaps/${roadmapId}/edit`, {
-      state: { nodeData, roadmapId }
-    });
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
@@ -136,13 +130,6 @@ const NodeDetailsPage = () => {
           >
             <ArrowLeft className="w-4 h-4" />
             Quay lại
-          </button>
-          <button
-            onClick={handleEdit}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg transition-colors"
-          >
-            <Edit2 className="w-4 h-4" />
-            Chỉnh Sửa Lộ Trình
           </button>
         </div>
 
@@ -223,15 +210,6 @@ const NodeDetailsPage = () => {
           </div>
         </div>
 
-        {/* Bottom Action Buttons */}
-        <div className="mt-8 flex gap-3 max-w-2xl lg:max-w-none lg:col-span-2">
-          <button
-            onClick={handleBack}
-            className="px-6 py-2.5 border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium rounded-lg transition-colors"
-          >
-            Quay lại
-          </button>
-        </div>
       </div>
     </div>
   );

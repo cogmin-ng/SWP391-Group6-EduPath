@@ -52,4 +52,20 @@ export const mentorApplicationService = {
     });
     return data.data;
   },
+
+  /**
+   * Get all advisor applications (Admin only)
+   */
+  async getAllApplications() {
+    const { data } = await api.get('/advisor-applications/all');
+    return data.data;
+  },
+
+  /**
+   * Update the status of an advisor application
+   */
+  async updateApplicationStatus(id, status, rejectReason = null) {
+    const { data } = await api.put(`/advisor-applications/${id}/status`, { status, rejectReason });
+    return data.data;
+  },
 };

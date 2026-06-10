@@ -102,4 +102,58 @@ router.get(
   advisorApplicationController.getMyApplication
 );
 
+/**
+ * @swagger
+ * /api/advisor-applications/all:
+ *   get:
+ *     tags:
+ *       - AdvisorApplication
+ *     summary: Get all applications (Admin only)
+ *     security:
+ *       - BearerAuth: []
+ */
+router.get(
+  '/all',
+  requireAuth,
+  requireRole(['ADMIN']),
+  advisorApplicationController.getAllApplications
+);
+
+/**
+ * @swagger
+ * /api/advisor-applications/{id}/status:
+ *   put:
+ *     tags:
+ *       - AdvisorApplication
+ *     summary: Update application status (Admin only)
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [APPROVED, REJECTED]
+ *               rejectReason:
+ *                 type: string
+ */
+router.put(
+  '/:id/status',
+  requireAuth,
+  requireRole(['ADMIN']),
+  advisorApplicationController.updateApplicationStatus
+);
+
 module.exports = router;

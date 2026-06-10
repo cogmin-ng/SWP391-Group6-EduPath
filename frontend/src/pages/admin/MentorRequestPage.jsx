@@ -95,10 +95,6 @@ const MentorRequestPage = () => {
           />
         </div>
         <div className="flex items-center gap-3">
-          <button className="p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors relative">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
-          </button>
           <button className="p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors">
             <Mail className="w-5 h-5" />
           </button>

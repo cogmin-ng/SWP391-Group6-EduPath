@@ -97,6 +97,28 @@ exports.createApplication = async (userId, data) => {
       })),
     });
 
+    // Find all active ADMINs
+    const admins = await tx.user.findMany({
+      where: {
+        role: { name: 'ADMIN' },
+        isDeleted: false,
+        status: 'ACTIVE',
+      },
+      select: { id: true },
+    });
+
+    // Create notifications for all admins
+    if (admins.length > 0) {
+      await tx.notification.createMany({
+        data: admins.map((admin) => ({
+          userId: admin.id,
+          title: 'Yêu cầu làm Mentor mới',
+          content: `Một học viên vừa gửi yêu cầu để trở thành Mentor. Vui lòng kiểm tra trang quản lý.`,
+          type: 'SYSTEM',
+        })),
+      });
+    }
+
     // Return the full application with relations
     return tx.advisorApplication.findUnique({
       where: { id: app.id },

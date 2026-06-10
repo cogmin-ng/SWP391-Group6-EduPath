@@ -1,5 +1,4 @@
-
-import { Search, Bell, Menu, User, ChevronDown } from 'lucide-react';
+import { Search, Bell, Menu, User, ChevronDown } from "lucide-react";
 
 const Topbar = ({ toggleSidebar }) => {
   return (
@@ -13,15 +12,6 @@ const Topbar = ({ toggleSidebar }) => {
           >
             <Menu className="w-5 h-5" />
           </button>
-
-          <div className="hidden md:flex items-center relative max-w-md w-full">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3" />
-            <input
-              type="text"
-              placeholder="Search anything..."
-              className="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
-            />
-          </div>
         </div>
 
         {/* Right Side: Icons & Profile */}
@@ -33,8 +23,12 @@ const Topbar = ({ toggleSidebar }) => {
 
             {/* Simple Dropdown placeholder */}
             <div className="absolute top-full right-0 mt-2 w-72 bg-white border border-slate-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 py-2">
-              <div className="px-4 py-2 border-b border-slate-100 font-semibold text-slate-800">Thông báo</div>
-              <div className="px-4 py-3 text-sm text-slate-500">Không có thông báo mới</div>
+              <div className="px-4 py-2 border-b border-slate-100 font-semibold text-slate-800">
+                Thông báo
+              </div>
+              <div className="px-4 py-3 text-sm text-slate-500">
+                Không có thông báo mới
+              </div>
             </div>
           </button>
         </div>

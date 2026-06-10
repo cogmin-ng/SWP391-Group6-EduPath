@@ -153,6 +153,20 @@ exports.updateUserRole = async (id, { roleId }, currentUserId) => {
     if (!role) {
       throw new ApiError(400, 'Role not found');
     }
+
+    // If changing role to something other than MENTOR (e.g. MENTEE), reset mentor applications
+    if (role.name !== 'MENTOR') {
+      const prisma = require('../lib/prisma');
+      await prisma.advisorApplication.updateMany({
+        where: {
+          userId: id,
+          isDeleted: false,
+        },
+        data: {
+          isDeleted: true,
+        },
+      });
+    }
   }
 
   const updated = await userRepository.update(id, { roleId: roleId || null });

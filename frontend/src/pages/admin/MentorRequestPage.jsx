@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { mentorApplicationService } from '../../services/mentorApplicationService';
 import { 
   Users, 
   CheckCircle, 
@@ -17,32 +18,59 @@ import {
 } from 'lucide-react';
 
 const MentorRequestPage = () => {
-  const [selectedRequest, setSelectedRequest] = useState({
-    id: 1,
-    name: "Nguyen Van A",
-    subtitle: "University Student • Beginner",
-    goal: "Frontend Development in 6 months",
-    techStack: ["React", "JavaScript", "HTML/CSS", "Tailwind"],
-    statement: "I have been self-learning for 3 months but feel overwhelmed by advanced concepts. I am seeking structured guidance and code reviews to accelerate my journey toward a professional career.",
-    schedule: {
-      days: "Tuesdays & Thursdays",
-      time: "7:00 PM – 9:00 PM (GMT+7)"
-    },
-    requestedAt: "2 hours ago",
-    status: "Pending"
-  });
+  const [requests, setRequests] = useState([]);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  const fetchRequests = async () => {
+    try {
+      setLoading(true);
+      const data = await mentorApplicationService.getAllApplications();
+      
+      const formattedRequests = data.map(app => ({
+        id: app.id,
+        name: app.user?.name || "Unknown",
+        specialization: app.specialization || "N/A",
+        currentSemester: app.currentSemester || "N/A",
+        bio: app.bio || "No bio provided",
+        experience: app.experience || "No experience provided",
+        transcriptUrl: app.transcriptUrl || null,
+        mentorSubjects: app.mentorSubjects?.map(ms => ms.subject.name) || [],
+        academicRecords: app.academicRecords?.map(ar => ({ subjectName: ar.subject.name, grade: ar.grade })) || [],
+        date: new Date(app.createdAt).toLocaleDateString(),
+        status: app.status === 'APPROVED' ? 'Accepted' : app.status === 'REJECTED' ? 'Rejected' : 'Pending',
+        rawStatus: app.status
+      }));
+
+      setRequests(formattedRequests);
+      if (formattedRequests.length > 0) {
+        setSelectedRequest(formattedRequests[0]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch applications', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusUpdate = async (id, status) => {
+    try {
+      await mentorApplicationService.updateApplicationStatus(id, status);
+      fetchRequests();
+    } catch (error) {
+      console.error('Failed to update status', error);
+    }
+  };
 
   const stats = [
-    { label: "Pending Requests", value: "24", growth: "+12%", icon: Clock, color: "text-amber-500", bg: "bg-amber-50" },
-    { label: "Accepted", value: "86", growth: "+5%", icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-50" },
-    { label: "Rejected", value: "12", growth: "-2%", icon: XCircle, color: "text-rose-500", bg: "bg-rose-50" },
-    { label: "Active Mentees", value: "43", growth: "+8", icon: Users, color: "text-indigo-500", bg: "bg-indigo-50" },
-  ];
-
-  const requests = [
-    { id: 1, name: "Nguyen Van A", goal: "Frontend", date: "2 hours ago", status: "Pending" },
-    { id: 2, name: "Tran Minh Khang", goal: "Full Stack", date: "5 hours ago", status: "Pending" },
-    { id: 3, name: "Le Thi Mai", goal: "Data Science", date: "Yesterday", status: "Accepted" },
+    { label: "Pending Requests", value: requests.filter(r => r.rawStatus === 'PENDING').length, growth: "", icon: Clock, color: "text-amber-500", bg: "bg-amber-50" },
+    { label: "Accepted", value: requests.filter(r => r.rawStatus === 'APPROVED').length, growth: "", icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-50" },
+    { label: "Rejected", value: requests.filter(r => r.rawStatus === 'REJECTED').length, growth: "", icon: XCircle, color: "text-rose-500", bg: "bg-rose-50" },
+    { label: "Total Applications", value: requests.length, growth: "", icon: Users, color: "text-indigo-500", bg: "bg-indigo-50" },
   ];
 
   const getStatusColor = (status) => {
@@ -126,7 +154,7 @@ const MentorRequestPage = () => {
               <thead>
                 <tr className="border-b border-slate-50 bg-slate-50/50">
                   <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Learner Name</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Goal</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Specialization</th>
                   <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Requested Date</th>
                   <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
                 </tr>
@@ -146,7 +174,7 @@ const MentorRequestPage = () => {
                         <span className="font-medium text-slate-900 group-hover:text-indigo-600 transition-colors">{req.name}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-600">{req.goal}</td>
+                    <td className="px-6 py-4 text-slate-600">{req.specialization}</td>
                     <td className="px-6 py-4 text-slate-500">{req.date}</td>
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusColor(req.status)}`}>
@@ -162,8 +190,9 @@ const MentorRequestPage = () => {
 
         {/* Detail Panel Column */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden sticky top-24">
-            <div className="p-6">
+          {selectedRequest ? (
+            <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden sticky top-24">
+              <div className="p-6">
               {/* Profile Section */}
               <div className="flex items-center gap-4 mb-8">
                 <img 
@@ -173,70 +202,90 @@ const MentorRequestPage = () => {
                 />
                 <div>
                   <h4 className="text-lg font-bold text-slate-900">{selectedRequest.name}</h4>
-                  <p className="text-sm text-slate-500 font-medium">{selectedRequest.subtitle}</p>
+                  <p className="text-sm text-slate-500 font-medium">Semester {selectedRequest.currentSemester} &bull; {selectedRequest.specialization}</p>
                 </div>
               </div>
 
               {/* Detail Items */}
               <div className="space-y-6">
                 <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Learning Goal</label>
-                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                    <p className="text-sm text-slate-700 font-medium flex items-start gap-2">
-                      <Monitor className="w-4 h-4 text-indigo-500 mt-0.5" />
-                      {selectedRequest.goal}
-                    </p>
-                  </div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Bio / Introduction</label>
+                  <p className="text-sm text-slate-700 font-medium p-3 bg-slate-50 rounded-lg border border-slate-100">
+                    {selectedRequest.bio}
+                  </p>
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Tech Stack</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Experience</label>
+                  <p className="text-sm text-slate-600 italic p-3 bg-slate-50 rounded-lg border border-slate-100 leading-relaxed whitespace-pre-wrap">
+                    "{selectedRequest.experience}"
+                  </p>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Subjects to Mentor</label>
                   <div className="flex flex-wrap gap-2">
-                    {selectedRequest.techStack.map((tech) => (
-                      <span key={tech} className="px-2.5 py-1 bg-white border border-slate-200 rounded-md text-[11px] font-semibold text-slate-600 flex items-center gap-1.5">
+                    {selectedRequest.mentorSubjects.map((subject, idx) => (
+                      <span key={idx} className="px-2.5 py-1 bg-white border border-slate-200 rounded-md text-[11px] font-semibold text-slate-600 flex items-center gap-1.5">
                         <Code className="w-3 h-3 text-indigo-400" />
-                        {tech}
+                        {subject}
                       </span>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Personal Statement</label>
-                  <p className="text-sm text-slate-600 italic leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    "{selectedRequest.statement}"
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Preferred Schedule</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Academic Records</label>
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
-                      <Calendar className="w-4 h-4 text-indigo-400" />
-                      {selectedRequest.schedule.days}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
-                      <Clock className="w-4 h-4 text-indigo-400" />
-                      {selectedRequest.schedule.time}
-                    </div>
+                    {selectedRequest.academicRecords.map((record, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+                        <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
+                          <GraduationCap className="w-4 h-4 text-indigo-400" />
+                          {record.subjectName}
+                        </div>
+                        <span className="font-bold text-slate-900">{record.grade}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
+
+                {selectedRequest.transcriptUrl && (
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Transcript</label>
+                    <a 
+                      href={selectedRequest.transcriptUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 transition-colors rounded-lg text-sm font-semibold text-slate-700"
+                    >
+                      <Monitor className="w-4 h-4" /> View Full Transcript
+                    </a>
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-8 space-y-3">
-                <button className="w-full py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:bg-indigo-700 shadow-md shadow-indigo-200 transition-all active:scale-[0.98]">
-                  Accept Request
-                </button>
-                <button className="w-full py-2.5 bg-white border border-slate-200 text-slate-700 rounded-lg font-bold text-sm hover:bg-slate-50 transition-all active:scale-[0.98]">
-                  Schedule Interview
-                </button>
-                <button className="w-full py-2.5 text-rose-600 font-bold text-sm hover:bg-rose-50 rounded-lg transition-all">
-                  Reject Request
-                </button>
-              </div>
+              {selectedRequest.rawStatus === 'PENDING' && (
+                <div className="mt-8 space-y-3">
+                  <button 
+                    onClick={() => handleStatusUpdate(selectedRequest.id, 'APPROVED')}
+                    className="w-full py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:bg-indigo-700 shadow-md shadow-indigo-200 transition-all active:scale-[0.98]">
+                    Accept Request
+                  </button>
+                  <button 
+                    onClick={() => handleStatusUpdate(selectedRequest.id, 'REJECTED')}
+                    className="w-full py-2.5 text-rose-600 font-bold text-sm hover:bg-rose-50 rounded-lg transition-all">
+                    Reject Request
+                  </button>
+                </div>
+              )}
             </div>
           </div>
+          ) : (
+            <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 text-center text-slate-500">
+              Select an application to view details.
+            </div>
+          )}
         </div>
       </div>
     </div>

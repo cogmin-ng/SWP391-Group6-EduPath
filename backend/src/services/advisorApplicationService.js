@@ -138,3 +138,74 @@ exports.getMyApplication = async (userId) => {
 
   return application;
 };
+
+/**
+ * Get all advisor applications (Admin only).
+ */
+exports.getAllApplications = async () => {
+  return await prisma.advisorApplication.findMany({
+    where: {
+      isDeleted: false,
+    },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          avatar: true,
+          bio: true,
+        },
+      },
+      mentorSubjects: {
+        include: { subject: { select: { id: true, name: true } } },
+      },
+      academicRecords: {
+        include: { subject: { select: { id: true, name: true } } },
+      },
+    },
+  });
+};
+
+/**
+ * Update the status of an advisor application.
+ */
+exports.updateApplicationStatus = async (id, status, reviewerId, rejectReason) => {
+  const application = await prisma.advisorApplication.findUnique({
+    where: { id },
+  });
+
+  if (!application || application.isDeleted) {
+    throw new ApiError(404, messages.notFound);
+  }
+
+  return await prisma.$transaction(async (tx) => {
+    // 1. Update the application status
+    const updatedApp = await tx.advisorApplication.update({
+      where: { id },
+      data: {
+        status,
+        reviewedBy: reviewerId,
+        reviewedAt: new Date(),
+        rejectReason: status === 'REJECTED' ? rejectReason : null,
+      },
+    });
+
+    // 2. If approved, change the user's role to MENTOR
+    if (status === 'APPROVED') {
+      const mentorRole = await tx.role.findUnique({
+        where: { name: 'MENTOR' },
+      });
+
+      if (mentorRole) {
+        await tx.user.update({
+          where: { id: application.userId },
+          data: { roleId: mentorRole.id },
+        });
+      }
+    }
+
+    return updatedApp;
+  });
+};

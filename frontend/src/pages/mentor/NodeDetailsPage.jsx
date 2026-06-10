@@ -166,18 +166,6 @@ const NodeDetailsPage = () => {
 
                 <div className="h-px bg-slate-200"></div>
 
-                {/* Checklist Progress */}
-                <div>
-                  <p className="text-xs text-slate-600 mb-2">Hoàn Thiện Checklist</p>
-                  <div className="w-full bg-slate-200 rounded-full h-2">
-                    <div
-                      className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: '66%' }}
-                    ></div>
-                  </div>
-                  <p className="text-xs text-slate-600 mt-1">2/3</p>
-                </div>
-
                 {/* Material Count */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600">Materials:</span>

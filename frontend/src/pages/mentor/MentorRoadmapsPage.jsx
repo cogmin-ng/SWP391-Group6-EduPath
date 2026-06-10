@@ -51,23 +51,6 @@ export default function MentorRoadmapsPage() {
                 <h4 className="font-bold text-sm text-slate-800 group-hover:text-indigo-600 transition tracking-tight line-clamp-1">
                   {roadmap.title}
                 </h4>
-                <p className="text-[10px] text-slate-400">
-                  Tutor: {roadmap.tutor}
-                </p>
-                <div className="space-y-1 pt-2">
-                  <div className="flex justify-between items-center text-[10px]">
-                    <span className="text-slate-500">Tiến độ</span>
-                    <span className="font-bold text-slate-800">
-                      {roadmap.progress}%
-                    </span>
-                  </div>
-                  <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-indigo-600 rounded-full"
-                      style={{ width: `${roadmap.progress}%` }}
-                    />
-                  </div>
-                </div>
               </div>
             </div>
             <div className="p-3 bg-slate-50 border-t border-slate-100 flex gap-2">

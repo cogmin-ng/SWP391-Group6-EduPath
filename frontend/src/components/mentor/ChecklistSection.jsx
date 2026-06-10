@@ -37,8 +37,6 @@ const ChecklistSection = ({ items: initialItems }) => {
     cancelEdit();
   };
 
-  const completedCount = items.filter((item) => item.completed).length;
-
   return (
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 mb-6">
       {/* Header */}
@@ -115,19 +113,6 @@ const ChecklistSection = ({ items: initialItems }) => {
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Progress */}
-      <div className="mb-6 pb-6 border-t border-slate-100">
-        <p className="text-sm text-slate-600">
-          Hoàn thành: <span className="font-bold text-slate-900">{completedCount}/{items.length}</span>
-        </p>
-        <div className="w-full bg-slate-100 rounded-full h-2 mt-2">
-          <div
-            className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${items.length ? (completedCount / items.length) * 100 : 0}%` }}
-          ></div>
-        </div>
       </div>
 
       {/* Add Button */}

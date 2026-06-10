@@ -4,27 +4,27 @@ const QuickActionsSidebar = ({ onCreateNew, onManage, onProfile, onNotifications
   const actions = [
     {
       icon: Plus,
-      label: 'Create New Roadmap',
-      description: 'Start a new roadmap',
+      label: 'Tạo Lộ Trình Mới',
+      description: 'Bắt đầu tạo lộ trình mới',
       onClick: onCreateNew,
       highlight: true,
     },
     {
       icon: FileText,
-      label: 'Manage My Roadmaps',
-      description: 'View and edit roadmaps',
+      label: 'Quản Lý Lộ Trình',
+      description: 'Xem và chỉnh sửa lộ trình',
       onClick: onManage,
     },
     {
       icon: User,
-      label: 'View Profile',
-      description: 'Edit your profile',
+      label: 'Xem Hồ Sơ',
+      description: 'Chỉnh sửa hồ sơ của bạn',
       onClick: onProfile,
     },
     {
       icon: Bell,
-      label: 'Notifications',
-      description: 'Check your notifications',
+      label: 'Thông Báo',
+      description: 'Kiểm tra thông báo của bạn',
       onClick: onNotifications,
       badge: 3,
     },
@@ -68,12 +68,12 @@ const QuickActionsSidebar = ({ onCreateNew, onManage, onProfile, onNotifications
 
       {/* Info Card */}
       <div className="sticky top-96 bg-slate-50 rounded-xl p-4 border border-slate-100">
-        <h4 className="font-semibold text-slate-900 mb-2 text-sm">Need Help?</h4>
+        <h4 className="font-semibold text-slate-900 mb-2 text-sm">Cần Giúp Đỡ?</h4>
         <p className="text-xs text-slate-500 mb-3">
-          Check our documentation and guides to get the most out of EduPath.
+          Kiểm tra tài liệu và hướng dẫn của chúng tôi để tận dụng tối đa EduPath.
         </p>
         <button className="w-full px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium">
-          Documentation
+          Tài Liệu
         </button>
       </div>
     </div>

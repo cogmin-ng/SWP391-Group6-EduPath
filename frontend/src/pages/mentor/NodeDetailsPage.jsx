@@ -122,14 +122,16 @@ const NodeDetailsPage = () => {
   return (
     <div className="min-h-screen bg-slate-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Back Button */}
-        <button
-          onClick={handleBack}
-          className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium mb-8 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Quay lại
-        </button>
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3 mb-8">
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Quay lại
+          </button>
+        </div>
 
         {/* Header */}
         <NodeDetailHeader node={nodeData} />
@@ -164,18 +166,6 @@ const NodeDetailsPage = () => {
 
                 <div className="h-px bg-slate-200"></div>
 
-                {/* Checklist Progress */}
-                <div>
-                  <p className="text-xs text-slate-600 mb-2">Hoàn Thiện Checklist</p>
-                  <div className="w-full bg-slate-200 rounded-full h-2">
-                    <div
-                      className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: '66%' }}
-                    ></div>
-                  </div>
-                  <p className="text-xs text-slate-600 mt-1">2/3</p>
-                </div>
-
                 {/* Material Count */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600">Materials:</span>
@@ -208,15 +198,6 @@ const NodeDetailsPage = () => {
           </div>
         </div>
 
-        {/* Bottom Action Buttons */}
-        <div className="mt-8 flex gap-3 max-w-2xl lg:max-w-none lg:col-span-2">
-          <button
-            onClick={handleBack}
-            className="px-6 py-2.5 border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium rounded-lg transition-colors"
-          >
-            Quay lại
-          </button>
-        </div>
       </div>
     </div>
   );

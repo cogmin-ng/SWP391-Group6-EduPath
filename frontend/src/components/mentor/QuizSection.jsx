@@ -35,7 +35,7 @@ const QuizSection = ({ quizzes }) => {
           <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
             <CheckCircle2 className="w-6 h-6 text-purple-600" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900">Node Assessment Quiz</h2>
+          <h2 className="text-xl font-bold text-slate-900">Bài Kiểm Tra Node</h2>
         </div>
         <button className="text-indigo-600 hover:text-indigo-700 font-medium text-sm flex items-center gap-1">
           <Plus className="w-4 h-4" />

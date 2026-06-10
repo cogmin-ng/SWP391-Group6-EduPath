@@ -37,7 +37,7 @@ const MentorLayout = () => {
     { title: 'Đánh giá chờ', icon: ClipboardList, path: '/mentor/reviews' },
     { title: 'Thống kê', icon: BarChart3, path: '/mentor/analytics' },
     { title: 'Tạo lộ trình', icon: Plus, path: '/mentor/create-roadmap' },
-    { title: 'Hộ số cá nhân', icon: User, path: '/mentor/profile' },
+    { title: 'Hồ sơ cá nhân', icon: User, path: '/mentor/profile' },
     { title: 'Thành tích', icon: Award, path: '/mentor/achievements' },
     { title: 'Cài đặt', icon: Settings, path: '/mentor/settings' },
     { title: 'Kho lộ trình', icon: Library, path: '/mentor/roadmap-repository' },

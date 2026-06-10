@@ -1,23 +1,30 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Plus, X, Pencil, Trash2, Cloud } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Textarea from '../../components/ui/Textarea';
 import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
+import { myRoadmaps } from '../../mock/mentorDashboardData';
 
-const CreateRoadmapPage = () => {
+const EditRoadmapPage = () => {
   const navigate = useNavigate();
+  const { roadmapId } = useParams();
+  const location = useLocation();
+
+  // Get roadmap data from state or load from mock data
+  const roadmapData = location.state?.roadmapData || 
+    myRoadmaps.find(r => r.id === parseInt(roadmapId));
+
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    category: '',
-    level: '',
-    thumbnail: null,
+    name: roadmapData?.title || '',
+    description: roadmapData?.description || '',
+    category: 'programming',
+    thumbnail: roadmapData?.thumbnail || null,
   });
 
-  const [nodes, setNodes] = useState([
+  const [nodes, setNodes] = useState(roadmapData?.nodes || [
     {
       id: 1,
       title: 'Node 1: Giới thiệu',
@@ -67,9 +74,7 @@ const CreateRoadmapPage = () => {
   };
 
   const handleEditNode = (node) => {
-    // Navigate to Node Details page with node data in state
-    // Using 'new' as temporary roadmapId since roadmap hasn't been saved yet
-    navigate(`/mentor/roadmaps/new/nodes/${node.id}`, {
+    navigate(`/mentor/roadmaps/${roadmapId}/nodes/${node.id}`, {
       state: { nodeData: node, roadmapData: formData }
     });
   };
@@ -77,8 +82,6 @@ const CreateRoadmapPage = () => {
   const handleSaveDraft = () => {
     console.log('Save draft:', { formData, nodes });
   };
-
-  // preview removed per request
 
   const handleSubmitApproval = () => {
     console.log('Submit for approval:', { formData, nodes });
@@ -91,20 +94,14 @@ const CreateRoadmapPage = () => {
     { value: 'data', label: 'Dữ liệu' },
   ];
 
-  const levelOptions = [
-    { value: 'beginner', label: 'Cơ bản' },
-    { value: 'intermediate', label: 'Trung cấp' },
-    { value: 'advanced', label: 'Nâng cao' },
-  ];
-
   return (
     <div className="min-h-screen bg-slate-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Tạo Lộ Trình Học Tập</h1>
-            <p className="text-slate-600 mt-1">Thiết kế một lộ trình học tập hiệu quả cho học viên</p>
+            <h1 className="text-3xl font-bold text-slate-900">Chỉnh Sửa Lộ Trình Học Tập</h1>
+            <p className="text-slate-600 mt-1">Cập nhật lộ trình học tập của bạn</p>
           </div>
         </div>
 
@@ -137,13 +134,6 @@ const CreateRoadmapPage = () => {
                     name="category"
                     options={categoryOptions}
                     value={formData.category}
-                    onChange={handleInputChange}
-                  />
-                  <Select
-                    label="Trình Độ"
-                    name="level"
-                    options={levelOptions}
-                    value={formData.level}
                     onChange={handleInputChange}
                   />
                 </div>
@@ -296,7 +286,7 @@ const CreateRoadmapPage = () => {
                 Lưu Nháp
               </Button>
               <Button variant="primary" className="w-full sm:w-auto" onClick={handleSubmitApproval}>
-                Cập nhật & Gửi
+                Cập Nhật & Gửi
               </Button>
             </div>
           </div>
@@ -304,53 +294,29 @@ const CreateRoadmapPage = () => {
           {/* Right Column - Summary (30%) */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 sticky top-8">
-              <h2 className="text-lg font-semibold text-slate-900 mb-4">Tóm Tắt Lộ Trình</h2>
+              <h2 className="text-lg font-semibold text-slate-900 mb-4">Tóm Tắt</h2>
               
               <div className="space-y-4">
                 {/* Stats */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">Số Node:</span>
+                    <span className="text-sm text-slate-600">Danh Mục:</span>
+                    <span className="font-semibold text-slate-900">
+                      {categoryOptions.find(c => c.value === formData.category)?.label || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-600">Tổng Node:</span>
                     <span className="font-semibold text-slate-900">{nodes.length}</span>
                   </div>
-                  {/* Category and Level removed from summary as requested */}
                 </div>
 
                 <div className="h-px bg-slate-200"></div>
 
-                {/* Status */}
-                <div>
-                  <p className="text-xs text-slate-600 mb-2">Trạng Thái</p>
-                  <Badge variant="draft">Bản Nháp</Badge>
-                </div>
-
-                {/* Progress */}
-                <div>
-                  <p className="text-xs text-slate-600 mb-2">Hoàn Thiện</p>
-                  <div className="w-full bg-slate-200 rounded-full h-2">
-                    <div
-                      className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
-                      style={{
-                        width: `${
-                          (
-                            (formData.name ? 25 : 0) +
-                            (formData.description ? 25 : 0) +
-                            (formData.category ? 25 : 0) +
-                            (nodes.length > 0 ? 25 : 0)
-                          ) / 100
-                        }%`
-                      }}
-                    ></div>
-                  </div>
-                  <p className="text-xs text-slate-600 mt-1">
-                    {Math.round(
-                      (
-                        (formData.name ? 25 : 0) +
-                        (formData.description ? 25 : 0) +
-                        (formData.category ? 25 : 0) +
-                        (nodes.length > 0 ? 25 : 0)
-                      )
-                    )}%
+                {/* Info */}
+                <div className="text-xs text-slate-600">
+                  <p className="mb-2">
+                    Lộ trình của bạn sẽ cần phê duyệt từ admin trước khi công khai.
                   </p>
                 </div>
               </div>
@@ -362,4 +328,4 @@ const CreateRoadmapPage = () => {
   );
 };
 
-export default CreateRoadmapPage;
+export default EditRoadmapPage;

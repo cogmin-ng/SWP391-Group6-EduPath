@@ -10,8 +10,8 @@ const PendingReviewsSection = ({ reviews }) => {
               <CheckCircle className="w-6 h-6 text-emerald-600" />
             </div>
           </div>
-          <h3 className="text-lg font-semibold text-slate-900 mb-2">All Roadmaps Approved!</h3>
-          <p className="text-slate-500">You have no pending reviews at the moment.</p>
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">Tất Cả Lộ Trình Đã Được Phê Duyệt!</h3>
+          <p className="text-slate-500">Hiện tại bạn không có lộ trình chờ duyệt.</p>
         </div>
       </div>
     );
@@ -32,14 +32,14 @@ const PendingReviewsSection = ({ reviews }) => {
             <div className="flex-1 min-w-0">
               <h4 className="text-base font-bold text-slate-900">{review.title}</h4>
               <p className="text-sm text-slate-500 mt-1">
-                Submitted: {review.submittedDate}
+                Nộp lúc: {review.submittedDate}
               </p>
             </div>
 
             {/* Status Badge */}
             <div className="flex-shrink-0">
               <span className="px-3 py-1.5 bg-amber-50 text-amber-600 rounded-full text-xs font-semibold whitespace-nowrap">
-                Pending Approval
+                Chờ Phê Duyệt
               </span>
             </div>
           </div>

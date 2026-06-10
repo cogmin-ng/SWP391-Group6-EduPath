@@ -1,6 +1,4 @@
-import { Plus } from 'lucide-react';
-
-const MentorWelcomeBanner = ({ onCreateNew }) => {
+const MentorWelcomeBanner = () => {
   const today = new Date();
   const formattedDate = today.toLocaleDateString('en-US', {
     weekday: 'long',
@@ -21,13 +19,6 @@ const MentorWelcomeBanner = ({ onCreateNew }) => {
             Chào mừng bạn quay trở lại EduPath. Tiếp tục xây dựng những lộ trình học tập chất lượng cho cộng đồng học viên.
           </p>
         </div>
-        <button
-          onClick={onCreateNew}
-          className="flex items-center gap-2 bg-white text-indigo-600 px-6 py-3 rounded-xl font-semibold hover:bg-indigo-50 transition-all duration-200 whitespace-nowrap shadow-md hover:shadow-lg"
-        >
-          <Plus className="w-5 h-5" />
-          Tạo Lộ Trình Mới
-        </button>
       </div>
     </div>
   );

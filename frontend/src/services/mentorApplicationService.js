@@ -2,44 +2,54 @@ import api from './api';
 
 export const mentorApplicationService = {
   /**
-   * Submit a mentor application.
-   * Uses multipart/form-data to support CV file upload.
-   *
-   * @param {Object} data
-   * @param {string} data.fullName
-   * @param {string} data.experienceYears
-   * @param {string} data.specialization
-   * @param {string} data.description
-   * @param {string[]} data.certifications
-   * @param {string} [data.linkedinUrl]
-   * @param {string} [data.githubUrl]
-   * @param {string} [data.portfolioUrl]
-   * @param {string} [data.personalWebsiteUrl]
-   * @param {File}   [data.cvFile]
+   * Get all active subjects from the database.
+   * @returns {Promise<Array<{ id: string, name: string, description: string }>>}
    */
-  submit(data) {
+  async getSubjects() {
+    const { data } = await api.get('/subjects');
+    return data.data;
+  },
+
+  /**
+   * Submit a new advisor (mentor) application.
+   *
+   * @param {Object} payload
+   * @param {string} payload.specialization
+   * @param {string} payload.currentSemester
+   * @param {string} payload.bio
+   * @param {string} payload.experience
+   * @param {string} [payload.transcriptUrl]
+   * @param {string[]} payload.subjectIds
+   * @param {Array<{ subjectId: string, grade: number }>} payload.academicRecords
+   */
+  async submit(payload) {
+    const { data } = await api.post('/advisor-applications', payload);
+    return data.data;
+  },
+
+  /**
+   * Get current user's latest application status.
+   * @returns {Promise<Object|null>}
+   */
+  async getMyApplication() {
+    const { data } = await api.get('/advisor-applications/me');
+    return data.data;
+  },
+
+  /**
+   * Upload transcript file via the existing media upload endpoint.
+   * @param {File} file
+   * @returns {Promise<{ url: string, publicId: string }>}
+   */
+  async uploadTranscript(file) {
     const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', 'advisor-transcripts');
+    formData.append('resourceType', 'auto');
 
-    formData.append('fullName', data.fullName);
-    formData.append('experienceYears', data.experienceYears);
-    formData.append('specialization', data.specialization);
-    formData.append('description', data.description);
-
-    if (data.certifications?.length) {
-      formData.append('certifications', JSON.stringify(data.certifications));
-    }
-
-    if (data.linkedinUrl) formData.append('linkedinUrl', data.linkedinUrl);
-    if (data.githubUrl) formData.append('githubUrl', data.githubUrl);
-    if (data.portfolioUrl) formData.append('portfolioUrl', data.portfolioUrl);
-    if (data.personalWebsiteUrl) formData.append('personalWebsiteUrl', data.personalWebsiteUrl);
-
-    if (data.cvFile) {
-      formData.append('cvFile', data.cvFile);
-    }
-
-    return api.post('/mentor-applications', formData, {
+    const { data } = await api.post('/uploads/media', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
+    return data.data;
   },
 };

@@ -1,19 +1,21 @@
-import { Trophy, Trash2, Plus } from "lucide-react";
+import { Trophy, Trash2, Plus, ChevronDown } from "lucide-react";
 
 /**
  * Section 3 – Thành tích học tập.
  *
- * Multiple rows, each with: subject name, grade, and delete button.
+ * Multiple rows, each with: subject dropdown, grade input, and delete button.
  * A "Thêm môn học" button appends a new empty row.
  *
  * @param {{
- *   achievements: Array<{ subject: string, grade: string }>,
+ *   achievements: Array<{ subjectId: string, grade: string }>,
  *   setAchievements: Function,
+ *   availableSubjects: Array<{ id: string, name: string }>,
  * }} props
  */
 export default function AcademicAchievementSection({
   achievements,
   setAchievements,
+  availableSubjects = [],
 }) {
   const updateRow = (index, field, value) => {
     setAchievements((prev) =>
@@ -26,7 +28,7 @@ export default function AcademicAchievementSection({
   };
 
   const addRow = () => {
-    setAchievements((prev) => [...prev, { subject: "", grade: "" }]);
+    setAchievements((prev) => [...prev, { subjectId: "", grade: "" }]);
   };
 
   const inputCls =
@@ -48,18 +50,29 @@ export default function AcademicAchievementSection({
       <div className="space-y-3">
         {achievements.map((row, index) => (
           <div key={index} className="flex items-center gap-3">
-            {/* Subject */}
-            <input
-              type="text"
-              value={row.subject}
-              onChange={(e) => updateRow(index, "subject", e.target.value)}
-              placeholder="Tên môn học"
-              className={`flex-1 ${inputCls}`}
-            />
+            {/* Subject dropdown */}
+            <div className="relative flex-1">
+              <select
+                value={row.subjectId}
+                onChange={(e) => updateRow(index, "subjectId", e.target.value)}
+                className={`w-full appearance-none ${inputCls} pr-10 cursor-pointer`}
+              >
+                <option value="">Chọn môn học</option>
+                {availableSubjects.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            </div>
 
             {/* Grade */}
             <input
-              type="text"
+              type="number"
+              min="0"
+              max="10"
+              step="0.1"
               value={row.grade}
               onChange={(e) => updateRow(index, "grade", e.target.value)}
               placeholder="Điểm"

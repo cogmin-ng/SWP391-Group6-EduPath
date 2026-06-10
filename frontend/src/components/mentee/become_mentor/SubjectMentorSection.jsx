@@ -1,38 +1,43 @@
 import { useState } from "react";
-import { BookOpen, X } from "lucide-react";
+import { BookOpen, X, ChevronDown } from "lucide-react";
 
 /**
  * Section 2 – Môn học muốn Mentor.
  *
- * Tag-based input that lets users add multiple subjects.
- * Press Enter to add a tag. Click X on a tag to remove it.
+ * Dropdown-based selection from subjects fetched from the API.
+ * Users select a subject from the dropdown to add it as a tag.
  *
  * @param {{
- *   subjects: string[],
+ *   subjects: Array<{ id: string, name: string }>,
  *   setSubjects: Function,
  *   error: string | null,
+ *   availableSubjects: Array<{ id: string, name: string }>,
  * }} props
  */
-export default function SubjectMentorSection({ subjects, setSubjects, error }) {
-  const [input, setInput] = useState("");
+export default function SubjectMentorSection({
+  subjects,
+  setSubjects,
+  error,
+  availableSubjects = [],
+}) {
+  const [selectedId, setSelectedId] = useState("");
+
+  // Filter out already-selected subjects
+  const filteredOptions = availableSubjects.filter(
+    (s) => !subjects.some((sel) => sel.id === s.id)
+  );
 
   const addSubject = () => {
-    const trimmed = input.trim().toUpperCase();
-    if (!trimmed) return;
-    if (subjects.includes(trimmed)) return;
-    setSubjects((prev) => [...prev, trimmed]);
-    setInput("");
+    if (!selectedId) return;
+    const found = availableSubjects.find((s) => s.id === selectedId);
+    if (!found) return;
+    if (subjects.some((s) => s.id === found.id)) return;
+    setSubjects((prev) => [...prev, { id: found.id, name: found.name }]);
+    setSelectedId("");
   };
 
-  const removeSubject = (subject) => {
-    setSubjects((prev) => prev.filter((s) => s !== subject));
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addSubject();
-    }
+  const removeSubject = (id) => {
+    setSubjects((prev) => prev.filter((s) => s.id !== id));
   };
 
   return (
@@ -52,13 +57,13 @@ export default function SubjectMentorSection({ subjects, setSubjects, error }) {
         <div className="flex flex-wrap gap-2 mb-4">
           {subjects.map((subject) => (
             <span
-              key={subject}
+              key={subject.id}
               className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 px-3 py-1.5 text-sm font-semibold text-indigo-700 border border-indigo-100 transition-colors"
             >
-              {subject}
+              {subject.name}
               <button
                 type="button"
-                onClick={() => removeSubject(subject)}
+                onClick={() => removeSubject(subject.id)}
                 className="rounded-full p-0.5 text-indigo-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
               >
                 <X className="h-3.5 w-3.5" />
@@ -68,19 +73,36 @@ export default function SubjectMentorSection({ subjects, setSubjects, error }) {
         </div>
       )}
 
-      {/* Input */}
-      <input
-        type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="Thêm môn học khác..."
-        className={`w-full rounded-xl border bg-white text-slate-800 text-sm placeholder:text-slate-400 px-4 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 ${
-          error
-            ? "border-red-300 focus:ring-red-500/20 focus:border-red-500"
-            : "border-slate-200 hover:border-slate-300"
-        }`}
-      />
+      {/* Dropdown + Add button */}
+      <div className="flex gap-3">
+        <div className="relative flex-1">
+          <select
+            value={selectedId}
+            onChange={(e) => setSelectedId(e.target.value)}
+            className={`w-full appearance-none rounded-xl border bg-white text-slate-800 text-sm px-4 py-3 pr-10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer ${
+              error
+                ? "border-red-300 focus:ring-red-500/20 focus:border-red-500"
+                : "border-slate-200 hover:border-slate-300"
+            }`}
+          >
+            <option value="">Chọn môn học...</option>
+            {filteredOptions.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        </div>
+        <button
+          type="button"
+          onClick={addSubject}
+          disabled={!selectedId}
+          className="px-5 py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+        >
+          Thêm
+        </button>
+      </div>
 
       {error && <p className="mt-1.5 text-xs text-red-500">{error}</p>}
     </section>

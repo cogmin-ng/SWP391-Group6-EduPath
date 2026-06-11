@@ -28,6 +28,7 @@ import QuizPage from "../pages/mentee/QuizPage";
 import RoadmapQuizPage from "../pages/mentee/RoadmapQuizPage";
 import ContributionHistoryPage from "../pages/mentee/ContributionHistoryPage";
 import PendingTipsPage from "../pages/mentor/PendingTipsPage";
+import UploadMaterialsPage from "../pages/mentor/UploadMaterialsPage";
 
 // Placeholder component for pages that are not yet implemented
 function PlaceholderPage({ title }) {
@@ -151,6 +152,10 @@ export default function AppRoutes() {
         <Route
           path="roadmaps/:roadmapId/nodes/:nodeId"
           element={<NodeDetailsPage />}
+        />
+        <Route
+          path="roadmaps/:roadmapId/nodes/:nodeId/upload-materials"
+          element={<UploadMaterialsPage />}
         />
         <Route
           path="roadmaps"

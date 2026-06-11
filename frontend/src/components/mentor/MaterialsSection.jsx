@@ -1,10 +1,14 @@
 import { Plus, Play, BookOpen, Pencil, Trash2, X, Check } from 'lucide-react';
 import { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const MaterialsSection = ({ materials: initialMaterials }) => {
+  const { roadmapId, nodeId } = useParams();
+  const navigate = useNavigate();
   const [materials, setMaterials] = useState(initialMaterials);
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({ title: '', type: '', description: '' });
+
 
   const getIcon = (iconName) => {
     const icons = { Play, BookOpen };
@@ -145,7 +149,10 @@ const MaterialsSection = ({ materials: initialMaterials }) => {
       </div>
 
       {/* Add Button */}
-      <button className="w-full flex items-center justify-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium text-sm py-2 rounded-lg hover:bg-indigo-50 transition-colors">
+      <button 
+        onClick={() => navigate(`/mentor/roadmaps/${roadmapId}/nodes/${nodeId}/upload-materials`)}
+        className="w-full flex items-center justify-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium text-sm py-2 rounded-lg hover:bg-indigo-50 transition-colors"
+      >
         <Plus className="w-4 h-4" />
         Thêm Tài Liệu
       </button>

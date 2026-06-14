@@ -30,8 +30,11 @@ import ContributionHistoryPage from "../pages/mentee/ContributionHistoryPage";
 import PendingTipsPage from "../pages/mentor/PendingTipsPage";
 import UploadMaterialsPage from "../pages/mentor/UploadMaterialsPage";
 import CreateQuizPage from "../pages/mentor/CreateQuizPage";
+import MentorRoadmapLearningPage from "../pages/mentor/MentorRoadmapLearningPage";
+import MentorRoadmapDetailPage from "../pages/mentor/MentorRoadmapDetailPage";
 
 // Placeholder component for pages that are not yet implemented
+// Force reload
 function PlaceholderPage({ title }) {
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -148,6 +151,8 @@ export default function AppRoutes() {
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<MentorDashboardPage />} />
         <Route path="create-roadmap" element={<CreateRoadmapPage />} />
+        <Route path="roadmaps/:roadmapId" element={<MentorRoadmapDetailPage />} />
+        <Route path="roadmaps/:roadmapId/learn" element={<MentorRoadmapLearningPage />} />
         <Route path="roadmaps/:roadmapId/edit" element={<EditRoadmapPage />} />
         <Route path="profile" element={<MentorProfilePage />} />
         <Route

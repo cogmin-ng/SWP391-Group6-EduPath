@@ -1,16 +1,15 @@
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
 import { myRoadmaps } from '../../mock/mentorDashboardData';
 
 export default function MentorRoadmapsPage() {
   const navigate = useNavigate();
 
   const handleViewRoadmap = (roadmapId) => {
-    toast.success(`Đang xem lộ trình ${roadmapId}`);
+    navigate(`/mentor/roadmaps/${roadmapId}`);
   };
 
-  const handleEditRoadmap = (roadmapId) => {
-    navigate(`/mentor/roadmaps/${roadmapId}/edit`);
+  const handleLearnRoadmap = (roadmapId) => {
+    navigate(`/mentor/roadmaps/${roadmapId}/learn`);
   };
 
   return (
@@ -61,10 +60,10 @@ export default function MentorRoadmapsPage() {
                 Xem
               </button>
               <button
-                onClick={() => handleEditRoadmap(roadmap.id)}
+                onClick={() => handleLearnRoadmap(roadmap.id)}
                 className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 text-xs rounded-xl font-semibold transition cursor-pointer text-center"
               >
-                Chỉnh sửa
+                Xem lộ trình
               </button>
             </div>
           </div>

@@ -46,6 +46,26 @@ export const myRoadmaps = [
     progress: 72,
     level: 'Advanced',
     tutor: 'Alex Johnson',
+    phases: [
+      {
+        name: 'Frontend Basics',
+        weeks: '4',
+        status: 'completed',
+        highlights: ['HTML/CSS', 'JavaScript ES6+', 'React Basics'],
+      },
+      {
+        name: 'Backend Development',
+        weeks: '5',
+        status: 'active',
+        highlights: ['Node.js & Express', 'Database Design', 'REST APIs'],
+      },
+      {
+        name: 'Full Integration',
+        weeks: '3',
+        status: 'locked',
+        highlights: ['Fullstack Architecture', 'Testing', 'Deployment'],
+      },
+    ],
   },
   {
     id: 2,
@@ -59,6 +79,26 @@ export const myRoadmaps = [
     progress: 45,
     level: 'Intermediate',
     tutor: 'Sarah Chen',
+    phases: [
+      {
+        name: 'Node.js Fundamentals',
+        weeks: '3',
+        status: 'completed',
+        highlights: ['Node.js Runtime', 'npm & Modules', 'Asynchronous JS'],
+      },
+      {
+        name: 'Database & ORM',
+        weeks: '4',
+        status: 'active',
+        highlights: ['SQL & PostgreSQL', 'Prisma ORM', 'Query Optimization'],
+      },
+      {
+        name: 'API & Security',
+        weeks: '2',
+        status: 'locked',
+        highlights: ['JWT Authentication', 'API Design', 'Security Practices'],
+      },
+    ],
   },
   {
     id: 3,
@@ -72,6 +112,26 @@ export const myRoadmaps = [
     progress: 28,
     level: 'Beginner',
     tutor: 'David Miller',
+    phases: [
+      {
+        name: 'HTML & CSS',
+        weeks: '3',
+        status: 'completed',
+        highlights: ['HTML5 Semantic', 'CSS Grid & Flexbox', 'Responsive Design'],
+      },
+      {
+        name: 'JavaScript Essentials',
+        weeks: '4',
+        status: 'active',
+        highlights: ['DOM Manipulation', 'Event Handling', 'ES6+ Features'],
+      },
+      {
+        name: 'React & Beyond',
+        weeks: '3',
+        status: 'locked',
+        highlights: ['React Fundamentals', 'Hooks & State', 'Component Libraries'],
+      },
+    ],
   },
   {
     id: 4,
@@ -85,6 +145,26 @@ export const myRoadmaps = [
     progress: 60,
     level: 'Intermediate',
     tutor: 'Emily White',
+    phases: [
+      {
+        name: 'React Native Setup',
+        weeks: '2',
+        status: 'completed',
+        highlights: ['Environment Setup', 'Core Components', 'Styling'],
+      },
+      {
+        name: 'Mobile Features',
+        weeks: '3',
+        status: 'active',
+        highlights: ['Navigation', 'State Management', 'Native APIs'],
+      },
+      {
+        name: 'Publishing & Deployment',
+        weeks: '2',
+        status: 'locked',
+        highlights: ['App Store Deploy', 'Performance', 'App Testing'],
+      },
+    ],
   },
   {
     id: 5,
@@ -98,6 +178,26 @@ export const myRoadmaps = [
     progress: 50,
     level: 'Advanced',
     tutor: 'Michael Brown',
+    phases: [
+      {
+        name: 'Python & Statistics',
+        weeks: '4',
+        status: 'completed',
+        highlights: ['Python Basics', 'Statistical Analysis', 'Data Structures'],
+      },
+      {
+        name: 'Machine Learning',
+        weeks: '5',
+        status: 'active',
+        highlights: ['Supervised Learning', 'Unsupervised Learning', 'Model Evaluation'],
+      },
+      {
+        name: 'Deep Learning & Applications',
+        weeks: '4',
+        status: 'locked',
+        highlights: ['Neural Networks', 'Deep Learning Frameworks', 'Projects'],
+      },
+    ],
   },
   {
     id: 6,
@@ -111,6 +211,26 @@ export const myRoadmaps = [
     progress: 85,
     level: 'Advanced',
     tutor: 'Chris Davis',
+    phases: [
+      {
+        name: 'Linux & Scripting',
+        weeks: '3',
+        status: 'completed',
+        highlights: ['Linux Fundamentals', 'Shell Scripting', 'System Administration'],
+      },
+      {
+        name: 'Docker & Kubernetes',
+        weeks: '4',
+        status: 'active',
+        highlights: ['Docker Containers', 'Kubernetes Orchestration', 'Helm Charts'],
+      },
+      {
+        name: 'CI/CD & Cloud',
+        weeks: '3',
+        status: 'locked',
+        highlights: ['Jenkins & GitLab CI', 'AWS & Cloud Platforms', 'Monitoring & Logging'],
+      },
+    ],
   },
 ];
 

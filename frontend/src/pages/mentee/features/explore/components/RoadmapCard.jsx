@@ -1,0 +1,39 @@
+import { Clock3, Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+const difficultyStyles = {
+  Beginner: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+  Intermediate: 'bg-indigo-50 text-indigo-700 border border-indigo-200',
+  Advanced: 'bg-rose-50 text-rose-700 border border-rose-200',
+};
+
+export default function RoadmapCard({ roadmap }) {
+  return (
+    <Link to={`/explore/${roadmap.slug}`} className="group block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+      <div className="relative h-44 overflow-hidden bg-slate-100">
+        <img src={roadmap.cover} alt={roadmap.title} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        <span className={`absolute left-3 top-3 rounded-md px-2.5 py-1 text-xs font-semibold ${difficultyStyles[roadmap.difficulty]}`}>
+          {roadmap.difficulty}
+        </span>
+      </div>
+
+      <div className="p-5">
+        <h3 className="text-lg font-semibold text-slate-900 line-clamp-2 group-hover:text-indigo-700 transition-colors">{roadmap.title}</h3>
+        <p className="mt-2 text-sm text-slate-600 line-clamp-2">{roadmap.description}</p>
+        <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4">
+          <span className="text-sm font-medium text-slate-800">{roadmap.mentor}</span>
+          <div className="flex items-center gap-3 text-xs text-slate-500">
+            <span className="inline-flex items-center gap-1">
+              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              {roadmap.rating}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Clock3 className="w-3.5 h-3.5" />
+              {roadmap.duration}
+            </span>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}

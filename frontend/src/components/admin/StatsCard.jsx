@@ -1,4 +1,3 @@
-import React from 'react';
 import * as Icons from 'lucide-react';
 
 const StatsCard = ({ label, value, icon, color, trend }) => {

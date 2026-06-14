@@ -19,6 +19,29 @@ async function main() {
     roles[name] = role;
   }
 
+  const subjects = [
+    {
+      name: 'SWP391',
+      description: 'Software Project Management',
+    },
+    {
+      name: 'PRJ301',
+      description: 'Java Web Application Development',
+    },
+    {
+      name: 'MAS291',
+      description: 'Statistics and Probability',
+    },
+  ];
+
+  for (const subject of subjects) {
+    await prisma.subject.upsert({
+      where: { name: subject.name },
+      update: {},
+      create: subject,
+    });
+  }
+
   for (const name of roleNames) {
     const email = `${name.toLowerCase()}@example.com`;
     await prisma.user.upsert({

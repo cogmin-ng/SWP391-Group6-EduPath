@@ -2,6 +2,9 @@
   "name": "edupath-backend",
   "version": "0.1.0",
   "private": true,
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "scripts": {
     "dev": "nodemon --watch src --exec node src/index.js",
     "start": "node src/index.js",

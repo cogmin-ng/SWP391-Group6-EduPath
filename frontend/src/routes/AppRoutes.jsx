@@ -2,12 +2,34 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "../pages/LandingPage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
+import ExplorePage from "../pages/ExplorePage";
+import RoadmapDetailPage from "../pages/RoadmapDetailPage";
+import MyRoadmapsPage from "../pages/mentee/MyRoadmapsPage";
+import RoadmapLearningPage from "../pages/mentee/RoadmapLearningPage";
 import PublicRoute from "./PublicRoute";
 import AdminLayout from "../layouts/AdminLayout";
 import DashboardPage from "../pages/admin/DashboardPage";
+import RoadmapApprovalPage from "../pages/admin/RoadmapApprovalPage";
+import UserManagementPage from "../pages/admin/UserManagementPage";
 import ProtectedRoute from "./ProtectedRoute";
+import MentorRequestPage from "../pages/admin/MentorRequestPage";
 import MenteeLayout from "../layouts/MenteeLayout";
 import MenteeProfilePage from "../pages/mentee/MenteeProfilePage";
+import MentorLayout from "../layouts/MentorLayout";
+import MentorDashboardPage from "../pages/mentor/MentorDashboardPage";
+import MentorRoadmapsPage from "../pages/mentor/MentorRoadmapsPage";
+import CreateRoadmapPage from "../pages/mentor/CreateRoadmapPage";
+import EditRoadmapPage from "../pages/mentor/EditRoadmapPage";
+import MentorProfilePage from "../pages/mentor/MentorProfilePage";
+import NodeDetailsPage from "../pages/mentor/NodeDetailsPage";
+import BecomeMentorPage from "../pages/mentee/BecomeMentorPage";
+import MenteeNodeDetailsPage from "../pages/mentee/MenteeNodeDetailsPage";
+import QuizPage from "../pages/mentee/QuizPage";
+import RoadmapQuizPage from "../pages/mentee/RoadmapQuizPage";
+import ContributionHistoryPage from "../pages/mentee/ContributionHistoryPage";
+import PendingTipsPage from "../pages/mentor/PendingTipsPage";
+import UploadMaterialsPage from "../pages/mentor/UploadMaterialsPage";
+import CreateQuizPage from "../pages/mentor/CreateQuizPage";
 
 // Placeholder component for pages that are not yet implemented
 function PlaceholderPage({ title }) {
@@ -63,6 +85,11 @@ export default function AppRoutes() {
       />
 
       <Route
+        path="/mentor"
+        element={<Navigate to="/mentor/dashboard" replace />}
+      />
+
+      <Route
         path="/mentee/homepage"
         element={
           <ProtectedRoute allowedRoles={["MENTEE"]}>
@@ -80,13 +107,98 @@ export default function AppRoutes() {
         }
       />
 
+      <Route
+        path="/mentee/contributions"
+        element={
+          <ProtectedRoute allowedRoles={["MENTEE"]}>
+            <ContributionHistoryPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Mentee Node Details */}
+      <Route
+        path="/mentee/roadmaps/:roadmapId/nodes/:nodeId"
+        element={
+          <ProtectedRoute allowedRoles={["MENTEE"]}>
+            <MenteeNodeDetailsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Mentee Quiz */}
+      <Route
+        path="/mentee/roadmaps/:roadmapId/nodes/:nodeId/quiz"
+        element={
+          <ProtectedRoute allowedRoles={["MENTEE"]}>
+            <QuizPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Mentor Routes */}
+      <Route
+        path="/mentor"
+        element={
+          <ProtectedRoute allowedRoles={["MENTOR"]}>
+            <MentorLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<MentorDashboardPage />} />
+        <Route path="create-roadmap" element={<CreateRoadmapPage />} />
+        <Route path="roadmaps/:roadmapId/edit" element={<EditRoadmapPage />} />
+        <Route path="profile" element={<MentorProfilePage />} />
+        <Route
+          path="roadmaps/:roadmapId/nodes/:nodeId"
+          element={<NodeDetailsPage />}
+        />
+        <Route
+          path="roadmaps/:roadmapId/nodes/:nodeId/upload-materials"
+          element={<UploadMaterialsPage />}
+        />
+        <Route
+          path="roadmaps/:roadmapId/nodes/:nodeId/quiz/create"
+          element={<CreateQuizPage />}
+        />
+        <Route
+          path="roadmaps/:roadmapId/nodes/:nodeId/quiz/:quizId/edit"
+          element={<CreateQuizPage />}
+        />
+        <Route
+          path="roadmaps"
+          element={<MentorRoadmapsPage />}
+        />
+        <Route
+          path="reviews"
+          element={<PendingTipsPage />}
+        />
+        <Route
+          path="analytics"
+          element={<PlaceholderPage title="Analytics" />}
+        />
+        <Route
+          path="settings"
+          element={<PlaceholderPage title="Settings" />}
+        />
+      </Route>
+      <Route
+        path="/profile/become-mentor"
+        element={
+          <ProtectedRoute allowedRoles={["MENTEE"]}>
+            <BecomeMentorPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Admin Routes */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route
           path="users"
-          element={<PlaceholderPage title="User Management" />}
+          element={<UserManagementPage />}
         />
         <Route
           path="categories"
@@ -94,15 +206,22 @@ export default function AppRoutes() {
         />
         <Route
           path="roadmaps"
-          element={<PlaceholderPage title="Roadmap Approval" />}
+          element={<RoadmapApprovalPage />}
         />
         <Route
           path="mentors"
-          element={<PlaceholderPage title="Mentor Requests" />}
+          element={<MentorRequestPage />}
         />
         <Route path="reports" element={<PlaceholderPage title="Reports" />} />
         <Route path="settings" element={<PlaceholderPage title="Settings" />} />
       </Route>
+
+      {/* Explore & Roadmap Routes */}
+      <Route path="/explore" element={<ExplorePage />} />
+      <Route path="/explore/:slug" element={<RoadmapDetailPage />} />
+      <Route path="/roadmaps" element={<MyRoadmapsPage />} />
+      <Route path="/roadmaps/:slug/learn" element={<RoadmapLearningPage />} />
+      <Route path="/roadmaps/:slug/learn/quiz" element={<RoadmapQuizPage />} />
 
       {/* 404 Route */}
       <Route

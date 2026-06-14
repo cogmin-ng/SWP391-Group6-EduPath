@@ -82,15 +82,10 @@ const NodeDetailsPage = () => {
   const quizzes = [
     {
       id: 1,
-      question: 'JWT (JSON Web Token) chủ yếu được sử dụng để làm gì?',
-      options: [
-        { id: 'A', label: 'Mã hóa mật khẩu người dùng', isCorrect: false },
-        { id: 'B', label: 'Xác thực và ủy quyền an toàn giữa các bên', isCorrect: true },
-        { id: 'C', label: 'Lưu trữ dữ liệu session trên server', isCorrect: false },
-        { id: 'D', label: 'Thêm lựa chọn...', isCorrect: false },
-      ],
-      selectedAnswer: 'B',
-      explanation: 'JWT là token dùng để xác thực người dùng.',
+      title: 'JavaScript Fundamentals Assessment',
+      questionCount: 12,
+      duration: 30,
+      passingScore: 80,
     },
   ];
 
@@ -99,7 +94,7 @@ const NodeDetailsPage = () => {
     if (roadmapId === 'new') {
       navigate('/mentor/create-roadmap');
     } else {
-      navigate(`/mentor/roadmaps/${roadmapId}`);
+      navigate(`/mentor/roadmaps/${roadmapId}/edit`);
     }
   };
 

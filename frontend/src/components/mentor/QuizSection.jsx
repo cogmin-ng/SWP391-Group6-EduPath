@@ -1,30 +1,22 @@
-import { Plus, CheckCircle2 } from 'lucide-react';
-import { useState } from 'react';
+import React from 'react';
+import { Plus, CheckCircle2, Clock, Edit, Eye, LayoutList, Trophy } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const QuizSection = ({ quizzes }) => {
-  const [selectedAnswers, setSelectedAnswers] = useState(
-    quizzes.reduce((acc, quiz) => {
-      acc[quiz.id] = quiz.selectedAnswer;
-      return acc;
-    }, {})
-  );
+  const navigate = useNavigate();
+  const { roadmapId, nodeId } = useParams();
 
-  const [showExplanation, setShowExplanation] = useState(
-    quizzes.reduce((acc, quiz) => {
-      acc[quiz.id] = !!quiz.selectedAnswer;
-      return acc;
-    }, {})
-  );
+  const handleCreateQuiz = () => {
+    navigate(`/mentor/roadmaps/${roadmapId}/nodes/${nodeId}/quiz/create`);
+  };
 
-  const handleSelectAnswer = (quizId, optionId) => {
-    setSelectedAnswers((prev) => ({
-      ...prev,
-      [quizId]: optionId,
-    }));
-    setShowExplanation((prev) => ({
-      ...prev,
-      [quizId]: true,
-    }));
+  const handleEditQuiz = (quizId) => {
+    navigate(`/mentor/roadmaps/${roadmapId}/nodes/${nodeId}/quiz/${quizId}/edit`);
+  };
+
+  const handlePreviewQuiz = (quizId) => {
+    // In a real app, this might open a modal or navigate to a preview page
+    console.log('Preview quiz', quizId);
   };
 
   return (
@@ -35,79 +27,83 @@ const QuizSection = ({ quizzes }) => {
           <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
             <CheckCircle2 className="w-6 h-6 text-purple-600" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900">Bài Kiểm Tra Node</h2>
+          <h2 className="text-xl font-bold text-slate-900">Quizzes & Assessments</h2>
         </div>
-        <button className="text-indigo-600 hover:text-indigo-700 font-medium text-sm flex items-center gap-1">
+        <button
+          onClick={handleCreateQuiz}
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all shadow-sm"
+        >
           <Plus className="w-4 h-4" />
-          Thêm Câu Hỏi
+          Create Quiz
         </button>
       </div>
 
-      {/* Quizzes */}
-      <div className="space-y-6">
-        {quizzes.map((quiz) => (
-          <div key={quiz.id} className="p-6 border border-slate-100 rounded-xl">
-            {/* Question */}
-            <h3 className="text-base font-semibold text-slate-900 mb-4">
-              {quiz.question}
-            </h3>
+      {/* Content */}
+      {quizzes && quizzes.length > 0 ? (
+        <div className="space-y-4">
+          {quizzes.map((quiz) => (
+            <div key={quiz.id} className="p-5 border border-slate-100 hover:border-indigo-100 rounded-xl bg-slate-50/50 transition-colors">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                {/* Quiz Info */}
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 mb-2">
+                    {quiz.title}
+                  </h3>
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
+                    <div className="flex items-center gap-1.5">
+                      <LayoutList className="w-4 h-4 text-slate-400" />
+                      <span>{quiz.questionCount || quiz.questions?.length || 0} Questions</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="w-4 h-4 text-slate-400" />
+                      <span>{quiz.duration} Minutes</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Trophy className="w-4 h-4 text-emerald-500" />
+                      <span className="text-emerald-600 font-medium">Pass Score {quiz.passingScore}%</span>
+                    </div>
+                  </div>
+                </div>
 
-            {/* Options */}
-            <div className="space-y-2 mb-4">
-              {quiz.options.map((option) => {
-                const isSelected = selectedAnswers[quiz.id] === option.id;
-                const isCorrect = option.isCorrect;
-                const showCorrectness = showExplanation[quiz.id] && selectedAnswers[quiz.id];
-
-                return (
-                  <label
-                    key={option.id}
-                    className={`
-                      flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all
-                      ${
-                        isSelected
-                          ? showCorrectness && isCorrect
-                            ? 'border-emerald-300 bg-emerald-50'
-                            : showCorrectness && !isCorrect
-                            ? 'border-red-300 bg-red-50'
-                            : 'border-indigo-300 bg-indigo-50'
-                          : 'border-slate-200 hover:border-slate-300'
-                      }
-                    `}
+                {/* Actions */}
+                <div className="flex items-center gap-2 sm:shrink-0">
+                  <button
+                    onClick={() => handlePreviewQuiz(quiz.id)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
                   >
-                    <input
-                      type="radio"
-                      name={`quiz-${quiz.id}`}
-                      value={option.id}
-                      checked={isSelected}
-                      onChange={() => handleSelectAnswer(quiz.id, option.id)}
-                      className="w-5 h-5 cursor-pointer accent-indigo-600"
-                    />
-                    <span className="text-sm text-slate-800 flex-1">
-                      {option.label}
-                    </span>
-                    {isSelected && showCorrectness && isCorrect && (
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                    )}
-                  </label>
-                );
-              })}
-            </div>
-
-            {/* Explanation */}
-            {showExplanation[quiz.id] && selectedAnswers[quiz.id] && (
-              <div className="p-4 bg-blue-50 border-l-4 border-blue-400 rounded-lg">
-                <p className="text-sm text-slate-700">
-                  <span className="font-semibold text-slate-900">Explanation: </span>
-                  {quiz.explanation}
-                </p>
+                    <Eye className="w-4 h-4" />
+                    Preview
+                  </button>
+                  <button
+                    onClick={() => handleEditQuiz(quiz.id)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Edit
+                  </button>
+                </div>
               </div>
-            )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="py-12 flex flex-col items-center justify-center text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
+          <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+            <LayoutList className="w-6 h-6 text-indigo-600" />
           </div>
-        ))}
-      </div>
+          <p className="text-slate-600 mb-4">Chưa có bài trắc nghiệm cho Node này.</p>
+          <button
+            onClick={handleCreateQuiz}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-medium transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            Tạo Quiz
+          </button>
+        </div>
+      )}
     </div>
   );
 };
 
 export default QuizSection;
+

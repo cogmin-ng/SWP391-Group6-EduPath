@@ -473,17 +473,6 @@ export default function HomeView({
                     alt={course.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <span
-                    className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                      course.level === "Advanced"
-                        ? "bg-red-50 text-red-600 border border-red-100"
-                        : course.level === "Intermediate"
-                          ? "bg-blue-50 text-blue-600 border border-blue-100"
-                          : "bg-green-50 text-green-600 border border-green-100"
-                    }`}
-                  >
-                    {course.level}
-                  </span>
                 </div>
                 <div className="p-4 space-y-1.5">
                   <h4 className="font-bold text-sm text-slate-800 group-hover:text-indigo-600 transition tracking-tight line-clamp-1">
@@ -701,17 +690,6 @@ export default function HomeView({
                     <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
                     <span>{course.rating || "4.8"}</span>
                   </div>
-                  <span
-                    className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                      course.level === "Advanced"
-                        ? "bg-red-50 text-red-600 border border-red-100"
-                        : course.level === "Intermediate"
-                          ? "bg-blue-50 text-blue-600 border border-blue-100"
-                          : "bg-green-50 text-green-600 border border-green-100"
-                    }`}
-                  >
-                    {course.level}
-                  </span>
                 </div>
 
                 <div className="p-4 space-y-1.5">

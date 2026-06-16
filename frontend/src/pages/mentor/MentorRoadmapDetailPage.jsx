@@ -44,7 +44,6 @@ export default function MentorRoadmapDetailPage() {
 
             <div className="relative z-10 max-w-2xl">
               <div className="mb-3 flex flex-wrap items-center gap-3">
-                <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">{roadmap.level}</span>
                 <span className="inline-flex items-center gap-1 text-sm text-slate-600">
                   <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                   {averageRating}

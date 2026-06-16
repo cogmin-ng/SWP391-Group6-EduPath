@@ -117,11 +117,6 @@ export default function FeaturedRoadmaps() {
                 <span className="text-5xl opacity-80 group-hover:scale-110 transition-transform duration-300">
                   {roadmap.emoji}
                 </span>
-                <span
-                  className={`absolute top-3 left-3 px-2.5 py-1 rounded-lg text-xs font-semibold ${roadmap.levelColor}`}
-                >
-                  {roadmap.level}
-                </span>
               </div>
 
               {/* Card Content */}

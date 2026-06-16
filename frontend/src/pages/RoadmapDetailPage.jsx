@@ -83,7 +83,6 @@ export default function RoadmapDetailPage() {
 
             <div className="relative z-10 max-w-2xl">
               <div className="mb-3 flex flex-wrap items-center gap-3">
-                <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">{roadmap.levelLabel || roadmap.difficulty}</span>
                 <span className="inline-flex items-center gap-1 text-sm text-slate-600"><Clock3 className="h-4 w-4" />{roadmap.duration}</span>
                 <span className="inline-flex items-center gap-1 text-sm text-slate-600"><Star className="h-4 w-4 fill-amber-400 text-amber-400" />{roadmap.rating}</span>
               </div>

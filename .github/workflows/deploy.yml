@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  IMAGE_NAME: ${{ secrets.REGISTRY_NAME }}/edupath-api
+  IMAGE_NAME: ${{ secrets.DOCKER_HUB_USERNAME }}/edupath-api
   APP_DIR: /opt/edupath
 
 jobs:
@@ -137,6 +137,7 @@ jobs:
             CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
             CLOUDINARY_UPLOAD_FOLDER=${{ secrets.CLOUDINARY_UPLOAD_FOLDER || 'edupath' }}
             EOF
+            sed -i 's/^            //' .env
 
             echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
             docker compose -f docker-compose.prod.yml pull

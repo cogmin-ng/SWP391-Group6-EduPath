@@ -65,13 +65,11 @@ const MentorDashboardPage = () => {
   };
 
   const handleViewRoadmap = (roadmapId) => {
-    toast.success(`Đang xem lộ trình ${roadmapId}`);
-    // Navigate to roadmap view
+    navigate(`/mentor/roadmaps/${roadmapId}`);
   };
 
-  const handleEditRoadmap = (roadmapId) => {
-    toast.success(`Đang chuyển đến trang chỉnh sửa lộ trình...`);
-    navigate(`/mentor/roadmaps/${roadmapId}/edit`);
+  const handleLearnRoadmap = (roadmapId) => {
+    navigate(`/mentor/roadmaps/${roadmapId}/learn`);
   };
 
   return (
@@ -112,17 +110,6 @@ const MentorDashboardPage = () => {
                         alt={roadmap.title}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
-                      <span
-                        className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                          roadmap.level === "Advanced"
-                            ? "bg-red-50 text-red-600 border border-red-100"
-                            : roadmap.level === "Intermediate"
-                              ? "bg-blue-50 text-blue-600 border border-blue-100"
-                              : "bg-green-50 text-green-600 border border-green-100"
-                        }`}
-                      >
-                        {roadmap.level}
-                      </span>
                     </div>
                     <div className="p-4 space-y-1.5">
                       <h4 className="font-bold text-sm text-slate-800 group-hover:text-indigo-600 transition tracking-tight line-clamp-1">
@@ -138,10 +125,10 @@ const MentorDashboardPage = () => {
                       Xem
                     </button>
                     <button
-                      onClick={() => handleEditRoadmap(roadmap.id)}
+                      onClick={() => handleLearnRoadmap(roadmap.id)}
                       className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 text-xs rounded-xl font-semibold transition cursor-pointer text-center"
                     >
-                      Chỉnh sửa
+                      Xem lộ trình
                     </button>
                   </div>
                 </div>

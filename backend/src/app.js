@@ -20,7 +20,17 @@ const limiter = rateLimit({
 });
 
 const corsOptions = {
-  origin: true,
+  origin:
+    config.nodeEnv === 'development'
+      ? true
+      : (origin, callback) => {
+          const allowed =
+            !origin ||
+            config.cors.origins.includes('*') ||
+            config.cors.origins.includes(origin);
+
+          callback(allowed ? null : new Error('Not allowed by CORS'), allowed);
+        },
   credentials: true,
 };
 

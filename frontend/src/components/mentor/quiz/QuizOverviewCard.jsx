@@ -1,7 +1,7 @@
 import React from 'react';
-import { LayoutList } from 'lucide-react';
+import { LayoutList, Trophy, Star } from 'lucide-react';
 
-const QuizOverviewCard = ({ totalQuestions, estimatedTime, passScore }) => {
+const QuizOverviewCard = ({ totalQuestions, passScore, xpReward }) => {
   return (
     <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm sticky top-8">
       <div className="flex items-center gap-3 mb-6">
@@ -17,12 +17,18 @@ const QuizOverviewCard = ({ totalQuestions, estimatedTime, passScore }) => {
           <span className="font-semibold text-slate-900">{totalQuestions}</span>
         </div>
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-          <span className="text-sm text-slate-600">Thời gian dự kiến</span>
-          <span className="font-semibold text-slate-900">{estimatedTime}m</span>
+          <div className="flex items-center gap-1.5">
+            <Trophy className="w-4 h-4 text-emerald-500" />
+            <span className="text-sm text-slate-600">Điểm đạt</span>
+          </div>
+          <span className="font-semibold text-emerald-600">{passScore}%</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-600">Điểm đạt</span>
-          <span className="font-semibold text-emerald-600">{passScore}%</span>
+          <div className="flex items-center gap-1.5">
+            <Star className="w-4 h-4 text-amber-500" />
+            <span className="text-sm text-slate-600">XP Reward</span>
+          </div>
+          <span className="font-semibold text-amber-600">{xpReward} XP</span>
         </div>
       </div>
     </div>

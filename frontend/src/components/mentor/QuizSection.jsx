@@ -1,10 +1,12 @@
-import React from 'react';
-import { Plus, CheckCircle2, Clock, Edit, Eye, LayoutList, Trophy } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, CheckCircle2, Edit, Eye, LayoutList, Trophy, Star, Trash2, Loader2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { deleteQuiz } from '../../services/quizService';
 
-const QuizSection = ({ quizzes }) => {
+const QuizSection = ({ quizzes, onRefresh }) => {
   const navigate = useNavigate();
   const { roadmapId, nodeId } = useParams();
+  const [deletingId, setDeletingId] = useState(null);
 
   const handleCreateQuiz = () => {
     navigate(`/mentor/roadmaps/${roadmapId}/nodes/${nodeId}/quiz/create`);
@@ -17,6 +19,21 @@ const QuizSection = ({ quizzes }) => {
   const handlePreviewQuiz = (quizId) => {
     // In a real app, this might open a modal or navigate to a preview page
     console.log('Preview quiz', quizId);
+  };
+
+  const handleDeleteQuiz = async (quizId) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa bài trắc nghiệm này không? Hành động này không thể hoàn tác.')) {
+      setDeletingId(quizId);
+      try {
+        await deleteQuiz(quizId);
+        if (onRefresh) onRefresh();
+      } catch (err) {
+        console.error('Failed to delete quiz', err);
+        alert('Xóa bài trắc nghiệm thất bại. Vui lòng thử lại.');
+      } finally {
+        setDeletingId(null);
+      }
+    }
   };
 
   return (
@@ -55,12 +72,12 @@ const QuizSection = ({ quizzes }) => {
                       <span>{quiz.questionCount || quiz.questions?.length || 0} Questions</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Clock className="w-4 h-4 text-slate-400" />
-                      <span>{quiz.duration} Minutes</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
                       <Trophy className="w-4 h-4 text-emerald-500" />
                       <span className="text-emerald-600 font-medium">Pass Score {quiz.passingScore}%</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Star className="w-4 h-4 text-amber-500" />
+                      <span className="text-amber-600 font-medium">{quiz.xpReward ?? 50} XP</span>
                     </div>
                   </div>
                 </div>
@@ -80,6 +97,18 @@ const QuizSection = ({ quizzes }) => {
                   >
                     <Edit className="w-4 h-4" />
                     Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteQuiz(quiz.id)}
+                    disabled={deletingId === quiz.id}
+                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-100 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                  >
+                    {deletingId === quiz.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                    Delete
                   </button>
                 </div>
               </div>

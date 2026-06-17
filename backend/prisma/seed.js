@@ -19,25 +19,59 @@ async function main() {
     roles[name] = role;
   }
 
+  const mathematics = await prisma.subjectCategory.upsert({
+    where: { name: 'Mathematics' },
+    update: {},
+    create: {
+      name: 'Mathematics',
+      description: 'Mathematics related subjects',
+    },
+  });
+
+  const backendDevelopment = await prisma.subjectCategory.upsert({
+    where: { name: 'Backend Development' },
+    update: {},
+    create: {
+      name: 'Backend Development',
+      description: 'Backend programming subjects',
+    },
+  });
+
+  const fullStackProject = await prisma.subjectCategory.upsert({
+    where: { name: 'Full-Stack Project' },
+    update: {},
+    create: {
+      name: 'Full-Stack Project',
+      description: 'Project and software engineering subjects',
+    },
+  });
+
+
   const subjects = [
     {
-      name: 'SWP391',
-      description: 'Software Project Management',
+      name: 'MAS291',
+      description: 'Statistics and Probability',
+      categoryId: mathematics.id,
     },
     {
       name: 'PRJ301',
       description: 'Java Web Application Development',
+      categoryId: backendDevelopment.id,
     },
     {
-      name: 'MAS291',
-      description: 'Statistics and Probability',
+      name: 'SWP391',
+      description: 'Software Project Management',
+      categoryId: fullStackProject.id,
     },
   ];
 
   for (const subject of subjects) {
     await prisma.subject.upsert({
       where: { name: subject.name },
-      update: {},
+      update: {
+        description: subject.description,
+        categoryId: subject.categoryId,
+      },
       create: subject,
     });
   }

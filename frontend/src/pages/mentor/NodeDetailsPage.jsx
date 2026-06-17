@@ -8,6 +8,7 @@ import TipsSection from '../../components/mentor/TipsSection';
 import QuizSection from '../../components/mentor/QuizSection';
 import { getTips } from '../../services/roadmapService';
 import { getQuizzesByNode } from '../../services/quizService';
+import { getNodeDetails, syncNodeDetails } from '../../services/nodeService';
 
 const NodeDetailsPage = () => {
   const { roadmapId, nodeId } = useParams();
@@ -16,36 +17,54 @@ const NodeDetailsPage = () => {
 
   // State for tips
   const [tips, setTips] = useState([]);
-  const [tipsLoading, setTipsLoading] = useState(true);
 
   // State for quizzes
   const [quizzes, setQuizzes] = useState([]);
-  const [quizzesLoading, setQuizzesLoading] = useState(true);
 
-  // Get node data from state if available, otherwise use mock data
-  const stateNodeData = location.state?.nodeData;
-  
-  // Mock data for node details (replace with API call later)
-  const nodeData = stateNodeData ? {
-    id: stateNodeData.id,
-    title: stateNodeData.title,
-    description: stateNodeData.description,
-    category: stateNodeData.title.split(':')[0] || 'Backend',
-    nodeNumber: 2,
-    totalNodes: 3,
-  } : {
+  // State for checklists & materials
+  const [checklists, setChecklists] = useState([]);
+  const [materials, setMaterials] = useState([]);
+  const [nodeDetailsLoading, setNodeDetailsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Get node data from state if available, otherwise we will use the fetched data
+  const [nodeData, setNodeData] = useState(location.state?.nodeData || {
     id: parseInt(nodeId),
-    title: 'Backend Development',
-    description: 'Học ExpressJS, Prisma, PostgreSQL và Authentication.',
-    category: 'Backend',
-    nodeNumber: 2,
-    totalNodes: 3,
-  };
+    title: 'Đang tải...',
+    description: '',
+    category: '',
+    nodeNumber: 0,
+    totalNodes: 0,
+  });
+
+  // Fetch node details
+  useEffect(() => {
+    const fetchNodeData = async () => {
+      setNodeDetailsLoading(true);
+      try {
+        const data = await getNodeDetails(nodeId);
+        if (data) {
+          setChecklists(data.checklists || []);
+          setMaterials(data.materials || []);
+          setNodeData(prev => ({
+            ...prev,
+            title: data.title,
+            description: data.description,
+            // Keep category and numbers if they were passed via router state, else fallback
+          }));
+        }
+      } catch (err) {
+        console.error('Failed to fetch node details:', err);
+      } finally {
+        setNodeDetailsLoading(false);
+      }
+    };
+    fetchNodeData();
+  }, [nodeId]);
 
   // Fetch tips on component mount
   useEffect(() => {
     const fetchTips = async () => {
-      setTipsLoading(true);
       try {
         const data = await getTips(nodeId);
         setTips(data || []);
@@ -53,8 +72,6 @@ const NodeDetailsPage = () => {
         console.error('Failed to fetch tips:', err);
         // Fallback to empty array on error
         setTips([]);
-      } finally {
-        setTipsLoading(false);
       }
     };
 
@@ -64,43 +81,19 @@ const NodeDetailsPage = () => {
   // Fetch quizzes on component mount
   useEffect(() => {
     const fetchQuizzes = async () => {
-      setQuizzesLoading(true);
       try {
         const data = await getQuizzesByNode(nodeId);
         setQuizzes(data || []);
       } catch (err) {
         console.error('Failed to fetch quizzes:', err);
         setQuizzes([]);
-      } finally {
-        setQuizzesLoading(false);
       }
     };
 
     fetchQuizzes();
   }, [nodeId]);
 
-  const checklistItems = [
-    { id: 1, title: 'Hiểu ExpressJS', completed: true },
-    { id: 2, title: 'Hiểu Middleware', completed: true },
-    { id: 3, title: 'Kết nối PostgreSQL với Prisma', completed: false },
-  ];
-
-  const materials = [
-    {
-      id: 1,
-      title: 'ExpressJS Crash Course',
-      type: 'VIDEO • 45 MINS',
-      icon: 'Play',
-      description: 'A comprehensive introduction to building RESTful APIs with Express.',
-    },
-    {
-      id: 2,
-      title: 'Prisma Official Docs',
-      type: 'DOCUMENTATION',
-      icon: 'BookOpen',
-      description: 'Reference guide for Prisma ORM schema and client usage.',
-    },
-  ];
+  // Removed mock data for checklists and materials
 
   const handleBack = () => {
     // Navigate back to create roadmap page when editing nodes during creation
@@ -113,14 +106,11 @@ const NodeDetailsPage = () => {
 
   const handleRefreshTips = () => {
     const fetchTips = async () => {
-      setTipsLoading(true);
       try {
         const data = await getTips(nodeId);
         setTips(data || []);
       } catch (err) {
         console.error('Failed to refresh tips:', err);
-      } finally {
-        setTipsLoading(false);
       }
     };
 
@@ -129,18 +119,36 @@ const NodeDetailsPage = () => {
 
   const handleRefreshQuizzes = () => {
     const fetchQuizzes = async () => {
-      setQuizzesLoading(true);
       try {
         const data = await getQuizzesByNode(nodeId);
         setQuizzes(data || []);
       } catch (err) {
         console.error('Failed to refresh quizzes:', err);
-      } finally {
-        setQuizzesLoading(false);
       }
     };
 
     fetchQuizzes();
+  };
+
+  const handleSaveChanges = async () => {
+    setIsSaving(true);
+    try {
+      const updatedData = await syncNodeDetails(nodeId, {
+        checklists,
+        materials,
+      });
+      // Optionally update local state with returned data if IDs were generated by backend
+      if (updatedData) {
+        setChecklists(updatedData.checklists || []);
+        setMaterials(updatedData.materials || []);
+      }
+      alert('Lưu thay đổi thành công!');
+    } catch (error) {
+      console.error('Failed to save changes:', error);
+      alert('Có lỗi xảy ra khi lưu thay đổi!');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -164,8 +172,8 @@ const NodeDetailsPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Sections (70%) */}
           <div className="lg:col-span-2 space-y-6">
-            <ChecklistSection items={checklistItems} />
-            <MaterialsSection materials={materials} />
+            <ChecklistSection items={checklists} onChange={setChecklists} />
+            <MaterialsSection materials={materials} onChange={setMaterials} />
             <TipsSection tips={tips} nodeId={nodeData.id} onRefresh={handleRefreshTips} />
             <QuizSection quizzes={quizzes} onRefresh={handleRefreshQuizzes} />
           </div>
@@ -212,10 +220,15 @@ const NodeDetailsPage = () => {
 
                 {/* Action Button */}
                 <button
-                  onClick={() => console.log('Save changes')}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition-colors"
+                  onClick={handleSaveChanges}
+                  disabled={isSaving || nodeDetailsLoading}
+                  className={`w-full font-medium py-2.5 rounded-lg transition-colors text-white ${
+                    isSaving || nodeDetailsLoading
+                      ? 'bg-indigo-400 cursor-not-allowed'
+                      : 'bg-indigo-600 hover:bg-indigo-700'
+                  }`}
                 >
-                  Lưu Thay Đổi
+                  {isSaving ? 'Đang lưu...' : 'Lưu Thay Đổi'}
                 </button>
               </div>
             </div>

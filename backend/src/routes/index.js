@@ -8,6 +8,8 @@ const notificationRoutes = require('./notification');
 const subjectRoutes = require('./subject');
 const advisorApplicationRoutes = require('./advisorApplication');
 const quizRoutes = require('./quiz');
+const roadmapRoutes = require('./roadmap');
+const nodeRoutes = require('./node');
 const quizController = require('../controllers/quizController');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
@@ -22,6 +24,8 @@ router.use('/notifications', notificationRoutes);
 router.use('/subjects', subjectRoutes);
 router.use('/advisor-applications', advisorApplicationRoutes);
 router.use('/quizzes', quizRoutes);
+router.use('/roadmaps', roadmapRoutes);
+router.use('/nodes', nodeRoutes);
 
 // Node-scoped quiz endpoint
 router.get(

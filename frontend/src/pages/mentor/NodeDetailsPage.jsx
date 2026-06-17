@@ -39,6 +39,12 @@ const NodeDetailsPage = () => {
 
   // Fetch node details
   useEffect(() => {
+    if (roadmapId === 'new') {
+      alert('Vui lòng lưu Lộ trình trước khi thêm chi tiết (tài liệu, checklist, bài trắc nghiệm) cho Node.');
+      navigate('/mentor/create-roadmap');
+      return;
+    }
+
     const fetchNodeData = async () => {
       setNodeDetailsLoading(true);
       try {
@@ -60,7 +66,7 @@ const NodeDetailsPage = () => {
       }
     };
     fetchNodeData();
-  }, [nodeId]);
+  }, [nodeId, roadmapId, navigate]);
 
   // Fetch tips on component mount
   useEffect(() => {

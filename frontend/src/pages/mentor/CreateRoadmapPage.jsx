@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, X, Pencil, Trash2, Cloud } from 'lucide-react';
+import { Plus, X, Pencil, Trash2, Cloud, ArrowRight, Clock } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Textarea from '../../components/ui/Textarea';
 import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
+import { createRoadmap, submitRoadmap, getMentorRoadmaps, deleteRoadmap } from '../../services/roadmapService';
 
 const CreateRoadmapPage = () => {
   const navigate = useNavigate();
@@ -17,23 +18,42 @@ const CreateRoadmapPage = () => {
     thumbnail: null,
   });
 
-  const [nodes, setNodes] = useState([
-    {
-      id: 1,
-      title: 'Node 1: Giới thiệu',
-      description: 'Tìm hiểu cơ bản',
-      duration: '2 tuần',
-    },
-    {
-      id: 2,
-      title: 'Node 2: Nâng cao',
-      description: 'Kỹ năng nâng cao',
-      duration: '3 tuần',
-    },
-  ]);
+  const [nodes, setNodes] = useState([]);
 
   const [showNodeForm, setShowNodeForm] = useState(false);
   const [newNode, setNewNode] = useState({ title: '', description: '', duration: '' });
+  const [drafts, setDrafts] = useState([]);
+
+  const loadDrafts = async () => {
+    try {
+      const data = await getMentorRoadmaps(0, 50);
+      if (data && data.roadmaps) {
+        const draftRoadmaps = data.roadmaps.filter(r => r.status === 'DRAFT');
+        setDrafts(draftRoadmaps);
+      }
+    } catch (err) {
+      console.error('Lỗi khi tải danh sách bản nháp:', err);
+    }
+  };
+
+  // Fetch draft roadmaps when page loads
+  useEffect(() => {
+    loadDrafts();
+  }, []);
+
+  const handleDeleteDraft = async (e, id) => {
+    e.stopPropagation(); // prevent navigation
+    if (!window.confirm('Bạn có chắc chắn muốn xóa bản nháp này không?')) return;
+    
+    try {
+      await deleteRoadmap(id);
+      alert('Đã xóa bản nháp!');
+      loadDrafts(); // reload list
+    } catch (err) {
+      console.error('Lỗi xóa bản nháp:', err);
+      alert('Không thể xóa bản nháp: ' + (err.response?.data?.message || err.message));
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -67,21 +87,54 @@ const CreateRoadmapPage = () => {
   };
 
   const handleEditNode = (node) => {
-    // Navigate to Node Details page with node data in state
-    // Using 'new' as temporary roadmapId since roadmap hasn't been saved yet
-    navigate(`/mentor/roadmaps/new/nodes/${node.id}`, {
-      state: { nodeData: node, roadmapData: formData }
-    });
+    // Populate the form with the node's data
+    setNewNode({ title: node.title, description: node.description, duration: node.duration });
+    setShowNodeForm(true);
+    // Remove the old one, since they will "Add" it again after editing
+    handleDeleteNode(node.id);
   };
 
-  const handleSaveDraft = () => {
-    console.log('Save draft:', { formData, nodes });
+  const buildPayload = () => ({
+    title: formData.name,
+    description: formData.description,
+    thumbnail: formData.thumbnail,
+    nodes: nodes.map((n, i) => ({
+      title: n.title,
+      description: n.description,
+      duration: n.duration,
+      orderIndex: i
+    }))
+  });
+
+  const handleSaveDraft = async () => {
+    try {
+      if (!formData.name) return alert('Vui lòng nhập tên lộ trình');
+      
+      const payload = buildPayload();
+      const created = await createRoadmap(payload);
+      alert('Lưu nháp Lộ trình thành công!');
+      navigate(`/mentor/roadmaps/${created.id}/edit`);
+    } catch (err) {
+      console.error(err);
+      alert('Lỗi lưu nháp: ' + (err.response?.data?.message || err.message));
+    }
   };
 
-  // preview removed per request
-
-  const handleSubmitApproval = () => {
-    console.log('Submit for approval:', { formData, nodes });
+  const handleSubmitApproval = async () => {
+    try {
+      if (!formData.name) return alert('Vui lòng nhập tên lộ trình');
+      if (nodes.length === 0) return alert('Lộ trình cần ít nhất 1 Node');
+      
+      const payload = buildPayload();
+      const created = await createRoadmap(payload);
+      await submitRoadmap(created.id);
+      
+      alert('Đã tạo và gửi phê duyệt thành công!');
+      navigate(`/mentor/roadmaps/${created.id}/edit`);
+    } catch (err) {
+      console.error(err);
+      alert('Lỗi gửi phê duyệt: ' + (err.response?.data?.message || err.message));
+    }
   };
 
   const categoryOptions = [
@@ -107,6 +160,46 @@ const CreateRoadmapPage = () => {
             <p className="text-slate-600 mt-1">Thiết kế một lộ trình học tập hiệu quả cho học viên</p>
           </div>
         </div>
+
+        {/* Drafts Section */}
+        {drafts.length > 0 && (
+          <div className="mb-8 p-6 bg-white rounded-2xl shadow-sm border border-slate-100">
+            <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-indigo-500" />
+              Tiếp tục chỉnh sửa bản nháp
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {drafts.map((draft) => (
+                <div 
+                  key={draft.id} 
+                  className="p-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-slate-50 transition-all cursor-pointer flex flex-col justify-between"
+                  onClick={() => navigate(`/mentor/roadmaps/${draft.id}/edit`)}
+                >
+                  <div className="mb-3">
+                    <h3 className="font-semibold text-slate-900 line-clamp-1">{draft.title}</h3>
+                    <p className="text-sm text-slate-500 mt-1 line-clamp-2">{draft.description || 'Chưa có mô tả'}</p>
+                  </div>
+                  <div className="flex items-center justify-between mt-4">
+                    <button 
+                      onClick={(e) => handleDeleteDraft(e, draft.id)}
+                      className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Xóa bản nháp"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <div className="flex items-center text-indigo-600 text-sm font-medium">
+                      Chỉnh sửa <ArrowRight className="w-4 h-4 ml-1" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <hr className="my-8 border-slate-200" />
+
+        <h2 className="text-xl font-bold text-slate-900 mb-6">Tạo Mới Lộ Trình</h2>
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

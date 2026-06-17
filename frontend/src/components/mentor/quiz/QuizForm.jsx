@@ -8,7 +8,7 @@ const QuizForm = ({ quizData, onChange }) => {
       <div className="space-y-5">
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1.5">
-            Tiêu đề bài trắc nghiệm
+            Tiêu đề bài trắc nghiệm <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -19,22 +19,23 @@ const QuizForm = ({ quizData, onChange }) => {
           />
         </div>
 
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            Mô tả
+          </label>
+          <textarea
+            value={quizData.description || ''}
+            onChange={(e) => onChange({ ...quizData, description: e.target.value })}
+            placeholder="Mô tả ngắn về bài trắc nghiệm..."
+            rows={3}
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none"
+          />
+        </div>
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Thời gian làm bài (Phút)
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={quizData.duration}
-              onChange={(e) => onChange({ ...quizData, duration: parseInt(e.target.value) || 0 })}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Điểm đạt (%)
+              Điểm đạt (%) <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -42,6 +43,18 @@ const QuizForm = ({ quizData, onChange }) => {
               max="100"
               value={quizData.passingScore}
               onChange={(e) => onChange({ ...quizData, passingScore: parseInt(e.target.value) || 0 })}
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              XP Reward
+            </label>
+            <input
+              type="number"
+              min="0"
+              value={quizData.xpReward}
+              onChange={(e) => onChange({ ...quizData, xpReward: parseInt(e.target.value) || 0 })}
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
             />
           </div>

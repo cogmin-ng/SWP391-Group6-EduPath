@@ -1,18 +1,40 @@
 import React from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, PlusCircle } from 'lucide-react';
 import QuestionOption from './QuestionOption';
 
 const QuestionCard = ({ question, index, onChange, onDelete }) => {
-  const optionsList = ['A', 'B', 'C', 'D'];
+  const optionLabels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
   const handleOptionChange = (optionIndex, value) => {
     const newOptions = [...question.options];
-    newOptions[optionIndex] = value;
+    newOptions[optionIndex] = { ...newOptions[optionIndex], content: value };
     onChange({ ...question, options: newOptions });
   };
 
   const handleCorrectAnswerChange = (optionIndex) => {
-    onChange({ ...question, correctAnswer: optionIndex });
+    const newOptions = question.options.map((opt, i) => ({
+      ...opt,
+      isCorrect: i === optionIndex,
+    }));
+    onChange({ ...question, options: newOptions });
+  };
+
+  const handleAddOption = () => {
+    onChange({
+      ...question,
+      options: [...question.options, { content: '', isCorrect: false }],
+    });
+  };
+
+  const handleDeleteOption = (optionIndex) => {
+    if (question.options.length <= 2) return;
+    const newOptions = question.options.filter((_, i) => i !== optionIndex);
+    // If deleted option was the correct one, reset to first
+    const hasCorrect = newOptions.some((opt) => opt.isCorrect);
+    if (!hasCorrect && newOptions.length > 0) {
+      newOptions[0] = { ...newOptions[0], isCorrect: true };
+    }
+    onChange({ ...question, options: newOptions });
   };
 
   return (
@@ -45,18 +67,27 @@ const QuestionCard = ({ question, index, onChange, onDelete }) => {
           Các lựa chọn đáp án
         </div>
         <div className="space-y-3">
-          {question.options.map((optionText, optIndex) => (
+          {question.options.map((option, optIndex) => (
             <QuestionOption
               key={optIndex}
               label={`q${index}`}
-              option={optionsList[optIndex]}
-              value={optionText}
-              isCorrect={question.correctAnswer === optIndex}
+              option={optionLabels[optIndex] || `${optIndex + 1}`}
+              value={option.content}
+              isCorrect={option.isCorrect}
               onChange={(e) => handleOptionChange(optIndex, e.target.value)}
               onSelectCorrect={() => handleCorrectAnswerChange(optIndex)}
+              onDelete={() => handleDeleteOption(optIndex)}
+              canDelete={question.options.length > 2}
             />
           ))}
         </div>
+        <button
+          onClick={handleAddOption}
+          className="mt-3 flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+        >
+          <PlusCircle className="w-4 h-4" />
+          Thêm đáp án
+        </button>
       </div>
 
       {/* Explanation */}

@@ -7,6 +7,7 @@ import MaterialsSection from '../../components/mentor/MaterialsSection';
 import TipsSection from '../../components/mentor/TipsSection';
 import QuizSection from '../../components/mentor/QuizSection';
 import { getTips } from '../../services/roadmapService';
+import { getQuizzesByNode } from '../../services/quizService';
 
 const NodeDetailsPage = () => {
   const { roadmapId, nodeId } = useParams();
@@ -16,6 +17,10 @@ const NodeDetailsPage = () => {
   // State for tips
   const [tips, setTips] = useState([]);
   const [tipsLoading, setTipsLoading] = useState(true);
+
+  // State for quizzes
+  const [quizzes, setQuizzes] = useState([]);
+  const [quizzesLoading, setQuizzesLoading] = useState(true);
 
   // Get node data from state if available, otherwise use mock data
   const stateNodeData = location.state?.nodeData;
@@ -56,6 +61,24 @@ const NodeDetailsPage = () => {
     fetchTips();
   }, [nodeId]);
 
+  // Fetch quizzes on component mount
+  useEffect(() => {
+    const fetchQuizzes = async () => {
+      setQuizzesLoading(true);
+      try {
+        const data = await getQuizzesByNode(nodeId);
+        setQuizzes(data || []);
+      } catch (err) {
+        console.error('Failed to fetch quizzes:', err);
+        setQuizzes([]);
+      } finally {
+        setQuizzesLoading(false);
+      }
+    };
+
+    fetchQuizzes();
+  }, [nodeId]);
+
   const checklistItems = [
     { id: 1, title: 'Hiểu ExpressJS', completed: true },
     { id: 2, title: 'Hiểu Middleware', completed: true },
@@ -76,16 +99,6 @@ const NodeDetailsPage = () => {
       type: 'DOCUMENTATION',
       icon: 'BookOpen',
       description: 'Reference guide for Prisma ORM schema and client usage.',
-    },
-  ];
-
-  const quizzes = [
-    {
-      id: 1,
-      title: 'JavaScript Fundamentals Assessment',
-      questionCount: 12,
-      duration: 30,
-      passingScore: 80,
     },
   ];
 
@@ -114,6 +127,22 @@ const NodeDetailsPage = () => {
     fetchTips();
   };
 
+  const handleRefreshQuizzes = () => {
+    const fetchQuizzes = async () => {
+      setQuizzesLoading(true);
+      try {
+        const data = await getQuizzesByNode(nodeId);
+        setQuizzes(data || []);
+      } catch (err) {
+        console.error('Failed to refresh quizzes:', err);
+      } finally {
+        setQuizzesLoading(false);
+      }
+    };
+
+    fetchQuizzes();
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
@@ -138,7 +167,7 @@ const NodeDetailsPage = () => {
             <ChecklistSection items={checklistItems} />
             <MaterialsSection materials={materials} />
             <TipsSection tips={tips} nodeId={nodeData.id} onRefresh={handleRefreshTips} />
-            <QuizSection quizzes={quizzes} />
+            <QuizSection quizzes={quizzes} onRefresh={handleRefreshQuizzes} />
           </div>
 
           {/* Right Column - Summary (30%) */}

@@ -3,19 +3,15 @@ import MenteeHeader from '../components/mentee/MenteeHeader';
 import ExploreFilters from './mentee/features/explore/components/ExploreFilters';
 import RoadmapCard from './mentee/features/explore/components/RoadmapCard';
 import { roadmaps } from './mentee/features/explore/data/roadmaps';
+import { exploreService } from '../services/exploreService';
 import { subjectCategoryService } from '../services/subjectCategoryService';
 
 function toggleValue(list, value) {
   return list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
 }
 
-const categoryAliases = {
-  'Backend Development': ['Development'],
-  'Full-Stack Project': ['Development'],
-  Mathematics: ['Data'],
-};
-
 export default function ExplorePage() {
+  const [exploreRoadmaps, setExploreRoadmaps] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedMentors, setSelectedMentors] = useState([]);
@@ -43,16 +39,53 @@ export default function ExplorePage() {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const mockBySlug = Object.fromEntries(roadmaps.map((roadmap) => [roadmap.slug, roadmap]));
+
+    const fetchLearningPaths = async () => {
+      try {
+        const data = await exploreService.getLearningPaths();
+        if (!isMounted) return;
+
+        setExploreRoadmaps(
+          data.map((roadmap) => ({
+            ...mockBySlug[roadmap.slug],
+            ...roadmap,
+            rating: mockBySlug[roadmap.slug]?.rating ?? 4.7,
+            duration: mockBySlug[roadmap.slug]?.duration ?? '8w',
+            difficulty: mockBySlug[roadmap.slug]?.difficulty ?? 'Intermediate',
+            mentorRole: mockBySlug[roadmap.slug]?.mentorRole,
+            mentorQuote: mockBySlug[roadmap.slug]?.mentorQuote,
+            skills: mockBySlug[roadmap.slug]?.skills || [roadmap.subject],
+            levelLabel: mockBySlug[roadmap.slug]?.levelLabel ?? 'Intermediate Level',
+            modulesCount: mockBySlug[roadmap.slug]?.modulesCount ?? 0,
+            phases: mockBySlug[roadmap.slug]?.phases || [],
+          })),
+        );
+      } catch (error) {
+        console.error('Failed to fetch learning paths:', error);
+        if (!isMounted) return;
+        setExploreRoadmaps(roadmaps);
+      }
+    };
+
+    fetchLearningPaths();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const mentors = useMemo(
-    () => [...new Set(roadmaps.map((roadmap) => roadmap.mentor))],
-    [],
+    () => [...new Set(exploreRoadmaps.map((roadmap) => roadmap.mentor))],
+    [exploreRoadmaps],
   );
 
   const filteredRoadmaps = useMemo(() => {
-    const filtered = roadmaps.filter((item) => {
-      const categoryMatch =
-        selectedCategories.length === 0 ||
-        selectedCategories.some((category) => (categoryAliases[category] || [category]).includes(item.category));
+    const filtered = exploreRoadmaps.filter((item) => {
+      const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(item.category);
       const mentorMatch = selectedMentors.length === 0 || selectedMentors.includes(item.mentor);
       return categoryMatch && mentorMatch;
     });
@@ -66,7 +99,7 @@ export default function ExplorePage() {
     }
 
     return filtered;
-  }, [selectedCategories, selectedMentors, sortBy]);
+  }, [exploreRoadmaps, selectedCategories, selectedMentors, sortBy]);
 
   return (
     <div className="min-h-screen bg-slate-50">

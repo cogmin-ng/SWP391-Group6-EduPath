@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, ArrowRight, Clock, Star, Pause, X,
+  ArrowLeft, ArrowRight, Clock, Star, X,
 } from 'lucide-react';
 import QuizResult from '../../components/mentee/quiz/QuizResult';
 import { getRoadmapBySlug } from './features/explore/data/roadmaps';
 import { jsQuizQuestions } from '../../mock/quizQuestions';
+import { getQuizAttemptHistory, saveQuizAttempt } from '../../utils/quizAttemptStorage';
 
 function generateQuiz(phase) {
   const questions = jsQuizQuestions.map((q) => ({
@@ -36,6 +37,8 @@ export default function RoadmapQuizPage() {
   const [answers, setAnswers] = useState({});
   const [timeLeft, setTimeLeft] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [attemptHistory, setAttemptHistory] = useState([]);
+  const [currentAttemptId, setCurrentAttemptId] = useState(null);
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -72,14 +75,55 @@ export default function RoadmapQuizPage() {
 
   const handleSubmit = useCallback(() => {
     clearInterval(timerRef.current);
+    setCurrentAttemptId((prev) => prev || `${quiz?.id || 'quiz'}-${Date.now()}`);
     setSubmitted(true);
-  }, []);
+  }, [quiz?.id]);
 
   const formatTime = (seconds) => {
     const m = String(Math.floor(seconds / 60)).padStart(2, '0');
     const s = String(seconds % 60).padStart(2, '0');
     return `${m}:${s}`;
   };
+
+  const questions = quiz?.questions || [];
+  const totalQuestions = questions.length;
+  const currentQuestion = questions[currentIndex];
+  const selectedAnswer = answers[currentIndex] || null;
+  const attemptStorageKey = quiz ? `quiz-attempts:${quiz.id}` : null;
+
+  const answeredCount = Object.keys(answers).length;
+  const correctCount = submitted
+    ? Object.entries(answers).filter(
+        ([idx, optId]) =>
+          questions[Number(idx)]?.options.find((o) => o.id === optId)?.isCorrect
+      ).length
+    : 0;
+  const accuracy = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
+  const progressPercent = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
+
+  useEffect(() => {
+    if (!attemptStorageKey) {
+      setAttemptHistory([]);
+      return;
+    }
+
+    setAttemptHistory(getQuizAttemptHistory(attemptStorageKey));
+  }, [attemptStorageKey]);
+
+  useEffect(() => {
+    if (!submitted || !currentAttemptId || !attemptStorageKey) return;
+
+    const attempt = {
+      id: currentAttemptId,
+      submittedAt: new Date().toISOString(),
+      answers,
+      correctCount,
+      totalQuestions,
+      accuracy,
+    };
+
+    setAttemptHistory(saveQuizAttempt(attemptStorageKey, attempt));
+  }, [submitted, currentAttemptId, answers, correctCount, totalQuestions, accuracy, attemptStorageKey]);
 
   const handleGoBack = () => {
     navigate(`/roadmaps/${slug}/learn`);
@@ -92,21 +136,6 @@ export default function RoadmapQuizPage() {
       </div>
     );
   }
-
-  const questions = quiz.questions || [];
-  const totalQuestions = questions.length;
-  const currentQuestion = questions[currentIndex];
-  const selectedAnswer = answers[currentIndex] || null;
-
-  const answeredCount = Object.keys(answers).length;
-  const correctCount = submitted
-    ? Object.entries(answers).filter(
-        ([idx, optId]) =>
-          questions[Number(idx)]?.options.find((o) => o.id === optId)?.isCorrect
-      ).length
-    : 0;
-  const accuracy = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
-  const progressPercent = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -153,10 +182,14 @@ export default function RoadmapQuizPage() {
           questions={questions}
           answers={answers}
           onGoBack={handleGoBack}
+          attemptHistory={attemptHistory}
+          currentAttemptId={currentAttemptId}
+          quizTitle={quiz.title}
           onRetry={() => {
             setAnswers({});
             setCurrentIndex(0);
             setSubmitted(false);
+            setCurrentAttemptId(null);
             setTimeLeft(quiz.durationMinutes * 60);
           }}
         />
@@ -194,7 +227,10 @@ export default function RoadmapQuizPage() {
                   Next Question <ArrowRight className="w-4 h-4" />
                 </button>
               ) : (
-                <button onClick={handleSubmit}
+                <button onClick={() => {
+                  setCurrentAttemptId(`${quiz.id}-${Date.now()}`);
+                  handleSubmit();
+                }}
                   className="flex items-center gap-1.5 px-6 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors text-sm font-semibold shadow-sm">
                   <Star className="w-4 h-4" /> Submit Quiz
                 </button>
@@ -236,7 +272,10 @@ export default function RoadmapQuizPage() {
               </div>
             </div>
             {answeredCount < totalQuestions && (
-              <button onClick={handleSubmit} className="w-full py-3 rounded-lg border border-outline text-on-surface-variant hover:bg-surface-container transition-colors text-sm font-semibold">Submit Quiz Early</button>
+              <button onClick={() => {
+                setCurrentAttemptId(`${quiz.id}-${Date.now()}`);
+                handleSubmit();
+              }} className="w-full py-3 rounded-lg border border-outline text-on-surface-variant hover:bg-surface-container transition-colors text-sm font-semibold">Submit Quiz Early</button>
             )}
           </aside>
         </div>

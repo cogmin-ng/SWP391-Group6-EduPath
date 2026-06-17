@@ -1,13 +1,58 @@
-import { CheckCircle2, XCircle, HelpCircle, BrainCircuit, Star, ArrowLeft, RotateCcw } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import {
+  CheckCircle2,
+  XCircle,
+  HelpCircle,
+  BrainCircuit,
+  ArrowLeft,
+  RotateCcw,
+  History,
+  X,
+} from 'lucide-react';
 
 function findOption(options, optId) {
   return options.find((o) => o.id === optId);
 }
 
-export default function QuizResult({ questions, answers, onGoBack, onRetry }) {
+function formatAttemptTime(value) {
+  if (!value) return 'Unknown time';
+
+  try {
+    return new Intl.DateTimeFormat('vi-VN', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+    }).format(new Date(value));
+  } catch {
+    return 'Unknown time';
+  }
+}
+
+export default function QuizResult({
+  questions,
+  answers,
+  onGoBack,
+  onRetry,
+  attemptHistory = [],
+  currentAttemptId = null,
+  quizTitle = 'Quiz',
+}) {
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [selectedAttemptId, setSelectedAttemptId] = useState(null);
+
+  const previousAttempts = useMemo(
+    () => attemptHistory.filter((attempt) => attempt.id !== currentAttemptId),
+    [attemptHistory, currentAttemptId],
+  );
+
+  const reviewedAttempt = useMemo(
+    () => previousAttempts.find((attempt) => attempt.id === selectedAttemptId) || null,
+    [previousAttempts, selectedAttemptId],
+  );
+
+  const displayedAnswers = reviewedAttempt?.answers || answers;
   const total = questions.length;
-  const answered = Object.keys(answers).length;
-  const correctCount = Object.entries(answers).filter(
+  const answered = Object.keys(displayedAnswers).length;
+  const correctCount = Object.entries(displayedAnswers).filter(
     ([idx, optId]) => questions[Number(idx)]?.options.find((o) => o.id === optId)?.isCorrect,
   ).length;
   const accuracy = answered > 0 ? Math.round((correctCount / answered) * 100) : 0;
@@ -19,7 +64,19 @@ export default function QuizResult({ questions, answers, onGoBack, onRetry }) {
           <BrainCircuit className="w-8 h-8 text-indigo-600" />
         </div>
         <h2 className="text-2xl font-bold text-slate-900 mb-1">Quiz Complete!</h2>
-        <p className="text-slate-500 mb-6">Here&apos;s how you performed</p>
+        <p className="text-slate-500 mb-3">
+          {reviewedAttempt ? `Reviewing a previous attempt from ${formatAttemptTime(reviewedAttempt.submittedAt)}` : 'Here\'s how you performed'}
+        </p>
+        {reviewedAttempt ? (
+          <button
+            onClick={() => setSelectedAttemptId(null)}
+            className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors text-xs font-semibold"
+          >
+            <RotateCcw className="w-3.5 h-3.5" /> Current Attempt
+          </button>
+        ) : (
+          <div className="mb-6" />
+        )}
 
         <div className="grid grid-cols-3 gap-4 mb-6 max-w-sm mx-auto">
           <div className="bg-indigo-50 rounded-xl p-4">
@@ -45,13 +102,21 @@ export default function QuizResult({ questions, answers, onGoBack, onRetry }) {
               <RotateCcw className="w-4 h-4" /> Retry
             </button>
           )}
+          {previousAttempts.length > 0 && (
+            <button
+              onClick={() => setIsHistoryOpen(true)}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors text-sm font-semibold"
+            >
+              <History className="w-4 h-4" /> Review Quiz
+            </button>
+          )}
         </div>
       </div>
 
       <div className="space-y-4">
         <h3 className="text-lg font-bold text-slate-900">Detailed Review</h3>
         {questions.map((q, idx) => {
-          const selectedId = answers[idx];
+          const selectedId = displayedAnswers[idx];
           const selected = selectedId ? findOption(q.options, selectedId) : null;
           const correct = q.options.find((o) => o.isCorrect);
           const isCorrect = selected?.isCorrect;
@@ -122,6 +187,54 @@ export default function QuizResult({ questions, answers, onGoBack, onRetry }) {
           );
         })}
       </div>
+
+      {isHistoryOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4">
+          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Review Previous Attempts</h3>
+                <p className="text-sm text-slate-500 mt-1">{quizTitle}</p>
+              </div>
+              <button
+                onClick={() => setIsHistoryOpen(false)}
+                className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+                aria-label="Close review history"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="max-h-[70vh] overflow-y-auto p-4 space-y-3">
+              {previousAttempts.map((attempt, index) => (
+                <button
+                  key={attempt.id}
+                  onClick={() => {
+                    setSelectedAttemptId(attempt.id);
+                    setIsHistoryOpen(false);
+                  }}
+                  className={`w-full text-left rounded-xl border p-4 transition-colors ${
+                    attempt.id === selectedAttemptId
+                      ? 'border-indigo-300 bg-indigo-50'
+                      : 'border-slate-200 hover:border-indigo-200 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">Attempt {previousAttempts.length - index}</p>
+                      <p className="text-xs text-slate-500 mt-1">{formatAttemptTime(attempt.submittedAt)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-indigo-600">{attempt.correctCount}/{attempt.totalQuestions}</p>
+                      <p className="text-xs text-slate-500 mt-1">{attempt.accuracy}% accuracy</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

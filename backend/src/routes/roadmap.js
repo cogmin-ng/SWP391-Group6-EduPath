@@ -5,6 +5,7 @@ const validateSchema = require('../middleware/validateSchema');
 const {
   createRoadmapSchema,
   updateRoadmapSchema,
+  reviewRoadmapSchema,
 } = require('../validators/roadmap.validator');
 
 const router = Router();
@@ -101,6 +102,50 @@ router.get(
   requireRole(['MENTOR']),
   roadmapController.getMentorRoadmaps
 );
+
+// --- Admin Section (Must be before parametric routes) ---
+
+/**
+ * @swagger
+ * /api/roadmaps/pending:
+ *   get:
+ *     tags:
+ *       - Roadmap
+ *     summary: Lấy danh sách lộ trình đang chờ phê duyệt (Admin only)
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of pending roadmaps
+ */
+router.get(
+  '/pending',
+  requireAuth,
+  requireRole(['ADMIN']),
+  roadmapController.getPendingRoadmaps
+);
+
+/**
+ * @swagger
+ * /api/roadmaps/stats:
+ *   get:
+ *     tags:
+ *       - Roadmap
+ *     summary: Lấy thống kê trạng thái lộ trình (Admin only)
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Roadmap status statistics
+ */
+router.get(
+  '/stats',
+  requireAuth,
+  requireRole(['ADMIN']),
+  roadmapController.getRoadmapStats
+);
+
+// --- Parametric Routes ---
 
 /**
  * @swagger
@@ -239,6 +284,47 @@ router.post(
   requireAuth,
   requireRole(['MENTOR']),
   roadmapController.submitRoadmap
+);
+
+// Admin review remains below as it's a post route with :id, but doesn't conflict with GET /stats etc.
+
+/**
+ * @swagger
+ * /api/roadmaps/{id}/review:
+ *   post:
+ *     tags:
+ *       - Roadmap
+ *     summary: Phê duyệt hoặc Từ chối lộ trình (Admin only)
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [APPROVED, REJECTED, PUBLISHED]
+ *               feedback:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Roadmap reviewed successfully
+ */
+router.post(
+  '/:id/review',
+  requireAuth,
+  requireRole(['ADMIN']),
+  validateSchema(reviewRoadmapSchema),
+  roadmapController.reviewRoadmap
 );
 
 module.exports = router;

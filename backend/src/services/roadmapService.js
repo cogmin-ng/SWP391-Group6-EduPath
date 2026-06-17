@@ -201,3 +201,40 @@ exports.submitRoadmap = async (roadmapId, mentorId) => {
 
   return roadmapRepository.findById(roadmapId);
 };
+
+/**
+ * Get roadmaps pending review (ADMIN only).
+ */
+exports.getPendingRoadmaps = async ({ skip = 0, take = 20 } = {}) => {
+  const [roadmaps, total] = await Promise.all([
+    roadmapRepository.findByStatus('PENDING', { skip, take }),
+    roadmapRepository.countByStatus('PENDING'),
+  ]);
+  return { roadmaps, total };
+};
+
+/**
+ * Review a roadmap (ADMIN only).
+ */
+exports.reviewRoadmap = async (roadmapId, { status, feedback }) => {
+  const roadmap = await roadmapRepository.findById(roadmapId);
+  if (!roadmap) throw new ApiError(404, MSG.notFound);
+
+  if (roadmap.status !== 'PENDING') {
+    throw new ApiError(400, 'Only PENDING roadmaps can be reviewed');
+  }
+
+  const updated = await roadmapRepository.update(roadmapId, {
+    status,
+    updatedAt: new Date(),
+  });
+
+  return updated;
+};
+
+/**
+ * Get roadmap statistics for dashboard (ADMIN only).
+ */
+exports.getRoadmapStats = async () => {
+  return roadmapRepository.getStatusStats();
+};

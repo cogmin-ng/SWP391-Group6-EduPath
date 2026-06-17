@@ -51,7 +51,13 @@ const updateRoadmapSchema = Joi.object({
   nodes: Joi.array().items(roadmapNodeSchema).optional(),
 });
 
+const reviewRoadmapSchema = Joi.object({
+  status: Joi.string().valid('APPROVED', 'REJECTED', 'PUBLISHED').required(),
+  feedback: Joi.string().trim().max(1000).optional(),
+});
+
 module.exports = {
   createRoadmapSchema,
   updateRoadmapSchema,
+  reviewRoadmapSchema,
 };

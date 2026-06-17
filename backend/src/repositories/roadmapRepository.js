@@ -69,6 +69,46 @@ exports.findByMentorId = async (mentorId, { skip = 0, take = 20 } = {}) => {
 };
 
 /**
+ * Find roadmaps by status (e.g., PENDING) with pagination.
+ */
+exports.findByStatus = async (status, { skip = 0, take = 20 } = {}) => {
+  return prisma.learningPath.findMany({
+    where: { status, ...ACTIVE_FILTER },
+    include: ROADMAP_INCLUDE,
+    orderBy: { updatedAt: 'desc' },
+    skip,
+    take,
+  });
+};
+
+/**
+ * Count roadmaps by status.
+ */
+exports.countByStatus = async (status) => {
+  return prisma.learningPath.count({
+    where: { status, ...ACTIVE_FILTER },
+  });
+};
+
+/**
+ * Get distribution of roadmap statuses for stats.
+ */
+exports.getStatusStats = async () => {
+  const counts = await prisma.learningPath.groupBy({
+    by: ['status'],
+    where: ACTIVE_FILTER,
+    _count: {
+      status: true,
+    },
+  });
+
+  return counts.reduce((acc, curr) => {
+    acc[curr.status] = curr._count.status;
+    return acc;
+  }, {});
+};
+
+/**
  * Count total roadmaps for a mentor.
  */
 exports.countByMentorId = async (mentorId) => {

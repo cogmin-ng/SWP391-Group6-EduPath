@@ -42,7 +42,7 @@ const MentorRequestPage = () => {
         mentorSubjects: app.mentorSubjects?.map(ms => ms.subject.name) || [],
         academicRecords: app.academicRecords?.map(ar => ({ subjectName: ar.subject.name, grade: ar.grade })) || [],
         date: new Date(app.createdAt).toLocaleDateString(),
-        status: app.status === 'APPROVED' ? 'Accepted' : app.status === 'REJECTED' ? 'Rejected' : 'Pending',
+        status: app.status === 'APPROVED' ? 'Đã chấp nhận' : app.status === 'REJECTED' ? 'Đã từ chối' : 'Đang chờ',
         rawStatus: app.status
       }));
 
@@ -67,17 +67,17 @@ const MentorRequestPage = () => {
   };
 
   const stats = [
-    { label: "Pending Requests", value: requests.filter(r => r.rawStatus === 'PENDING').length, growth: "", icon: Clock, color: "text-amber-500", bg: "bg-amber-50" },
-    { label: "Accepted", value: requests.filter(r => r.rawStatus === 'APPROVED').length, growth: "", icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-50" },
-    { label: "Rejected", value: requests.filter(r => r.rawStatus === 'REJECTED').length, growth: "", icon: XCircle, color: "text-rose-500", bg: "bg-rose-50" },
-    { label: "Total Applications", value: requests.length, growth: "", icon: Users, color: "text-indigo-500", bg: "bg-indigo-50" },
+    { label: "Yêu cầu đang chờ", value: requests.filter(r => r.rawStatus === 'PENDING').length, growth: "", icon: Clock, color: "text-amber-500", bg: "bg-amber-50" },
+    { label: "Đã chấp nhận", value: requests.filter(r => r.rawStatus === 'APPROVED').length, growth: "", icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-50" },
+    { label: "Đã từ chối", value: requests.filter(r => r.rawStatus === 'REJECTED').length, growth: "", icon: XCircle, color: "text-rose-500", bg: "bg-rose-50" },
+    { label: "Tổng số đơn", value: requests.length, growth: "", icon: Users, color: "text-indigo-500", bg: "bg-indigo-50" },
   ];
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Pending': return 'bg-amber-100 text-amber-700 border-amber-200';
-      case 'Accepted': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-      case 'Rejected': return 'bg-rose-100 text-rose-700 border-rose-200';
+      case 'Đang chờ': return 'bg-amber-100 text-amber-700 border-amber-200';
+      case 'Đã chấp nhận': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+      case 'Đã từ chối': return 'bg-rose-100 text-rose-700 border-rose-200';
       default: return 'bg-slate-100 text-slate-700 border-slate-200';
     }
   };
@@ -90,7 +90,7 @@ const MentorRequestPage = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input 
             type="text" 
-            placeholder="Search by learner name..." 
+            placeholder="Tìm kiếm theo tên người đăng ký..." 
             className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
           />
         </div>
@@ -99,7 +99,7 @@ const MentorRequestPage = () => {
             <Mail className="w-5 h-5" />
           </button>
           <button className="ml-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors flex items-center gap-2">
-            <span className="text-lg leading-none">+</span> Open Sessions
+            <span className="text-lg leading-none">+</span> Phiên làm việc
           </button>
         </div>
       </div>
@@ -126,9 +126,9 @@ const MentorRequestPage = () => {
 
       {/* Filter Row */}
       <div className="flex flex-wrap items-center gap-3 bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">Filters:</span>
+        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">Bộ lọc:</span>
         <div className="flex flex-wrap gap-2">
-          {['Learning Goal', 'Category', 'Status'].map((filter) => (
+          {['Mục tiêu', 'Danh mục', 'Trạng thái'].map((filter) => (
             <button key={filter} className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 flex items-center gap-2 hover:border-indigo-500 hover:text-indigo-600 transition-colors">
               {filter}
               <ChevronDown className="w-3.5 h-3.5" />
@@ -136,7 +136,7 @@ const MentorRequestPage = () => {
           ))}
           <button className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 flex items-center gap-2 hover:bg-slate-100 transition-colors ml-auto lg:ml-0">
             <Calendar className="w-4 h-4" />
-            Last 30 Days
+            30 ngày qua
           </button>
         </div>
       </div>
@@ -149,10 +149,10 @@ const MentorRequestPage = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-slate-50 bg-slate-50/50">
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Learner Name</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Specialization</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Requested Date</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tên người đăng ký</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Chuyên môn</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ngày yêu cầu</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Trạng thái</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -198,28 +198,28 @@ const MentorRequestPage = () => {
                 />
                 <div>
                   <h4 className="text-lg font-bold text-slate-900">{selectedRequest.name}</h4>
-                  <p className="text-sm text-slate-500 font-medium">Semester {selectedRequest.currentSemester} &bull; {selectedRequest.specialization}</p>
+                  <p className="text-sm text-slate-500 font-medium">Học kỳ {selectedRequest.currentSemester} &bull; {selectedRequest.specialization}</p>
                 </div>
               </div>
 
               {/* Detail Items */}
               <div className="space-y-6">
                 <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Bio / Introduction</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Tiểu sử / Giới thiệu</label>
                   <p className="text-sm text-slate-700 font-medium p-3 bg-slate-50 rounded-lg border border-slate-100">
                     {selectedRequest.bio}
                   </p>
                 </div>
 
-                <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Experience</label>
+                 <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Kinh nghiệm</label>
                   <p className="text-sm text-slate-600 italic p-3 bg-slate-50 rounded-lg border border-slate-100 leading-relaxed whitespace-pre-wrap">
                     "{selectedRequest.experience}"
                   </p>
                 </div>
 
-                <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Subjects to Mentor</label>
+                 <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Môn học hướng dẫn</label>
                   <div className="flex flex-wrap gap-2">
                     {selectedRequest.mentorSubjects.map((subject, idx) => (
                       <span key={idx} className="px-2.5 py-1 bg-white border border-slate-200 rounded-md text-[11px] font-semibold text-slate-600 flex items-center gap-1.5">
@@ -231,7 +231,7 @@ const MentorRequestPage = () => {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Academic Records</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Kết quả học tập (Điểm số)</label>
                   <div className="space-y-2">
                     {selectedRequest.academicRecords.map((record, idx) => (
                       <div key={idx} className="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-100">
@@ -247,31 +247,31 @@ const MentorRequestPage = () => {
 
                 {selectedRequest.transcriptUrl && (
                   <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Transcript</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Bảng điểm</label>
                     <a 
                       href={selectedRequest.transcriptUrl} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 transition-colors rounded-lg text-sm font-semibold text-slate-700"
                     >
-                      <Monitor className="w-4 h-4" /> View Full Transcript
+                      <Monitor className="w-4 h-4" /> Xem bảng điểm đầy đủ
                     </a>
                   </div>
                 )}
               </div>
 
-              {/* Action Buttons */}
+               {/* Action Buttons */}
               {selectedRequest.rawStatus === 'PENDING' && (
                 <div className="mt-8 space-y-3">
                   <button 
                     onClick={() => handleStatusUpdate(selectedRequest.id, 'APPROVED')}
                     className="w-full py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:bg-indigo-700 shadow-md shadow-indigo-200 transition-all active:scale-[0.98]">
-                    Accept Request
+                    Chấp nhận yêu cầu
                   </button>
                   <button 
                     onClick={() => handleStatusUpdate(selectedRequest.id, 'REJECTED')}
                     className="w-full py-2.5 text-rose-600 font-bold text-sm hover:bg-rose-50 rounded-lg transition-all">
-                    Reject Request
+                    Từ chối yêu cầu
                   </button>
                 </div>
               )}
@@ -279,7 +279,7 @@ const MentorRequestPage = () => {
           </div>
           ) : (
             <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 text-center text-slate-500">
-              Select an application to view details.
+              Chọn một đơn đăng ký để xem chi tiết.
             </div>
           )}
         </div>

@@ -97,3 +97,45 @@ exports.submitRoadmap = asyncHandler(async (req, res) => {
     data: roadmap,
   });
 });
+
+/**
+ * GET /api/roadmaps/pending
+ * Get all roadmaps pending review (ADMIN only).
+ */
+exports.getPendingRoadmaps = asyncHandler(async (req, res) => {
+  const skip = parseInt(req.query.skip) || 0;
+  const take = parseInt(req.query.take) || 20;
+
+  const result = await roadmapService.getPendingRoadmaps({ skip, take });
+
+  return sendSuccess(res, {
+    message: 'Pending roadmaps retrieved successfully',
+    data: result,
+  });
+});
+
+/**
+ * POST /api/roadmaps/:id/review
+ * Approve or Reject a roadmap (ADMIN only).
+ */
+exports.reviewRoadmap = asyncHandler(async (req, res) => {
+  const roadmap = await roadmapService.reviewRoadmap(req.params.id, req.body);
+
+  return sendSuccess(res, {
+    message: `Roadmap ${req.body.status.toLowerCase()} successfully`,
+    data: roadmap,
+  });
+});
+
+/**
+ * GET /api/roadmaps/stats
+ * Get roadmap status counts (ADMIN only).
+ */
+exports.getRoadmapStats = asyncHandler(async (req, res) => {
+  const stats = await roadmapService.getRoadmapStats();
+
+  return sendSuccess(res, {
+    message: 'Roadmap statistics retrieved successfully',
+    data: stats,
+  });
+});

@@ -221,3 +221,33 @@ export const getTipById = async (tipId) => {
     throw new Error(err?.response?.data?.message || 'Failed to fetch tip');
   }
 };
+
+/**
+ * Fetch all roadmaps pending review (Admin only).
+ * @returns {Promise<Object>} { roadmaps: Array, total: number }
+ */
+export const getPendingRoadmaps = async (skip = 0, take = 20) => {
+  const res = await api.get(`/roadmaps/pending?skip=${skip}&take=${take}`);
+  return res.data.data;
+};
+
+/**
+ * Fetch roadmap status statistics (Admin only).
+ * @returns {Promise<Object>} Status counts
+ */
+export const getRoadmapStatsByAdmin = async () => {
+  const res = await api.get('/roadmaps/stats');
+  return res.data.data;
+};
+
+/**
+ * Approve or Reject a roadmap (Admin only).
+ * @param {string} id - Roadmap ID
+ * @param {string} status - 'APPROVED' or 'REJECTED'
+ * @param {string} feedback - Review feedback
+ * @returns {Promise<Object>} Updated roadmap
+ */
+export const reviewRoadmap = async (id, status, feedback) => {
+  const res = await api.post(`/roadmaps/${id}/review`, { status, feedback });
+  return res.data.data;
+};

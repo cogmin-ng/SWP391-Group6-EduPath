@@ -6,6 +6,7 @@ const userRoutes = require('./user');
 const tipRoutes = require('./tip');
 const notificationRoutes = require('./notification');
 const subjectRoutes = require('./subject');
+const subjectCategoryRoutes = require('./subjectCategory');
 const advisorApplicationRoutes = require('./advisorApplication');
 const quizRoutes = require('./quiz');
 const quizController = require('../controllers/quizController');
@@ -20,6 +21,7 @@ router.use('/users', userRoutes);
 router.use('/tips', tipRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/subjects', subjectRoutes);
+router.use('/subject-categories', subjectCategoryRoutes);
 router.use('/advisor-applications', advisorApplicationRoutes);
 router.use('/quizzes', quizRoutes);
 

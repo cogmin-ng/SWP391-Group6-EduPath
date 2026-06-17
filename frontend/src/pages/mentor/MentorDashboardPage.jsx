@@ -68,6 +68,11 @@ const MentorDashboardPage = () => {
     navigate(`/mentor/roadmaps/${roadmapId}`);
   };
 
+  const handleEditRoadmap = (roadmapId) => {
+    toast.success('Đang chuyển đến trang chỉnh sửa lộ trình...');
+    navigate(`/mentor/roadmaps/${roadmapId}/edit`);
+  };
+
   const handleLearnRoadmap = (roadmapId) => {
     navigate(`/mentor/roadmaps/${roadmapId}/learn`);
   };
@@ -125,10 +130,10 @@ const MentorDashboardPage = () => {
                       Xem
                     </button>
                     <button
-                      onClick={() => handleLearnRoadmap(roadmap.id)}
+                      onClick={() => handleEditRoadmap(roadmap.id)}
                       className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 text-xs rounded-xl font-semibold transition cursor-pointer text-center"
                     >
-                      Xem lộ trình
+                      Chỉnh sửa
                     </button>
                   </div>
                 </div>

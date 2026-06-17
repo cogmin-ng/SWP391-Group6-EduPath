@@ -20,16 +20,22 @@ FROM deps AS build
 COPY backend ./backend
 
 RUN pnpm --filter edupath-backend prisma:generate
-RUN pnpm --filter edupath-backend deploy --prod /prod/backend
 
 FROM node:22-alpine AS runtime
 
-WORKDIR /app/backend
 ENV NODE_ENV=production
 ENV PORT=4000
 
 RUN apk add --no-cache openssl
-COPY --from=build /prod/backend ./
+
+WORKDIR /app
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=build /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/backend ./backend
+
+WORKDIR /app/backend
 
 EXPOSE 4000
 

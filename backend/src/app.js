@@ -34,6 +34,9 @@ const corsOptions = {
   credentials: true,
 };
 
+// Swagger UI uses inline scripts, so keep it outside Helmet's default CSP.
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
+
 app.use(helmet());
 app.use(cors(corsOptions));
 app.use(limiter);
@@ -43,9 +46,6 @@ app.use(cookieParser());
 if (config.nodeEnv === 'development') app.use(morgan('dev'));
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
-
-// Swagger UI
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 app.use('/api', routes);
 

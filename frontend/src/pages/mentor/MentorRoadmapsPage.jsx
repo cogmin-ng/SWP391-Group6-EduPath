@@ -8,6 +8,10 @@ export default function MentorRoadmapsPage() {
     navigate(`/mentor/roadmaps/${roadmapId}`);
   };
 
+  const handleEditRoadmap = (roadmapId) => {
+    navigate(`/mentor/roadmaps/${roadmapId}/edit`);
+  };
+
   const handleLearnRoadmap = (roadmapId) => {
     navigate(`/mentor/roadmaps/${roadmapId}/learn`);
   };
@@ -49,7 +53,7 @@ export default function MentorRoadmapsPage() {
                 Xem
               </button>
               <button
-                onClick={() => handleLearnRoadmap(roadmap.id)}
+                onClick={() => handleEditRoadmap(roadmap.id)}
                 className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 text-xs rounded-xl font-semibold transition cursor-pointer text-center"
               >
                 Chỉnh sửa

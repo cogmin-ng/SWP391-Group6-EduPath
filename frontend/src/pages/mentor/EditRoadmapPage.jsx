@@ -6,38 +6,42 @@ import Input from '../../components/ui/Input';
 import Textarea from '../../components/ui/Textarea';
 import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
-import { myRoadmaps } from '../../mock/mentorDashboardData';
+import { getRoadmapById, updateRoadmap, submitRoadmap } from '../../services/roadmapService';
 
 const EditRoadmapPage = () => {
   const navigate = useNavigate();
   const { roadmapId } = useParams();
-  const location = useLocation();
-
-  // Get roadmap data from state or load from mock data
-  const roadmapData = location.state?.roadmapData || 
-    myRoadmaps.find(r => r.id === parseInt(roadmapId));
-
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
-    name: roadmapData?.title || '',
-    description: roadmapData?.description || '',
+    name: '',
+    description: '',
     category: 'programming',
-    thumbnail: roadmapData?.thumbnail || null,
+    thumbnail: null,
   });
 
-  const [nodes, setNodes] = useState(roadmapData?.nodes || [
-    {
-      id: 1,
-      title: 'Node 1: Giới thiệu',
-      description: 'Tìm hiểu cơ bản',
-      duration: '2 tuần',
-    },
-    {
-      id: 2,
-      title: 'Node 2: Nâng cao',
-      description: 'Kỹ năng nâng cao',
-      duration: '3 tuần',
-    },
-  ]);
+  const [nodes, setNodes] = useState([]);
+
+  useEffect(() => {
+    const fetchRoadmap = async () => {
+      try {
+        setLoading(true);
+        const data = await getRoadmapById(roadmapId);
+        setFormData({
+          name: data.title || '',
+          description: data.description || '',
+          category: 'programming', // Add mapped category if API returns it
+          thumbnail: data.thumbnail || null,
+        });
+        setNodes(data.nodes || []);
+      } catch (error) {
+        console.error('Failed to load roadmap:', error);
+        alert('Lỗi tải dữ liệu lộ trình');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRoadmap();
+  }, [roadmapId]);
 
   const [showNodeForm, setShowNodeForm] = useState(false);
   const [newNode, setNewNode] = useState({ title: '', description: '', duration: '' });
@@ -79,12 +83,47 @@ const EditRoadmapPage = () => {
     });
   };
 
-  const handleSaveDraft = () => {
-    console.log('Save draft:', { formData, nodes });
+  const buildPayload = () => ({
+    title: formData.name,
+    description: formData.description,
+    thumbnail: formData.thumbnail,
+    nodes: nodes.map((n, i) => ({
+      id: n.id, // pass id if updating existing nodes
+      title: n.title,
+      description: n.description,
+      duration: n.duration,
+      orderIndex: i
+    }))
+  });
+
+  const handleSaveDraft = async () => {
+    try {
+      if (!formData.name) return alert('Vui lòng nhập tên lộ trình');
+      const payload = buildPayload();
+      const updated = await updateRoadmap(roadmapId, payload);
+      setNodes(updated.nodes || []);
+      alert('Cập nhật lộ trình thành công!');
+    } catch (err) {
+      console.error(err);
+      alert('Lỗi cập nhật: ' + (err.response?.data?.message || err.message));
+    }
   };
 
-  const handleSubmitApproval = () => {
-    console.log('Submit for approval:', { formData, nodes });
+  const handleSubmitApproval = async () => {
+    try {
+      if (!formData.name) return alert('Vui lòng nhập tên lộ trình');
+      if (nodes.length === 0) return alert('Lộ trình cần ít nhất 1 Node');
+      
+      const payload = buildPayload();
+      await updateRoadmap(roadmapId, payload);
+      await submitRoadmap(roadmapId);
+      
+      alert('Gửi phê duyệt thành công!');
+      navigate('/mentor/roadmaps');
+    } catch (err) {
+      console.error(err);
+      alert('Lỗi phê duyệt: ' + (err.response?.data?.message || err.message));
+    }
   };
 
   const categoryOptions = [
@@ -93,6 +132,10 @@ const EditRoadmapPage = () => {
     { value: 'business', label: 'Kinh doanh' },
     { value: 'data', label: 'Dữ liệu' },
   ];
+
+  if (loading) {
+    return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Đang tải...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 py-8">

@@ -41,7 +41,7 @@ const AdminLayout = () => {
         </main>
 
         <footer className="py-6 px-8 text-center text-slate-500 text-sm">
-          &copy; {new Date().getFullYear()} EduPath Admin Dashboard. Built with React & Tailwind.
+          &copy; {new Date().getFullYear()} EduPath - Hệ thống quản trị. Xây dựng bởi React & Tailwind.
         </footer>
       </div>
     </div>

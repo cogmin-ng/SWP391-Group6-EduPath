@@ -15,15 +15,64 @@ import {
 import api from './api';
 
 /**
+ * Fetch mentor roadmaps.
+ * @param {number} skip 
+ * @param {number} take 
+ * @returns {Promise<Object>} { roadmaps: Array, total: number }
+ */
+export const getMentorRoadmaps = async (skip = 0, take = 20) => {
+  const res = await api.get(`/roadmaps/mentor?skip=${skip}&take=${take}`);
+  return res.data.data;
+};
+
+/**
  * Fetch roadmap overview (sidebar data).
  * @param {string} roadmapId
  * @returns {Promise<Object>}
  */
 export const getRoadmapById = async (roadmapId) => {
-  // TODO: Replace with → api.get(`/roadmaps/${roadmapId}`)
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(mockRoadmap), 300);
-  });
+  const res = await api.get(`/roadmaps/${roadmapId}`);
+  return res.data.data;
+};
+
+/**
+ * Create a new roadmap.
+ * @param {Object} roadmapData
+ * @returns {Promise<Object>}
+ */
+export const createRoadmap = async (roadmapData) => {
+  const res = await api.post('/roadmaps', roadmapData);
+  return res.data.data;
+};
+
+/**
+ * Update an existing roadmap along with node synchronization.
+ * @param {string} roadmapId 
+ * @param {Object} roadmapData 
+ * @returns {Promise<Object>}
+ */
+export const updateRoadmap = async (roadmapId, roadmapData) => {
+  const res = await api.put(`/roadmaps/${roadmapId}`, roadmapData);
+  return res.data.data;
+};
+
+/**
+ * Submit a roadmap for review (DRAFT -> PENDING).
+ * @param {string} roadmapId 
+ * @returns {Promise<Object>}
+ */
+export const submitRoadmap = async (roadmapId) => {
+  const res = await api.post(`/roadmaps/${roadmapId}/submit`);
+  return res.data.data;
+};
+
+/**
+ * Delete a roadmap (soft delete).
+ * @param {string} roadmapId 
+ * @returns {Promise<void>}
+ */
+export const deleteRoadmap = async (roadmapId) => {
+  await api.delete(`/roadmaps/${roadmapId}`);
 };
 
 /**
@@ -33,10 +82,9 @@ export const getRoadmapById = async (roadmapId) => {
  * @returns {Promise<Object>}
  */
 export const getNodeDetails = async (roadmapId, nodeId) => {
-  // TODO: Replace with → api.get(`/roadmaps/${roadmapId}/nodes/${nodeId}`)
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(mockNode), 300);
-  });
+  // Using the new node endpoint from nodeService
+  const res = await api.get(`/nodes/${nodeId}`);
+  return res.data.data;
 };
 
 /**
@@ -45,10 +93,8 @@ export const getNodeDetails = async (roadmapId, nodeId) => {
  * @returns {Promise<Array>}
  */
 export const getChecklist = async (nodeId) => {
-  // TODO: Replace with → api.get(`/nodes/${nodeId}/checklist`)
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(mockChecklist), 200);
-  });
+  const res = await api.get(`/nodes/${nodeId}`);
+  return res.data.data.checklists || [];
 };
 
 /**
@@ -57,10 +103,8 @@ export const getChecklist = async (nodeId) => {
  * @returns {Promise<Array>}
  */
 export const getMaterials = async (nodeId) => {
-  // TODO: Replace with → api.get(`/nodes/${nodeId}/materials`)
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(mockMaterials), 200);
-  });
+  const res = await api.get(`/nodes/${nodeId}`);
+  return res.data.data.materials || [];
 };
 
 /**
@@ -176,4 +220,34 @@ export const getTipById = async (tipId) => {
   } catch (err) {
     throw new Error(err?.response?.data?.message || 'Failed to fetch tip');
   }
+};
+
+/**
+ * Fetch all roadmaps pending review (Admin only).
+ * @returns {Promise<Object>} { roadmaps: Array, total: number }
+ */
+export const getPendingRoadmaps = async (skip = 0, take = 20) => {
+  const res = await api.get(`/roadmaps/pending?skip=${skip}&take=${take}`);
+  return res.data.data;
+};
+
+/**
+ * Fetch roadmap status statistics (Admin only).
+ * @returns {Promise<Object>} Status counts
+ */
+export const getRoadmapStatsByAdmin = async () => {
+  const res = await api.get('/roadmaps/stats');
+  return res.data.data;
+};
+
+/**
+ * Approve or Reject a roadmap (Admin only).
+ * @param {string} id - Roadmap ID
+ * @param {string} status - 'APPROVED' or 'REJECTED'
+ * @param {string} feedback - Review feedback
+ * @returns {Promise<Object>} Updated roadmap
+ */
+export const reviewRoadmap = async (id, status, feedback) => {
+  const res = await api.post(`/roadmaps/${id}/review`, { status, feedback });
+  return res.data.data;
 };

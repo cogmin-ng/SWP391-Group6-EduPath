@@ -40,7 +40,7 @@ function PlaceholderPage({ title }) {
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
       <div className="text-center">
         <h1 className="text-3xl font-bold text-slate-900 mb-4">{title}</h1>
-        <p className="text-slate-500">This page is under development.</p>
+        <p className="text-slate-500">Trang này đang trong quá trình phát triển.</p>
       </div>
     </div>
   );
@@ -236,13 +236,13 @@ export default function AppRoutes() {
             <div className="text-center">
               <h1 className="text-6xl font-bold text-slate-900 mb-4">404</h1>
               <p className="text-slate-500 mb-6">
-                Oops! The page you're looking for doesn't exist.
+                Rất tiếc! Trang bạn đang tìm kiếm không tồn tại.
               </p>
               <a
                 href="/admin/dashboard"
                 className="text-indigo-600 font-semibold hover:underline"
               >
-                Go back to Dashboard
+                Quay lại Bảng điều khiển
               </a>
             </div>
           </div>

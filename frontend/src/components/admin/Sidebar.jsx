@@ -24,13 +24,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     }
   };
   const menuItems = [
-    { title: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
-    { title: 'User Management', icon: Users, path: '/admin/users' },
-    { title: 'Category Management', icon: Layers, path: '/admin/categories' },
-    { title: 'Roadmap Approval', icon: CheckCircle, path: '/admin/roadmaps' },
-    { title: 'Mentor Requests', icon: UserPlus, path: '/admin/mentors' },
-    { title: 'Reports', icon: BarChart3, path: '/admin/reports' },
-    { title: 'Settings', icon: Settings, path: '/admin/settings' },
+    { title: 'Bảng điều khiển', icon: LayoutDashboard, path: '/admin/dashboard' },
+    { title: 'Quản lý người dùng', icon: Users, path: '/admin/users' },
+    { title: 'Quản lý danh mục', icon: Layers, path: '/admin/categories' },
+    { title: 'Phê duyệt lộ trình', icon: CheckCircle, path: '/admin/roadmaps' },
+    { title: 'Yêu cầu Mentor', icon: UserPlus, path: '/admin/mentors' },
+    { title: 'Báo cáo', icon: BarChart3, path: '/admin/reports' },
+    { title: 'Cài đặt', icon: Settings, path: '/admin/settings' },
   ];
 
   return (
@@ -54,7 +54,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center flex-shrink-0">
                 <span className="font-bold text-lg">E</span>
               </div>
-              {isOpen && <span className="font-bold text-xl tracking-tight">EduPath Admin</span>}
+              {isOpen && <span className="font-bold text-xl tracking-tight">EduPath Quản trị</span>}
             </div>
           </div>
 
@@ -91,7 +91,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               ${isOpen ? '' : 'justify-center'}
             `}>
               <LogOut className="w-5 h-5" />
-              {isOpen && <span className="font-medium">Logout</span>}
+              {isOpen && <span className="font-medium">Đăng xuất</span>}
             </button>
           </div>
         </div>

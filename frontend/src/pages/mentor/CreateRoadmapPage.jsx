@@ -6,7 +6,10 @@ import Input from '../../components/ui/Input';
 import Textarea from '../../components/ui/Textarea';
 import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
+import NodeDetailEditor from '../../components/mentor/NodeDetailEditor';
 import { createRoadmap, submitRoadmap, getMentorRoadmaps, deleteRoadmap } from '../../services/roadmapService';
+
+const EMPTY_NODE = { title: '', description: '', duration: '', checklists: [], materials: [] };
 
 const CreateRoadmapPage = () => {
   const navigate = useNavigate();
@@ -20,7 +23,8 @@ const CreateRoadmapPage = () => {
   const [nodes, setNodes] = useState([]);
 
   const [showNodeForm, setShowNodeForm] = useState(false);
-  const [newNode, setNewNode] = useState({ title: '', description: '', duration: '' });
+  const [newNode, setNewNode] = useState({ ...EMPTY_NODE });
+  const [editingNodeId, setEditingNodeId] = useState(null);
   const [drafts, setDrafts] = useState([]);
 
   const loadDrafts = async () => {
@@ -70,27 +74,56 @@ const CreateRoadmapPage = () => {
     }
   };
 
-  const handleAddNode = () => {
-    if (newNode.title.trim()) {
-      setNodes(prev => [
-        ...prev,
-        { id: Date.now(), ...newNode }
-      ]);
-      setNewNode({ title: '', description: '', duration: '' });
-      setShowNodeForm(false);
+  const resetNodeForm = () => {
+    setNewNode({ ...EMPTY_NODE });
+    setEditingNodeId(null);
+    setShowNodeForm(false);
+  };
+
+  const handleSaveNode = () => {
+    if (!newNode.title.trim()) return;
+
+    if (editingNodeId !== null) {
+      // Cập nhật node đang chỉnh sửa (giữ nguyên vị trí)
+      setNodes(prev =>
+        prev.map(node =>
+          node.id === editingNodeId ? { ...node, ...newNode } : node
+        )
+      );
+    } else {
+      // Thêm node mới
+      setNodes(prev => [...prev, { id: Date.now(), ...newNode }]);
+    }
+
+    resetNodeForm();
+  };
+
+  const handleToggleNodeForm = () => {
+    if (showNodeForm) {
+      resetNodeForm();
+    } else {
+      setNewNode({ ...EMPTY_NODE });
+      setEditingNodeId(null);
+      setShowNodeForm(true);
     }
   };
 
   const handleDeleteNode = (id) => {
     setNodes(prev => prev.filter(node => node.id !== id));
+    if (editingNodeId === id) resetNodeForm();
   };
 
   const handleEditNode = (node) => {
-    // Populate the form with the node's data
-    setNewNode({ title: node.title, description: node.description, duration: node.duration });
+    // Mở form inline (giống giao diện Thêm Node) với dữ liệu đã điền sẵn
+    setNewNode({
+      title: node.title || '',
+      description: node.description || '',
+      duration: node.duration || '',
+      checklists: node.checklists || [],
+      materials: node.materials || [],
+    });
+    setEditingNodeId(node.id);
     setShowNodeForm(true);
-    // Remove the old one, since they will "Add" it again after editing
-    handleDeleteNode(node.id);
   };
 
   const buildPayload = () => ({
@@ -101,7 +134,9 @@ const CreateRoadmapPage = () => {
       title: n.title,
       description: n.description,
       duration: n.duration,
-      orderIndex: i
+      orderIndex: i,
+      checklists: n.checklists || [],
+      materials: n.materials || [],
     }))
   });
 
@@ -273,7 +308,7 @@ const CreateRoadmapPage = () => {
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={() => setShowNodeForm(!showNodeForm)}
+                  onClick={handleToggleNodeForm}
                   className="gap-2"
                 >
                   <Plus className="w-4 h-4" />
@@ -283,6 +318,9 @@ const CreateRoadmapPage = () => {
 
               {showNodeForm && (
                 <div className="bg-slate-50 rounded-xl p-4 mb-4 border border-slate-200">
+                  <h3 className="text-sm font-semibold text-slate-900 mb-3">
+                    {editingNodeId !== null ? 'Chỉnh Sửa Node' : 'Thêm Node Mới'}
+                  </h3>
                   <div className="space-y-3">
                     <Input
                       placeholder="Tên Node"
@@ -300,19 +338,32 @@ const CreateRoadmapPage = () => {
                       value={newNode.duration}
                       onChange={(e) => setNewNode(prev => ({ ...prev, duration: e.target.value }))}
                     />
+
+                    {/* Chi tiết Node: Checklist, Tài liệu & Quiz */}
+                    <div className="pt-2">
+                      <NodeDetailEditor
+                        checklists={newNode.checklists || []}
+                        onChecklistsChange={(items) => setNewNode(prev => ({ ...prev, checklists: items }))}
+                        materials={newNode.materials || []}
+                        onMaterialsChange={(mats) => setNewNode(prev => ({ ...prev, materials: mats }))}
+                        roadmapId={null}
+                        nodeId={editingNodeId}
+                      />
+                    </div>
+
                     <div className="flex gap-2 pt-2">
                       <Button
                         size="sm"
                         variant="primary"
-                        onClick={handleAddNode}
+                        onClick={handleSaveNode}
                         className="flex-1"
                       >
-                        Thêm
+                        {editingNodeId !== null ? 'Lưu' : 'Thêm'}
                       </Button>
                       <Button
                         size="sm"
                         variant="secondary"
-                        onClick={() => setShowNodeForm(false)}
+                        onClick={resetNodeForm}
                         className="flex-1"
                       >
                         Hủy
@@ -347,6 +398,11 @@ const CreateRoadmapPage = () => {
                             <h3 className="font-semibold text-slate-900">{node.title}</h3>
                             <p className="text-sm text-slate-600 mt-1">{node.description}</p>
                             <p className="text-xs text-slate-500 mt-2">Thời lượng: {node.duration}</p>
+                            {((node.checklists?.length || 0) > 0 || (node.materials?.length || 0) > 0) && (
+                              <p className="text-xs text-indigo-500 mt-1">
+                                {node.checklists?.length || 0} checklist · {node.materials?.length || 0} tài liệu
+                              </p>
+                            )}
                           </div>
                           <div className="flex gap-2">
                             <button

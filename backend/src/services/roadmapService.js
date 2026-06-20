@@ -5,6 +5,7 @@ const {
   findLearningPathIdBySlug,
   toRoadmapSlug,
 } = require('../utils/roadmapSlug');
+const nodeRepository = require('../repositories/nodeRepository');
 
 const MSG = {
   notFound: 'Roadmap not found',
@@ -73,7 +74,7 @@ exports.createRoadmap = async (data, mentorId) => {
 
   const nodes = data.nodes || [];
 
-  const roadmap = await prisma.$transaction(async (tx) => {
+  const roadmapId = await prisma.$transaction(async (tx) => {
     const created = await roadmapRepository.create(
       {
         title: resolvedTitle,
@@ -93,10 +94,28 @@ exports.createRoadmap = async (data, mentorId) => {
       },
       tx
     );
-    return created;
+
+    // Persist each node's detail (checklists & materials). Created nodes come
+    // back ordered by orderIndex, matching the input node order.
+    const createdNodes = [...(created.nodes || [])].sort(
+      (a, b) => a.orderIndex - b.orderIndex
+    );
+    for (let i = 0; i < nodes.length; i++) {
+      const input = nodes[i];
+      const target = createdNodes[i];
+      if (!target) continue;
+      if (Array.isArray(input.checklists)) {
+        await nodeRepository.syncChecklists(target.id, input.checklists, tx);
+      }
+      if (Array.isArray(input.materials)) {
+        await nodeRepository.syncMaterials(target.id, input.materials, tx);
+      }
+    }
+
+    return created.id;
   });
 
-  return roadmap;
+  return roadmapRepository.findById(roadmapId);
 };
 
 /**

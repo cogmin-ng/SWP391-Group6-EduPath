@@ -1,5 +1,23 @@
 const Joi = require('joi');
 
+const nodeChecklistSchema = Joi.object({
+  id: Joi.any().optional(), // Can have temporary client-side IDs (e.g. "temp-...")
+  title: Joi.string().trim().required(),
+  description: Joi.string().trim().allow('', null).optional(),
+  orderIndex: Joi.number().integer().min(0).optional(),
+  xpReward: Joi.number().integer().min(0).optional(),
+  completed: Joi.boolean().optional(), // client-only flag, ignored on save
+});
+
+const nodeMaterialSchema = Joi.object({
+  id: Joi.any().optional(), // Can have temporary client-side IDs (e.g. "staged-...")
+  title: Joi.string().trim().required(),
+  description: Joi.string().trim().allow('', null).optional(),
+  url: Joi.string().trim().allow('', null).optional(), // not strict URI: allows placeholder "#"
+  type: Joi.string().trim().default('LINK'),
+  size: Joi.string().trim().allow('', null).optional(), // client-only metadata, ignored on save
+});
+
 const roadmapNodeSchema = Joi.object({
   id: Joi.any().optional(), // Can have temporary client-side IDs
   title: Joi.string().trim().required().messages({
@@ -9,6 +27,8 @@ const roadmapNodeSchema = Joi.object({
   description: Joi.string().trim().allow('', null).optional(),
   orderIndex: Joi.number().integer().min(0).optional(),
   duration: Joi.string().trim().allow('', null).optional(), // Allowed for compatibility with frontend
+  checklists: Joi.array().items(nodeChecklistSchema).optional(),
+  materials: Joi.array().items(nodeMaterialSchema).optional(),
 });
 
 const createRoadmapSchema = Joi.object({
@@ -53,7 +73,7 @@ const updateRoadmapSchema = Joi.object({
 
 const reviewRoadmapSchema = Joi.object({
   status: Joi.string().valid('APPROVED', 'REJECTED', 'PUBLISHED').required(),
-  feedback: Joi.string().trim().max(1000).optional(),
+  feedback: Joi.string().trim().max(1000).allow('', null).optional(),
 });
 
 module.exports = {

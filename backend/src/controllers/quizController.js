@@ -15,11 +15,39 @@ exports.createQuiz = asyncHandler(async (req, res) => {
 
 exports.getQuizById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const quiz = await quizService.getQuizById(id);
+  const quiz = await quizService.getQuizById(id, req.user.id, req.user.roles);
 
   return sendSuccess(res, {
     message: 'Quiz retrieved successfully',
     data: quiz,
+  });
+});
+
+exports.submitQuizAttempt = asyncHandler(async (req, res) => {
+  const result = await quizService.submitQuizAttempt(
+    req.params.id,
+    req.body.answers,
+    req.user.id,
+    req.user.roles
+  );
+
+  return sendSuccess(res, {
+    statusCode: 201,
+    message: 'Quiz submitted successfully',
+    data: result,
+  });
+});
+
+exports.getMyQuizAttempts = asyncHandler(async (req, res) => {
+  const attempts = await quizService.getMyQuizAttempts(
+    req.params.id,
+    req.user.id,
+    req.user.roles
+  );
+
+  return sendSuccess(res, {
+    message: 'Quiz attempts retrieved successfully',
+    data: attempts,
   });
 });
 

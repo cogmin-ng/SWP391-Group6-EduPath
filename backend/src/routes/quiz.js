@@ -2,7 +2,10 @@ const Router = require('express').Router;
 const quizController = require('../controllers/quizController');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const validateSchema = require('../middleware/validateSchema');
-const { createQuizSchema, updateQuizSchema } = require('../validators/quiz.validator');
+const {
+  createQuizSchema,
+  updateQuizSchema,
+} = require('../validators/quiz.validator');
 
 const router = Router();
 
@@ -120,12 +123,11 @@ router.post(
  *       404:
  *         description: Quiz not found
  */
-router.get(
-  '/:id',
-  requireAuth,
-  requireRole(['MENTOR']),
-  quizController.getQuizById
-);
+router.get('/:id', requireAuth, quizController.getQuizById);
+
+router.post('/:id/attempts', requireAuth, quizController.submitQuizAttempt);
+
+router.get('/:id/attempts/me', requireAuth, quizController.getMyQuizAttempts);
 
 /**
  * @swagger

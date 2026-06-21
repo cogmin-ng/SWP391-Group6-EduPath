@@ -1,4 +1,4 @@
-import { CheckCircle2, XCircle, HelpCircle, BrainCircuit, Star, ArrowLeft, RotateCcw } from 'lucide-react';
+import { CheckCircle2, XCircle, HelpCircle, BrainCircuit, ArrowLeft, RotateCcw } from 'lucide-react';
 
 function findOption(options, optId) {
   return options.find((o) => o.id === optId);
@@ -18,17 +18,17 @@ export default function QuizResult({ questions, answers, onGoBack, onRetry }) {
         <div className="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-4">
           <BrainCircuit className="w-8 h-8 text-indigo-600" />
         </div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-1">Quiz Complete!</h2>
-        <p className="text-slate-500 mb-6">Here&apos;s how you performed</p>
+        <h2 className="text-2xl font-bold text-slate-900 mb-1">Bạn đã hoàn thành bài kiểm tra!</h2>
+        <p className="text-slate-500 mb-6">Đây là kết quả của bạn</p>
 
         <div className="grid grid-cols-3 gap-4 mb-6 max-w-sm mx-auto">
           <div className="bg-indigo-50 rounded-xl p-4">
             <p className="text-3xl font-bold text-indigo-600">{correctCount}/{total}</p>
-            <p className="text-xs text-slate-500 mt-1">Correct</p>
+            <p className="text-xs text-slate-500 mt-1">Đúng</p>
           </div>
           <div className="bg-green-50 rounded-xl p-4">
             <p className="text-3xl font-bold text-green-600">{accuracy}%</p>
-            <p className="text-xs text-slate-500 mt-1">Accuracy</p>
+            <p className="text-xs text-slate-500 mt-1">Độ chính xác</p>
           </div>
           <div className="bg-amber-50 rounded-xl p-4">
             <p className="text-3xl font-bold text-amber-600">+{correctCount * 10}</p>
@@ -37,19 +37,19 @@ export default function QuizResult({ questions, answers, onGoBack, onRetry }) {
         </div>
 
         <div className="flex gap-3 justify-center">
-          <button onClick={onGoBack} className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-outline text-on-surface-variant hover:bg-surface-container transition-colors text-sm font-semibold">
-            <ArrowLeft className="w-4 h-4" /> Back
+            <button onClick={onGoBack} className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-outline text-on-surface-variant hover:bg-surface-container transition-colors text-sm font-semibold">
+            <ArrowLeft className="w-4 h-4" /> Quay lại
           </button>
           {onRetry && (
             <button onClick={onRetry} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors text-sm font-semibold">
-              <RotateCcw className="w-4 h-4" /> Retry
+              <RotateCcw className="w-4 h-4" /> Làm lại
             </button>
           )}
         </div>
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-lg font-bold text-slate-900">Detailed Review</h3>
+        <h3 className="text-lg font-bold text-slate-900">Chi tiết bài làm</h3>
         {questions.map((q, idx) => {
           const selectedId = answers[idx];
           const selected = selectedId ? findOption(q.options, selectedId) : null;
@@ -71,7 +71,7 @@ export default function QuizResult({ questions, answers, onGoBack, onRetry }) {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-500 mb-1">Question {idx + 1}</p>
+                  <p className="text-sm font-medium text-slate-500 mb-1">Câu hỏi {idx + 1}</p>
                   <p className="text-sm font-semibold text-slate-900 mb-3">{q.question}</p>
 
                   <div className="grid grid-cols-1 gap-2">
@@ -92,8 +92,8 @@ export default function QuizResult({ questions, answers, onGoBack, onRetry }) {
                           {!isSelected && !isCorrectOpt && <span className="w-4 shrink-0" />}
                           <span className="font-medium">{opt.id}.</span>
                           <span>{opt.label}</span>
-                          {isCorrectOpt && <span className="ml-auto text-xs font-medium">Correct Answer</span>}
-                          {isSelected && !isCorrectOpt && <span className="ml-auto text-xs font-medium">Your Answer</span>}
+                          {isCorrectOpt && <span className="ml-auto text-xs font-medium">Đáp án đúng</span>}
+                          {isSelected && !isCorrectOpt && <span className="ml-auto text-xs font-medium">Câu trả lời của bạn</span>}
                         </div>
                       );
                     })}

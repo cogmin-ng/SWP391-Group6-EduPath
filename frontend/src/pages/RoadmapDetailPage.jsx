@@ -6,8 +6,8 @@ import MenteeHeader from '../components/mentee/MenteeHeader';
 import Button from '../components/ui/Button';
 import RoadmapTimeline from './mentee/features/explore/components/RoadmapTimeline';
 import { getRoadmapBySlug } from './mentee/features/explore/data/roadmaps';
-import { enrollRoadmap, isEnrolled } from './mentee/features/enrollments/storage';
 import { isFavorited, toggleFavorite } from './mentee/features/enrollments/favorites';
+import { enrollInRoadmapBySlug, getMyEnrollmentBySlug } from '../services/enrollmentService';
 
 const initialReviews = [
   {
@@ -30,17 +30,33 @@ export default function RoadmapDetailPage() {
   const { slug } = useParams();
   const roadmap = getRoadmapBySlug(slug);
   const [enrolled, setEnrolled] = useState(false);
-  const [favorited, setFavorited] = useState(false);
+  const [favorited, setFavorited] = useState(() => isFavorited(slug));
   const [reviews, setReviews] = useState(initialReviews);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [hoverRating, setHoverRating] = useState(0);
 
   useEffect(() => {
-    if (roadmap?.slug) {
-      setEnrolled(isEnrolled(roadmap.slug));
-      setFavorited(isFavorited(roadmap.slug));
-    }
+    if (!roadmap?.slug) return;
+
+    let isMounted = true;
+
+    const loadEnrollment = async () => {
+      try {
+        const enrollment = await getMyEnrollmentBySlug(roadmap.slug);
+        if (!isMounted) return;
+        setEnrolled(Boolean(enrollment));
+      } catch {
+        if (!isMounted) return;
+        setEnrolled(false);
+      }
+    };
+
+    loadEnrollment();
+
+    return () => {
+      isMounted = false;
+    };
   }, [roadmap?.slug]);
 
   if (!roadmap) {
@@ -58,10 +74,14 @@ export default function RoadmapDetailPage() {
     toast.success('Đã gửi đánh giá thành công.');
   };
 
-  const handleEnroll = () => {
-    enrollRoadmap(roadmap.slug);
-    setEnrolled(true);
-    toast.success('Đã đăng ký thành công. Xem lộ trình của tôi.');
+  const handleEnroll = async () => {
+    try {
+      await enrollInRoadmapBySlug(roadmap.slug);
+      setEnrolled(true);
+      toast.success('Đã đăng ký thành công. Xem lộ trình của tôi.');
+    } catch (error) {
+      toast.error(error?.response?.data?.message || 'Không thể đăng ký lộ trình này.');
+    }
   };
 
   const handleToggleFavorite = () => {

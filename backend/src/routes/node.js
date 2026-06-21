@@ -31,6 +31,14 @@ const router = Router();
  */
 router.get('/:id', requireAuth, nodeController.getNodeDetails);
 
+router.put(
+  '/:id/checklists/:checklistId/toggle',
+  requireAuth,
+  nodeController.toggleChecklistProgress
+);
+
+router.put('/:id/progress', requireAuth, nodeController.updateNodeProgress);
+
 /**
  * @swagger
  * /api/nodes/{id}/details:

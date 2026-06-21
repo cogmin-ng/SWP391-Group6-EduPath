@@ -4,14 +4,7 @@
 // when the backend endpoints are ready.
 // ============================================================
 
-import {
-  mockRoadmap,
-  mockNode,
-  mockChecklist,
-  mockMaterials,
-  mockQuiz,
-  mockTips,
-} from '../mock/menteeNodeDetailData';
+import { mockQuiz, mockTips } from '../mock/menteeNodeDetailData';
 import api from './api';
 
 /**
@@ -32,6 +25,11 @@ export const getMentorRoadmaps = async (skip = 0, take = 20) => {
  */
 export const getRoadmapById = async (roadmapId) => {
   const res = await api.get(`/roadmaps/${roadmapId}`);
+  return res.data.data;
+};
+
+export const getRoadmapBySlug = async (slug) => {
+  const res = await api.get(`/roadmaps/slug/${slug}`);
   return res.data.data;
 };
 
@@ -81,7 +79,7 @@ export const deleteRoadmap = async (roadmapId) => {
  * @param {string} nodeId
  * @returns {Promise<Object>}
  */
-export const getNodeDetails = async (roadmapId, nodeId) => {
+export const getNodeDetails = async (_roadmapId, nodeId) => {
   // Using the new node endpoint from nodeService
   const res = await api.get(`/nodes/${nodeId}`);
   return res.data.data;
@@ -112,7 +110,7 @@ export const getMaterials = async (nodeId) => {
  * @param {string} nodeId
  * @returns {Promise<Object>}
  */
-export const getQuiz = async (nodeId) => {
+export const getQuiz = async () => {
   // TODO: Replace with → api.get(`/nodes/${nodeId}/quiz`)
   return new Promise((resolve) => {
     setTimeout(() => resolve(mockQuiz), 200);
@@ -128,7 +126,7 @@ export const getTips = async (nodeId) => {
   try {
     const res = await api.get(`/tips/node/${nodeId}`);
     return res.data.data;
-  } catch (err) {
+  } catch {
     // fallback to mock
     return new Promise((resolve) => {
       setTimeout(() => resolve(mockTips), 200);
@@ -159,8 +157,11 @@ export const getPendingTips = async (skip = 0, take = 10) => {
   try {
     const res = await api.get(`/tips/pending?skip=${skip}&take=${take}`);
     return res.data.data;
-  } catch (err) {
-    throw new Error(err?.response?.data?.message || 'Failed to fetch pending tips');
+  } catch (error) {
+    throw new Error(
+      error?.response?.data?.message || 'Failed to fetch pending tips',
+      { cause: error }
+    );
   }
 };
 
@@ -173,8 +174,10 @@ export const approveTip = async (tipId) => {
   try {
     const res = await api.put(`/tips/${tipId}/approve`);
     return res.data.data;
-  } catch (err) {
-    throw new Error(err?.response?.data?.message || 'Failed to approve tip');
+  } catch (error) {
+    throw new Error(error?.response?.data?.message || 'Failed to approve tip', {
+      cause: error,
+    });
   }
 };
 
@@ -188,8 +191,10 @@ export const rejectTip = async (tipId, rejectReason) => {
   try {
     const res = await api.put(`/tips/${tipId}/reject`, { rejectReason });
     return res.data.data;
-  } catch (err) {
-    throw new Error(err?.response?.data?.message || 'Failed to reject tip');
+  } catch (error) {
+    throw new Error(error?.response?.data?.message || 'Failed to reject tip', {
+      cause: error,
+    });
   }
 };
 
@@ -203,8 +208,11 @@ export const getContributionHistory = async (skip = 0, take = 10) => {
   try {
     const res = await api.get(`/tips/my-contributions?skip=${skip}&take=${take}`);
     return res.data.data;
-  } catch (err) {
-    throw new Error(err?.response?.data?.message || 'Failed to fetch contribution history');
+  } catch (error) {
+    throw new Error(
+      error?.response?.data?.message || 'Failed to fetch contribution history',
+      { cause: error }
+    );
   }
 };
 
@@ -217,8 +225,10 @@ export const getTipById = async (tipId) => {
   try {
     const res = await api.get(`/tips/${tipId}`);
     return res.data.data;
-  } catch (err) {
-    throw new Error(err?.response?.data?.message || 'Failed to fetch tip');
+  } catch (error) {
+    throw new Error(error?.response?.data?.message || 'Failed to fetch tip', {
+      cause: error,
+    });
   }
 };
 

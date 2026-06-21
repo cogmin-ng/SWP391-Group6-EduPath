@@ -3,9 +3,13 @@ import { Plus, CheckCircle2, Edit, Eye, LayoutList, Trophy, Star, Trash2, Loader
 import { useNavigate, useParams } from 'react-router-dom';
 import { deleteQuiz } from '../../services/quizService';
 
-const QuizSection = ({ quizzes, onRefresh }) => {
+const QuizSection = ({ quizzes, onRefresh, roadmapId: roadmapIdProp, nodeId: nodeIdProp }) => {
   const navigate = useNavigate();
-  const { roadmapId, nodeId } = useParams();
+  const params = useParams();
+  // Allow passing roadmapId/nodeId as props (e.g. embedded inside the roadmap
+  // edit form where the URL has no :nodeId param); fall back to route params.
+  const roadmapId = roadmapIdProp ?? params.roadmapId;
+  const nodeId = nodeIdProp ?? params.nodeId;
   const [deletingId, setDeletingId] = useState(null);
 
   const handleCreateQuiz = () => {

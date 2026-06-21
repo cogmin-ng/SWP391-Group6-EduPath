@@ -1,4 +1,5 @@
 const prisma = require('../lib/prisma');
+const nodeRepository = require('./nodeRepository');
 
 const ACTIVE_FILTER = { isDeleted: false };
 
@@ -19,6 +20,24 @@ const ROADMAP_INCLUDE = {
       orderIndex: true,
       createdAt: true,
       updatedAt: true,
+      checklists: {
+        where: ACTIVE_FILTER,
+        orderBy: { orderIndex: 'asc' },
+      },
+      materials: {
+        where: ACTIVE_FILTER,
+        orderBy: { createdAt: 'asc' },
+      },
+      quizzes: {
+        where: ACTIVE_FILTER,
+        orderBy: { createdAt: 'asc' },
+        select: {
+          id: true,
+          title: true,
+          passingScore: true,
+          xpReward: true,
+        },
+      },
     },
   },
 };
@@ -185,6 +204,7 @@ exports.syncNodes = async (learningPathId, nodes, tx = prisma) => {
     const isExisting =
       node.id && typeof node.id === 'string' && existingIds.includes(node.id);
 
+    let nodeId;
     if (isExisting) {
       await tx.node.update({
         where: { id: node.id },
@@ -195,8 +215,9 @@ exports.syncNodes = async (learningPathId, nodes, tx = prisma) => {
           updatedAt: new Date(),
         },
       });
+      nodeId = node.id;
     } else {
-      await tx.node.create({
+      const created = await tx.node.create({
         data: {
           learningPathId,
           title: node.title,
@@ -204,6 +225,15 @@ exports.syncNodes = async (learningPathId, nodes, tx = prisma) => {
           orderIndex,
         },
       });
+      nodeId = created.id;
+    }
+
+    // Sync node details (checklists & materials) when provided by the client
+    if (Array.isArray(node.checklists)) {
+      await nodeRepository.syncChecklists(nodeId, node.checklists, tx);
+    }
+    if (Array.isArray(node.materials)) {
+      await nodeRepository.syncMaterials(nodeId, node.materials, tx);
     }
   }
 };

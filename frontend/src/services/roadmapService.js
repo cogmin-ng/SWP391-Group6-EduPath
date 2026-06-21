@@ -258,6 +258,8 @@ export const getRoadmapStatsByAdmin = async () => {
  * @returns {Promise<Object>} Updated roadmap
  */
 export const reviewRoadmap = async (id, status, feedback) => {
-  const res = await api.post(`/roadmaps/${id}/review`, { status, feedback });
+  const payload = { status };
+  if (feedback && feedback.trim()) payload.feedback = feedback.trim();
+  const res = await api.post(`/roadmaps/${id}/review`, payload);
   return res.data.data;
 };

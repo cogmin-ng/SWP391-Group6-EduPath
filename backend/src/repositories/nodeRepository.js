@@ -10,7 +10,7 @@ exports.findByIdWithDetails = async (id) => {
     where: { id, ...ACTIVE_FILTER },
     include: {
       learningPath: {
-        select: { mentorId: true, status: true },
+        select: { id: true, mentorId: true, status: true, isPublic: true },
       },
       checklists: {
         where: ACTIVE_FILTER,
@@ -23,6 +23,12 @@ exports.findByIdWithDetails = async (id) => {
       quizzes: {
         where: ACTIVE_FILTER,
         orderBy: { createdAt: 'asc' },
+        include: {
+          questions: {
+            where: ACTIVE_FILTER,
+            select: { id: true },
+          },
+        },
       },
       tips: {
         where: ACTIVE_FILTER,

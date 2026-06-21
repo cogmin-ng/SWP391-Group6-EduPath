@@ -22,7 +22,6 @@ function generateNodeData(phase, phaseIndex, totalPhases) {
     description: `${phase.highlights?.join(', ') || ''}`,
     nodeNumber: phaseIndex + 1,
     totalNodes: totalPhases,
-    level: phaseIndex === 0 ? 'Beginner' : phaseIndex === totalPhases - 1 ? 'Advanced' : 'Intermediate',
     estimatedHours: parseInt(phase.weeks) * 3 || 8,
     mentorGuided: true,
     updatedAt: 'Oct 24',

@@ -147,6 +147,8 @@ router.get(
 
 // --- Parametric Routes ---
 
+router.get('/slug/:slug', requireAuth, roadmapController.getRoadmapBySlug);
+
 /**
  * @swagger
  * /api/roadmaps/{id}:

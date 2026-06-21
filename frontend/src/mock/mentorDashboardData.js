@@ -44,7 +44,6 @@ export const myRoadmaps = [
     description: 'Lộ trình hoàn chỉnh để phát triển web fullstack',
     image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
     progress: 72,
-    level: 'Advanced',
     tutor: 'Alex Johnson',
     phases: [
       {
@@ -77,7 +76,6 @@ export const myRoadmaps = [
     description: 'Lộ trình phát triển backend toàn diện',
     image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80',
     progress: 45,
-    level: 'Intermediate',
     tutor: 'Sarah Chen',
     phases: [
       {
@@ -110,7 +108,6 @@ export const myRoadmaps = [
     description: 'Phát triển frontend hiện đại với React',
     image: 'https://images.unsplash.com/photo-1633356713697-4dc2cfc135d1?auto=format&fit=crop&w=800&q=80',
     progress: 28,
-    level: 'Beginner',
     tutor: 'David Miller',
     phases: [
       {
@@ -143,7 +140,6 @@ export const myRoadmaps = [
     description: 'Hướng dẫn phát triển ứng dụng mobile React Native',
     image: 'https://images.unsplash.com/photo-1512941691920-e10d2b1aada4?auto=format&fit=crop&w=800&q=80',
     progress: 60,
-    level: 'Intermediate',
     tutor: 'Emily White',
     phases: [
       {
@@ -176,7 +172,6 @@ export const myRoadmaps = [
     description: 'Từ cơ bản đến khoa học dữ liệu nâng cao',
     image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80',
     progress: 50,
-    level: 'Advanced',
     tutor: 'Michael Brown',
     phases: [
       {
@@ -209,7 +204,6 @@ export const myRoadmaps = [
     description: 'DevOps hoàn chỉnh và hạ tầng đám mây',
     image: 'https://images.unsplash.com/photo-1667482746857-72d2fd0c3e41?auto=format&fit=crop&w=800&q=80',
     progress: 85,
-    level: 'Advanced',
     tutor: 'Chris Davis',
     phases: [
       {

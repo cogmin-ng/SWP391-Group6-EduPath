@@ -16,7 +16,7 @@ export default function ProgressCard({
 }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sticky top-6 animate-fadeIn">
-      <h3 className="text-base font-bold text-slate-900 mb-5">Node Status</h3>
+      <h3 className="text-base font-bold text-slate-900 mb-5">Trạng thái bài học</h3>
 
       {/* Stats rows */}
       <div className="space-y-3.5 mb-6">
@@ -27,13 +27,13 @@ export default function ProgressCard({
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-500">Materials Read</span>
+          <span className="text-sm text-slate-500">Tài liệu đã học</span>
           <span className="text-sm font-bold text-indigo-600">
             {materialsRead}%
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-500">Quizzes</span>
+          <span className="text-sm text-slate-500">Bài kiểm tra</span>
           <span className="text-sm font-bold text-indigo-600">
             {quizzesDone}
           </span>
@@ -46,8 +46,8 @@ export default function ProgressCard({
       {/* Overall progress */}
       <div className="text-center">
         <p className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase mb-2">
-          Current Progress
-        </p>
+            Tiến độ hiện tại
+          </p>
         <div className="relative w-28 h-28 mx-auto mb-1">
           {/* Background circle */}
           <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">

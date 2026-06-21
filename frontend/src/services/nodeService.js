@@ -19,3 +19,17 @@ export const syncNodeDetails = async (nodeId, data) => {
     throw error;
   }
 };
+
+export const toggleChecklistProgress = async (nodeId, checklistId, completed) => {
+  const response = await api.put(`/nodes/${nodeId}/checklists/${checklistId}/toggle`, {
+    completed,
+  });
+  return response.data.data;
+};
+
+export const updateNodeProgress = async (nodeId, completed) => {
+  const response = await api.put(`/nodes/${nodeId}/progress`, {
+    completed,
+  });
+  return response.data.data;
+};

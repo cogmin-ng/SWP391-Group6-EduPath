@@ -14,7 +14,6 @@ const CreateRoadmapPage = () => {
     name: '',
     description: '',
     category: '',
-    level: '',
     thumbnail: null,
   });
 
@@ -144,12 +143,6 @@ const CreateRoadmapPage = () => {
     { value: 'data', label: 'Dữ liệu' },
   ];
 
-  const levelOptions = [
-    { value: 'beginner', label: 'Cơ bản' },
-    { value: 'intermediate', label: 'Trung cấp' },
-    { value: 'advanced', label: 'Nâng cao' },
-  ];
-
   return (
     <div className="min-h-screen bg-slate-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
@@ -230,13 +223,6 @@ const CreateRoadmapPage = () => {
                     name="category"
                     options={categoryOptions}
                     value={formData.category}
-                    onChange={handleInputChange}
-                  />
-                  <Select
-                    label="Trình Độ"
-                    name="level"
-                    options={levelOptions}
-                    value={formData.level}
                     onChange={handleInputChange}
                   />
                 </div>

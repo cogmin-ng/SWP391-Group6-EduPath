@@ -17,7 +17,9 @@ import {
   Eye,
   Play
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { getPendingRoadmaps, getRoadmapStatsByAdmin, reviewRoadmap } from '../../services/roadmapService';
+import RoadmapDetailModal from '../../components/admin/RoadmapDetailModal';
 
 const RoadmapApprovalPage = () => {
   const [selectedRoadmap, setSelectedRoadmap] = useState(null);
@@ -25,6 +27,8 @@ const RoadmapApprovalPage = () => {
   const [roadmaps, setRoadmaps] = useState([]);
   const [statsData, setStatsData] = useState({});
   const [loading, setLoading] = useState(true);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
   const fetchStats = async () => {
     try {
@@ -58,15 +62,26 @@ const RoadmapApprovalPage = () => {
   }, []);
 
   const handleReview = async (roadmapId, status, feedback = '') => {
+    const isReject = status === 'REJECTED';
+    if (isReject && !window.confirm('Bạn có chắc muốn từ chối lộ trình này?')) {
+      return;
+    }
+
     try {
+      setProcessing(true);
       await reviewRoadmap(roadmapId, status, feedback);
-      alert(`Lộ trình đã được ${status === 'APPROVED' ? 'phê duyệt' : 'từ chối'} thành công!`);
+      toast.success(
+        `Lộ trình đã được ${isReject ? 'từ chối' : 'phê duyệt'} thành công!`
+      );
+      setDetailOpen(false);
       // Refresh data
       fetchStats();
       fetchRoadmaps();
     } catch (err) {
       console.error('Failed to review roadmap:', err);
-      alert('Có lỗi xảy ra khi thực hiện đánh giá!');
+      toast.error(err?.message || 'Có lỗi xảy ra khi thực hiện đánh giá!');
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -233,7 +248,11 @@ const RoadmapApprovalPage = () => {
                         {selectedRoadmap.title}
                       </h3>
                     </div>
-                    <button className="p-2 bg-white/10 backdrop-blur-md rounded-xl text-white hover:bg-white/20 transition-all">
+                    <button
+                      onClick={() => setDetailOpen(true)}
+                      title="Xem chi tiết"
+                      className="p-2 bg-white/10 backdrop-blur-md rounded-xl text-white hover:bg-white/20 transition-all"
+                    >
                       <ExternalLink className="w-5 h-5" />
                     </button>
                   </div>
@@ -292,16 +311,25 @@ const RoadmapApprovalPage = () => {
 
               {/* Footer Buttons */}
               <div className="p-6 pt-0 flex flex-col gap-3">
-                <button 
+                <button
+                  onClick={() => setDetailOpen(true)}
+                  className="w-full py-3 bg-slate-100 text-slate-700 rounded-[1.25rem] text-sm font-black flex items-center justify-center gap-3 hover:bg-slate-200 transition-all group"
+                >
+                  <Eye className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  Xem chi tiết
+                </button>
+                <button
                   onClick={() => handleReview(selectedRoadmap.id, 'APPROVED')}
-                  className="w-full py-4 bg-emerald-600 text-white rounded-[1.25rem] text-sm font-black flex items-center justify-center gap-3 hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-200 group"
+                  disabled={processing}
+                  className="w-full py-4 bg-emerald-600 text-white rounded-[1.25rem] text-sm font-black flex items-center justify-center gap-3 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl shadow-emerald-200 group"
                 >
                   <CheckCircle2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                  Phê duyệt Lộ trình
+                  {processing ? 'Đang xử lý...' : 'Phê duyệt Lộ trình'}
                 </button>
-                <button 
+                <button
                   onClick={() => handleReview(selectedRoadmap.id, 'REJECTED')}
-                  className="w-full py-4 bg-white text-rose-600 border-2 border-rose-600 rounded-[1.25rem] text-sm font-black flex items-center justify-center gap-3 hover:bg-rose-50 transition-all group"
+                  disabled={processing}
+                  className="w-full py-4 bg-white text-rose-600 border-2 border-rose-600 rounded-[1.25rem] text-sm font-black flex items-center justify-center gap-3 hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all group"
                 >
                   <XCircle className="w-4 h-4 group-hover:scale-110 transition-transform" />
                   Từ chối Lộ trình
@@ -320,6 +348,16 @@ const RoadmapApprovalPage = () => {
         </div>
 
       </div>
+
+      {/* Roadmap Detail Modal */}
+      <RoadmapDetailModal
+        roadmap={selectedRoadmap}
+        isOpen={detailOpen}
+        onClose={() => setDetailOpen(false)}
+        onApprove={(id) => handleReview(id, 'APPROVED')}
+        onReject={(id) => handleReview(id, 'REJECTED')}
+        isProcessing={processing}
+      />
     </div>
   );
 };

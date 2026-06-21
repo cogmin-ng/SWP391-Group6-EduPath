@@ -152,8 +152,12 @@ exports.getRoadmapBySlug = async (slug, userId, roles = []) => {
   const isOwner = roadmap.mentorId === userId;
   const isAdmin = roles.includes('ADMIN');
   const isEnrolled = Boolean(enrollment && enrollment.status !== 'DROPPED');
+  const isPublic =
+    roadmap.isPublic ||
+    roadmap.status === 'APPROVED' ||
+    roadmap.status === 'PUBLISHED';
 
-  if (!isOwner && !isAdmin && !isEnrolled) {
+  if (!isOwner && !isAdmin && !isEnrolled && !isPublic) {
     throw new ApiError(403, MSG.forbidden);
   }
 

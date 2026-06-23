@@ -233,7 +233,7 @@ const RoadmapApprovalPage = () => {
               {/* Preview Header / Image */}
               <div className="relative aspect-video bg-slate-900 overflow-hidden">
                 <img 
-                  src="https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=800" 
+                  src={selectedRoadmap.thumbnail || "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=800"} 
                   alt={selectedRoadmap.title}
                   className="w-full h-full object-cover opacity-80"
                 />

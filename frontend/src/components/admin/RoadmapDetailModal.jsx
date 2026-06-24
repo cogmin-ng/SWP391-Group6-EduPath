@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   XCircle,
   Eye,
+  Lightbulb,
 } from 'lucide-react';
 import NodeDetailModal from './NodeDetailModal';
 
@@ -95,6 +96,35 @@ const RoadmapDetailModal = ({
               </h4>
               <p className="text-sm text-slate-700 whitespace-pre-wrap">
                 {roadmap.description}
+              </p>
+            </div>
+          )}
+
+          {/* Thumbnail Preview */}
+          {roadmap.thumbnail && (
+            <div>
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                Ảnh đại diện
+              </h4>
+              <div className="relative aspect-video rounded-xl overflow-hidden border border-slate-200">
+                <img 
+                  src={roadmap.thumbnail} 
+                  alt={roadmap.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Study Tips (Tip Trick từ Mentor) */}
+          {roadmap.studyTips && (
+            <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-4">
+              <h4 className="flex items-center gap-2 text-xs font-bold text-amber-600 uppercase tracking-wider mb-2">
+                <Lightbulb className="w-3.5 h-3.5" />
+                Tip Trick từ Mentor
+              </h4>
+              <p className="text-sm text-slate-700 whitespace-pre-wrap italic">
+                "{roadmap.studyTips}"
               </p>
             </div>
           )}

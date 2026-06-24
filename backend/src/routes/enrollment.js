@@ -15,5 +15,6 @@ router.patch(
   requireAuth,
   enrollmentController.updateEnrollmentProgressBySlug
 );
+router.get('/', requireAuth, enrollmentController.getMyEnrollments);
 
 module.exports = router;

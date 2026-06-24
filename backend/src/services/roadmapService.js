@@ -11,7 +11,7 @@ const MSG = {
   notFound: 'Roadmap not found',
   forbidden: 'You do not have permission to perform this action',
   subjectNotFound: 'Subject not found',
-  cannotSubmit: 'Only DRAFT roadmaps can be submitted for review',
+  cannotSubmit: 'Only DRAFT or REJECTED roadmaps can be submitted for review',
   cannotDelete:
     'Cannot delete a PUBLISHED roadmap. Archive it first or contact admin.',
 };
@@ -79,6 +79,7 @@ exports.createRoadmap = async (data, mentorId) => {
       {
         title: resolvedTitle,
         description: data.description || null,
+        studyTips: data.studyTips || null,
         thumbnail: data.thumbnail || null,
         status: 'DRAFT',
         xpReward: data.xpReward ?? 0,
@@ -109,6 +110,9 @@ exports.createRoadmap = async (data, mentorId) => {
       }
       if (Array.isArray(input.materials)) {
         await nodeRepository.syncMaterials(target.id, input.materials, tx);
+      }
+      if (Array.isArray(input.quizzes)) {
+        await roadmapRepository.syncQuizzes(target.id, input.quizzes, tx);
       }
     }
 
@@ -230,6 +234,8 @@ exports.updateRoadmap = async (roadmapId, data, mentorId) => {
     title: resolvedTitle,
     description:
       data.description !== undefined ? data.description : existing.description,
+    studyTips:
+      data.studyTips !== undefined ? data.studyTips : existing.studyTips,
     thumbnail:
       data.thumbnail !== undefined ? data.thumbnail : existing.thumbnail,
     xpReward: data.xpReward !== undefined ? data.xpReward : existing.xpReward,
@@ -271,7 +277,7 @@ exports.deleteRoadmap = async (roadmapId, mentorId) => {
 exports.submitRoadmap = async (roadmapId, mentorId) => {
   const existing = await assertOwnership(roadmapId, mentorId);
 
-  if (existing.status !== 'DRAFT') {
+  if (existing.status !== 'DRAFT' && existing.status !== 'REJECTED') {
     throw new ApiError(400, MSG.cannotSubmit);
   }
 
@@ -309,6 +315,29 @@ exports.reviewRoadmap = async (roadmapId, { status }) => {
     status,
     updatedAt: new Date(),
   });
+
+  // Auto-enroll mentor if approved
+  if (status === 'APPROVED') {
+    const existingEnrollment = await prisma.enrollment.findUnique({
+      where: {
+        userId_learningPathId: {
+          userId: updated.mentorId,
+          learningPathId: updated.id,
+        },
+      },
+    });
+
+    if (!existingEnrollment) {
+      await prisma.enrollment.create({
+        data: {
+          userId: updated.mentorId,
+          learningPathId: updated.id,
+          status: 'ACTIVE',
+          progressPercent: 0,
+        },
+      });
+    }
+  }
 
   return updated;
 };

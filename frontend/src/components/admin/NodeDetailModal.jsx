@@ -18,7 +18,6 @@ const TABS = [
   { key: 'checklists', label: 'Checklist', icon: CheckSquare },
   { key: 'materials', label: 'Tài liệu', icon: FileText },
   { key: 'quizzes', label: 'Bài kiểm tra', icon: HelpCircle },
-  { key: 'tips', label: 'Mẹo học tập', icon: Lightbulb },
 ];
 
 const NodeDetailModal = ({ nodeId, nodeTitle, isOpen, onClose }) => {
@@ -303,47 +302,6 @@ const NodeDetailModal = ({ nodeId, nodeTitle, isOpen, onClose }) => {
                             ))}
                           </div>
                         )}
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-
-              {/* Tips Tab */}
-              {activeTab === 'tips' && (
-                <div className="space-y-3">
-                  {tips.length === 0 ? (
-                    <EmptyState icon={Lightbulb} text="Chưa có mẹo học tập nào." />
-                  ) : (
-                    tips.map((tip, idx) => (
-                      <div
-                        key={tip.id || idx}
-                        className="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-all"
-                      >
-                        {tip.title && (
-                          <p className="text-sm font-bold text-slate-800 mb-1">{tip.title}</p>
-                        )}
-                        <p className="text-xs text-slate-600 whitespace-pre-wrap leading-relaxed">
-                          {tip.content}
-                        </p>
-                        <div className="flex items-center gap-3 mt-2 flex-wrap">
-                          <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
-                              tip.status === 'APPROVED'
-                                ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
-                                : tip.status === 'REJECTED'
-                                ? 'bg-rose-50 text-rose-600 border-rose-100'
-                                : 'bg-amber-50 text-amber-600 border-amber-100'
-                            }`}
-                          >
-                            {tip.status}
-                          </span>
-                          {tip.isPublished && (
-                            <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
-                              Đã xuất bản
-                            </span>
-                          )}
-                        </div>
                       </div>
                     ))
                   )}

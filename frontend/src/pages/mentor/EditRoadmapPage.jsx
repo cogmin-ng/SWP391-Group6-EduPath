@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Plus, X, Pencil, Trash2, Cloud } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Plus, X, Pencil, Trash2, Cloud, BookOpen, Lightbulb } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Textarea from '../../components/ui/Textarea';
@@ -8,8 +8,10 @@ import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
 import NodeDetailEditor from '../../components/mentor/NodeDetailEditor';
 import { getRoadmapById, updateRoadmap, submitRoadmap } from '../../services/roadmapService';
+import { subjectCategoryService } from '../../services/subjectCategoryService';
+import { subjectService } from '../../services/subjectService';
 
-const EMPTY_NODE = { title: '', description: '', duration: '', checklists: [], materials: [] };
+const EMPTY_NODE = { title: '', description: '', duration: '', checklists: [], materials: [], quizzes: [] };
 
 const EditRoadmapPage = () => {
   const navigate = useNavigate();
@@ -18,32 +20,46 @@ const EditRoadmapPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    category: 'programming',
+    studyTips: '',
+    category: '',
+    subjectId: '',
     thumbnail: null,
   });
 
   const [nodes, setNodes] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [subjects, setSubjects] = useState([]);
 
   useEffect(() => {
-    const fetchRoadmap = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const data = await getRoadmapById(roadmapId);
+        const [roadmapData, catData, subData] = await Promise.all([
+          getRoadmapById(roadmapId),
+          subjectCategoryService.getSubjectCategories(),
+          subjectService.getAllSubjects(),
+        ]);
+
+        setCategories(catData || []);
+        setSubjects(subData || []);
+
         setFormData({
-          name: data.title || '',
-          description: data.description || '',
-          category: 'programming', // Add mapped category if API returns it
-          thumbnail: data.thumbnail || null,
+          name: roadmapData.title || '',
+          description: roadmapData.description || '',
+          studyTips: roadmapData.studyTips || '',
+          category: roadmapData.subject?.categoryId || '',
+          subjectId: roadmapData.subjectId || '',
+          thumbnail: roadmapData.thumbnail || null,
         });
-        setNodes(data.nodes || []);
+        setNodes(roadmapData.nodes || []);
       } catch (error) {
-        console.error('Failed to load roadmap:', error);
-        alert('Lỗi tải dữ liệu lộ trình');
+        console.error('Failed to load data:', error);
+        alert('Lỗi tải dữ liệu');
       } finally {
         setLoading(false);
       }
     };
-    fetchRoadmap();
+    fetchData();
   }, [roadmapId]);
 
   const [showNodeForm, setShowNodeForm] = useState(false);
@@ -113,6 +129,7 @@ const EditRoadmapPage = () => {
       duration: node.duration || '',
       checklists: node.checklists || [],
       materials: node.materials || [],
+      quizzes: node.quizzes || [],
     });
     setEditingNodeId(node.id);
     setShowNodeForm(true);
@@ -121,6 +138,8 @@ const EditRoadmapPage = () => {
   const buildPayload = () => ({
     title: formData.name,
     description: formData.description,
+    studyTips: formData.studyTips,
+    subjectId: formData.subjectId || null,
     thumbnail: formData.thumbnail,
     nodes: nodes.map((n, i) => ({
       id: n.id, // pass id if updating existing nodes
@@ -130,6 +149,7 @@ const EditRoadmapPage = () => {
       orderIndex: i,
       checklists: n.checklists || [],
       materials: n.materials || [],
+      quizzes: n.quizzes || [],
     }))
   });
 
@@ -163,12 +183,10 @@ const EditRoadmapPage = () => {
     }
   };
 
-  const categoryOptions = [
-    { value: 'programming', label: 'Lập trình' },
-    { value: 'design', label: 'Thiết kế' },
-    { value: 'business', label: 'Kinh doanh' },
-    { value: 'data', label: 'Dữ liệu' },
-  ];
+  const categoryOptions = categories.map(c => ({ value: c.id, label: c.name }));
+  const subjectOptions = subjects
+    .filter(s => !formData.category || s.categoryId === formData.category)
+    .map(s => ({ value: s.id, label: s.name }));
 
   if (loading) {
     return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Đang tải...</div>;
@@ -191,7 +209,10 @@ const EditRoadmapPage = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Card 1: Thông Tin Lộ Trình */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-              <h2 className="text-lg font-semibold text-slate-900 mb-4">Thông Tin Lộ Trình</h2>
+              <div className="flex items-center gap-2 mb-4">
+                <BookOpen className="w-5 h-5 text-indigo-500" />
+                <h2 className="text-lg font-semibold text-slate-900">Thông Tin Lộ Trình</h2>
+              </div>
               <div className="space-y-4">
                 <Input
                   label="Tên Lộ Trình"
@@ -208,15 +229,39 @@ const EditRoadmapPage = () => {
                   value={formData.description}
                   onChange={handleInputChange}
                 />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Select
-                    label="Danh Mục"
+                    label="Chuyên Ngành"
                     name="category"
                     options={categoryOptions}
                     value={formData.category}
+                    onChange={(e) => {
+                      handleInputChange(e);
+                      setFormData(prev => ({ ...prev, subjectId: '' }));
+                    }}
+                  />
+                  <Select
+                    label="Môn Học"
+                    name="subjectId"
+                    options={subjectOptions}
+                    value={formData.subjectId}
                     onChange={handleInputChange}
+                    disabled={!formData.category}
                   />
                 </div>
+                <Textarea
+                  label={
+                    <div className="flex items-center gap-1.5">
+                      <Lightbulb className="w-4 h-4 text-amber-500" />
+                      Tip Trick Học Tập
+                    </div>
+                  }
+                  name="studyTips"
+                  placeholder="Chia sẻ những mẹo nhỏ giúp học viên nắm bắt kiến thức nhanh hơn..."
+                  rows={3}
+                  value={formData.studyTips}
+                  onChange={handleInputChange}
+                />
               </div>
             </div>
 
@@ -302,6 +347,8 @@ const EditRoadmapPage = () => {
                         onChecklistsChange={(items) => setNewNode(prev => ({ ...prev, checklists: items }))}
                         materials={newNode.materials || []}
                         onMaterialsChange={(mats) => setNewNode(prev => ({ ...prev, materials: mats }))}
+                        quizzes={newNode.quizzes || []}
+                        onQuizzesChange={(qs) => setNewNode(prev => ({ ...prev, quizzes: qs }))}
                         roadmapId={roadmapId}
                         nodeId={editingNodeId}
                       />

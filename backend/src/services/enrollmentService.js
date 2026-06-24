@@ -131,3 +131,37 @@ exports.updateEnrollmentProgressBySlug = async (
     slug: toRoadmapSlug(learningPath.title),
   };
 };
+
+exports.getMyEnrollments = async (userId) => {
+  const enrollments = await prisma.enrollment.findMany({
+    where: {
+      userId,
+      isDeleted: false,
+    },
+    include: {
+      learningPath: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          thumbnail: true,
+          status: true,
+          mentor: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return enrollments.map((en) => ({
+    ...en,
+    slug: toRoadmapSlug(en.learningPath.title),
+    title: en.learningPath.title,
+    description: en.learningPath.description,
+    thumbnail: en.learningPath.thumbnail,
+    mentorName: en.learningPath.mentor?.name || 'Unknown',
+  }));
+};

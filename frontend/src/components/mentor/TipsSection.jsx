@@ -17,7 +17,7 @@ const TipsSection = ({ tips, nodeId, onRefresh }) => {
           <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
             <Lightbulb className="w-6 h-6 text-amber-600" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900">Kinh nghiệm & Bí kíp</h2>
+          <h2 className="text-xl font-bold text-slate-900">Tip Trick</h2>
         </div>
         {isMentee ? (
           <button

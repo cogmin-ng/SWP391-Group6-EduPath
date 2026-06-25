@@ -39,3 +39,12 @@ exports.updateEnrollmentProgressBySlug = asyncHandler(async (req, res) => {
     data: enrollment,
   });
 });
+
+exports.getMyEnrollments = asyncHandler(async (req, res) => {
+  const enrollments = await enrollmentService.getMyEnrollments(req.user.id);
+
+  return sendSuccess(res, {
+    message: 'Enrollments retrieved successfully',
+    data: enrollments,
+  });
+});

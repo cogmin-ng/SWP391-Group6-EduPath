@@ -18,6 +18,34 @@ const nodeMaterialSchema = Joi.object({
   size: Joi.string().trim().allow('', null).optional(), // client-only metadata, ignored on save
 });
 
+const nodeQuizSchema = Joi.object({
+  id: Joi.any().optional(),
+  title: Joi.string().trim().required(),
+  description: Joi.string().trim().allow('', null).optional(),
+  passingScore: Joi.number().integer().min(0).max(100).required(),
+  xpReward: Joi.number().integer().min(0).default(50),
+  questions: Joi.array()
+    .items(
+      Joi.object({
+        id: Joi.any().optional(),
+        question: Joi.string().trim().required(),
+        explanation: Joi.string().trim().allow('', null).optional(),
+        options: Joi.array()
+          .items(
+            Joi.object({
+              id: Joi.any().optional(),
+              content: Joi.string().trim().required(),
+              isCorrect: Joi.boolean().required(),
+            })
+          )
+          .min(2)
+          .required(),
+      })
+    )
+    .min(1)
+    .required(),
+});
+
 const roadmapNodeSchema = Joi.object({
   id: Joi.any().optional(), // Can have temporary client-side IDs
   title: Joi.string().trim().required().messages({
@@ -29,6 +57,7 @@ const roadmapNodeSchema = Joi.object({
   duration: Joi.string().trim().allow('', null).optional(), // Allowed for compatibility with frontend
   checklists: Joi.array().items(nodeChecklistSchema).optional(),
   materials: Joi.array().items(nodeMaterialSchema).optional(),
+  quizzes: Joi.array().items(nodeQuizSchema).optional(),
 });
 
 const createRoadmapSchema = Joi.object({
@@ -39,6 +68,7 @@ const createRoadmapSchema = Joi.object({
     'string.empty': 'Roadmap name is required',
   }),
   description: Joi.string().trim().allow('', null).optional(),
+  studyTips: Joi.string().trim().allow('', null).optional(),
   subjectId: Joi.string().trim().allow('', null).optional(),
   category: Joi.string().trim().allow('', null).optional(),
   level: Joi.string().trim().allow('', null).optional(),
@@ -60,6 +90,7 @@ const updateRoadmapSchema = Joi.object({
   title: Joi.string().trim().optional(),
   name: Joi.string().trim().optional(),
   description: Joi.string().trim().allow('', null).optional(),
+  studyTips: Joi.string().trim().allow('', null).optional(),
   subjectId: Joi.string().trim().allow('', null).optional(),
   category: Joi.string().trim().allow('', null).optional(),
   level: Joi.string().trim().allow('', null).optional(),

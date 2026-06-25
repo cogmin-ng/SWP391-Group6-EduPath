@@ -16,3 +16,8 @@ export const updateEnrollmentProgressBySlug = async (slug, progressPercent) => {
   });
   return res.data.data;
 };
+
+export const getMyEnrollments = async () => {
+  const res = await api.get('/enrollments');
+  return res.data.data;
+};

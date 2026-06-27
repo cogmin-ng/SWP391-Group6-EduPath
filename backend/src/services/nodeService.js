@@ -1,6 +1,7 @@
 const prisma = require('../lib/prisma');
 const ApiError = require('../utils/ApiError');
 const nodeRepository = require('../repositories/nodeRepository');
+const certificateService = require('./certificateService');
 
 const MSG = {
   notFound: 'Node not found',
@@ -301,6 +302,9 @@ exports.updateNodeProgress = async (nodeId, completed, userId, roles = []) => {
       },
     }),
   ]);
+
+  // Auto-create certificate if eligible (idempotent)
+  await certificateService.createCertificateIfEligible(userId, node.learningPathId);
 
   return { nodeProgress, enrollment };
 };

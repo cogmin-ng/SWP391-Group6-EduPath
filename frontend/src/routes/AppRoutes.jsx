@@ -27,6 +27,8 @@ import MenteeNodeDetailsPage from "../pages/mentee/MenteeNodeDetailsPage";
 import QuizPage from "../pages/mentee/QuizPage";
 import RoadmapQuizPage from "../pages/mentee/RoadmapQuizPage";
 import ContributionHistoryPage from "../pages/mentee/ContributionHistoryPage";
+import MyCertificatesPage from "../pages/mentee/MyCertificatesPage";
+import CertificateDetailPage from "../pages/mentee/CertificateDetailPage";
 import PendingTipsPage from "../pages/mentor/PendingTipsPage";
 import UploadMaterialsPage from "../pages/mentor/UploadMaterialsPage";
 import CreateQuizPage from "../pages/mentor/CreateQuizPage";
@@ -115,6 +117,24 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["MENTEE"]}>
             <ContributionHistoryPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Mentee Certificates */}
+      <Route
+        path="/my-certificates"
+        element={
+          <ProtectedRoute allowedRoles={["MENTEE"]}>
+            <MyCertificatesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/my-certificates/:id"
+        element={
+          <ProtectedRoute allowedRoles={["MENTEE"]}>
+            <CertificateDetailPage />
           </ProtectedRoute>
         }
       />

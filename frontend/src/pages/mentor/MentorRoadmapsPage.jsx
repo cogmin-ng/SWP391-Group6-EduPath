@@ -7,6 +7,7 @@ export default function MentorRoadmapsPage() {
   const navigate = useNavigate();
   const [roadmaps, setRoadmaps] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('APPROVED');
 
   useEffect(() => {
     const fetchRoadmaps = async () => {
@@ -54,6 +55,25 @@ export default function MentorRoadmapsPage() {
     }
   };
 
+  const approvedRoadmaps = roadmaps.filter((r) => r.status === 'APPROVED');
+  const pendingRoadmaps = roadmaps.filter((r) => r.status === 'PENDING');
+  const draftRoadmaps = roadmaps.filter((r) => r.status === 'DRAFT');
+
+  const getDisplayedRoadmaps = () => {
+    if (activeTab === 'APPROVED') return approvedRoadmaps;
+    if (activeTab === 'PENDING') return pendingRoadmaps;
+    if (activeTab === 'DRAFT') return draftRoadmaps;
+    return [];
+  };
+
+  const displayedRoadmaps = getDisplayedRoadmaps();
+
+  const tabs = [
+    { id: 'APPROVED', label: 'Đã duyệt', count: approvedRoadmaps.length },
+    { id: 'PENDING', label: 'Chờ duyệt', count: pendingRoadmaps.length },
+    { id: 'DRAFT', label: 'Nháp', count: draftRoadmaps.length },
+  ];
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -67,23 +87,50 @@ export default function MentorRoadmapsPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900">Lộ trình của tôi</h1>
         <p className="text-slate-500 mt-2">
-          Quản lý và phát triển các chương trình đào tạo của bạn.
+          Quản lý và theo dõi các lộ trình bạn đã tạo.
         </p>
       </div>
 
-      {roadmaps.length === 0 ? (
-        <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-12 text-center">
-          <p className="text-slate-400 font-medium">Bạn chưa có lộ trình nào. Hãy bắt đầu tạo lộ trình đầu tiên!</p>
-          <button 
-            onClick={() => navigate('/mentor/create-roadmap')}
-            className="mt-4 bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-indigo-700 transition"
+      <div className="flex space-x-8 border-b border-slate-200 mb-6 px-1">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-2 pb-4 border-b-2 font-semibold transition-colors ${
+              activeTab === tab.id
+                ? 'border-indigo-600 text-indigo-600'
+                : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
+            }`}
           >
-            Tạo lộ trình ngay
+            <span>{tab.label}</span>
+            <span
+              className={`text-xs px-2 py-0.5 rounded-full ${
+                activeTab === tab.id
+                  ? 'bg-indigo-100 text-indigo-700'
+                  : 'bg-slate-100 text-slate-600'
+              }`}
+            >
+              {tab.count}
+            </span>
           </button>
+        ))}
+      </div>
+
+      {displayedRoadmaps.length === 0 ? (
+        <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-12 text-center">
+          <p className="text-slate-400 font-medium">Bạn chưa có lộ trình nào trong mục này.</p>
+          {activeTab === 'DRAFT' && (
+            <button 
+              onClick={() => navigate('/mentor/create-roadmap')}
+              className="mt-4 bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-indigo-700 transition"
+            >
+              Tạo lộ trình ngay
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {roadmaps.map((roadmap) => (
+          {displayedRoadmaps.map((roadmap) => (
             <div
               key={roadmap.id}
               className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col group justify-between"
@@ -117,26 +164,19 @@ export default function MentorRoadmapsPage() {
                 >
                   Xem
                 </button>
-                {roadmap.status === 'DRAFT' || roadmap.status === 'REJECTED' ? (
-                  <button
-                    onClick={() => handleEditRoadmap(roadmap.id)}
-                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 text-xs rounded-xl font-semibold transition cursor-pointer text-center"
-                  >
-                    Chỉnh sửa
-                  </button>
-                ) : roadmap.status === 'APPROVED' || roadmap.status === 'PUBLISHED' ? (
-                  <button
-                    disabled
-                    className="flex-1 bg-emerald-100 text-emerald-600 py-1.5 text-xs rounded-xl font-semibold cursor-not-allowed text-center"
-                  >
-                    {roadmap.status === 'PUBLISHED' ? 'Đã xuất bản' : 'Đã duyệt'}
-                  </button>
-                ) : (
+                {roadmap.status === 'PENDING' ? (
                   <button
                     disabled
                     className="flex-1 bg-slate-200 text-slate-500 py-1.5 text-xs rounded-xl font-semibold transition cursor-not-allowed text-center"
                   >
                     Đang duyệt
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleEditRoadmap(roadmap.id)}
+                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 text-xs rounded-xl font-semibold transition cursor-pointer text-center"
+                  >
+                    Chỉnh sửa
                   </button>
                 )}
               </div>

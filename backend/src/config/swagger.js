@@ -336,6 +336,26 @@ const options = {
             },
           },
         },
+        CertificateResponse: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            learningPathTitle: { type: 'string' },
+            mentorName: { type: 'string' },
+            issuedAt: { type: 'string', format: 'date-time' },
+            certificateUrl: { type: ['string', 'null'] },
+            verificationId: { type: 'string' },
+          },
+        },
+        CertificateVerifyResponse: {
+          type: 'object',
+          properties: {
+            valid: { type: 'boolean' },
+            learningPath: { type: 'string' },
+            mentor: { type: 'string' },
+            issueDate: { type: 'string', format: 'date-time' },
+          },
+        },
       },
     },
     tags: [
@@ -367,6 +387,10 @@ const options = {
         name: 'Quiz',
         description: 'Quiz management endpoints for mentors',
       },
+      {
+        name: 'Certificate',
+        description: 'Certificate management and verification endpoints',
+      },
     ],
   },
   apis: [
@@ -377,6 +401,7 @@ const options = {
     './src/routes/tip.js',
     './src/routes/notification.js',
     './src/routes/quiz.js',
+    './src/routes/certificate.js',
   ],
 };
 

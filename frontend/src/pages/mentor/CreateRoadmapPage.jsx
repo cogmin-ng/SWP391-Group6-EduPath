@@ -1,38 +1,42 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, X, Pencil, Trash2, Cloud, ArrowRight, Clock, BookOpen, Lightbulb } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Plus, X, Pencil, Trash2, Cloud, BookOpen, Lightbulb } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Textarea from '../../components/ui/Textarea';
 import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
-import NodeDetailEditor from '../../components/mentor/NodeDetailEditor';
-import { createRoadmap, submitRoadmap, getMentorRoadmaps, deleteRoadmap } from '../../services/roadmapService';
+import { createRoadmap, submitRoadmap } from '../../services/roadmapService';
 import { subjectCategoryService } from '../../services/subjectCategoryService';
 import { subjectService } from '../../services/subjectService';
 
-const EMPTY_NODE = { title: '', description: '', duration: '', checklists: [], materials: [], quizzes: [] };
-
 const CreateRoadmapPage = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    studyTips: '',
-    category: '',
-    subjectId: '',
-    thumbnail: null,
+  const location = useLocation();
+
+  const [formData, setFormData] = useState(() => {
+    if (location.state?.formData) {
+      return location.state.formData;
+    }
+    return {
+      name: '',
+      description: '',
+      category: '',
+      subjectId: '',
+      thumbnail: null,
+    };
   });
 
-  const [nodes, setNodes] = useState([]);
+  const [nodes, setNodes] = useState(() => {
+    if (location.state?.nodes) {
+      return location.state.nodes;
+    }
+    return [];
+  });
   const [categories, setCategories] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [loadingInitial, setLoadingInitial] = useState(true);
 
-  const [showNodeForm, setShowNodeForm] = useState(false);
-  const [newNode, setNewNode] = useState({ ...EMPTY_NODE });
-  const [editingNodeId, setEditingNodeId] = useState(null);
-  const [drafts, setDrafts] = useState([]);
 
   const loadInitialData = async () => {
     try {
@@ -50,37 +54,14 @@ const CreateRoadmapPage = () => {
     }
   };
 
-  const loadDrafts = async () => {
-    try {
-      const data = await getMentorRoadmaps(0, 50);
-      if (data && data.roadmaps) {
-        const draftRoadmaps = data.roadmaps.filter(r => r.status === 'DRAFT');
-        setDrafts(draftRoadmaps);
-      }
-    } catch (err) {
-      console.error('Lỗi khi tải danh sách bản nháp:', err);
-    }
-  };
 
-  // Fetch draft roadmaps and initial data when page loads
+
+  // Fetch initial data when page loads
   useEffect(() => {
-    loadDrafts();
     loadInitialData();
   }, []);
 
-  const handleDeleteDraft = async (e, id) => {
-    e.stopPropagation(); // prevent navigation
-    if (!window.confirm('Bạn có chắc chắn muốn xóa bản nháp này không?')) return;
 
-    try {
-      await deleteRoadmap(id);
-      alert('Đã xóa bản nháp!');
-      loadDrafts(); // reload list
-    } catch (err) {
-      console.error('Lỗi xóa bản nháp:', err);
-      alert('Không thể xóa bản nháp: ' + (err.response?.data?.message || err.message));
-    }
-  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -98,69 +79,38 @@ const CreateRoadmapPage = () => {
     }
   };
 
-  const resetNodeForm = () => {
-    setNewNode({ ...EMPTY_NODE });
-    setEditingNodeId(null);
-    setShowNodeForm(false);
+  const handleAddNode = () => {
+    navigate('/mentor/roadmaps/new/nodes/new/edit', {
+      state: {
+        formData,
+        nodes,
+      },
+    });
   };
 
-  const handleSaveNode = () => {
-    if (!newNode.title.trim()) return;
-
-    if (editingNodeId !== null) {
-      // Cập nhật node đang chỉnh sửa (giữ nguyên vị trí)
-      setNodes(prev =>
-        prev.map(node =>
-          node.id === editingNodeId ? { ...node, ...newNode } : node
-        )
-      );
-    } else {
-      // Thêm node mới
-      setNodes(prev => [...prev, { id: Date.now(), ...newNode }]);
-    }
-
-    resetNodeForm();
-  };
-
-  const handleToggleNodeForm = () => {
-    if (showNodeForm) {
-      resetNodeForm();
-    } else {
-      setNewNode({ ...EMPTY_NODE });
-      setEditingNodeId(null);
-      setShowNodeForm(true);
-    }
+  const handleEditNode = (node) => {
+    navigate(`/mentor/roadmaps/new/nodes/${node.id}/edit`, {
+      state: {
+        formData,
+        nodes,
+      },
+    });
   };
 
   const handleDeleteNode = (id) => {
     setNodes(prev => prev.filter(node => node.id !== id));
-    if (editingNodeId === id) resetNodeForm();
-  };
-
-  const handleEditNode = (node) => {
-    // Mở form inline (giống giao diện Thêm Node) với dữ liệu đã điền sẵn
-    setNewNode({
-      title: node.title || '',
-      description: node.description || '',
-      duration: node.duration || '',
-      checklists: node.checklists || [],
-      materials: node.materials || [],
-      quizzes: node.quizzes || [],
-    });
-    setEditingNodeId(node.id);
-    setShowNodeForm(true);
   };
 
   const buildPayload = () => ({
     title: formData.name,
     description: formData.description,
-    studyTips: formData.studyTips,
     subjectId: formData.subjectId || null,
     thumbnail: formData.thumbnail,
     nodes: nodes.map((n, i) => ({
       title: n.title,
       description: n.description,
       duration: n.duration,
+      studyTips: n.studyTips || '',
       orderIndex: i,
       checklists: n.checklists || [],
       materials: n.materials || [],
@@ -216,45 +166,7 @@ const CreateRoadmapPage = () => {
           </div>
         </div>
 
-        {/* Drafts Section */}
-        {drafts.length > 0 && (
-          <div className="mb-8 p-6 bg-white rounded-2xl shadow-sm border border-slate-100">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-indigo-500" />
-              Tiếp tục chỉnh sửa bản nháp
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {drafts.map((draft) => (
-                <div
-                  key={draft.id}
-                  className="p-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-slate-50 transition-all cursor-pointer flex flex-col justify-between"
-                  onClick={() => navigate(`/mentor/roadmaps/${draft.id}/edit`)}
-                >
-                  <div className="mb-3">
-                    <h3 className="font-semibold text-slate-900 line-clamp-1">{draft.title}</h3>
-                    <p className="text-sm text-slate-500 mt-1 line-clamp-2">{draft.description || 'Chưa có mô tả'}</p>
-                  </div>
-                  <div className="flex items-center justify-between mt-4">
-                    <button
-                      onClick={(e) => handleDeleteDraft(e, draft.id)}
-                      className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Xóa bản nháp"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                    <div className="flex items-center text-indigo-600 text-sm font-medium">
-                      Chỉnh sửa <ArrowRight className="w-4 h-4 ml-1" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
-        <hr className="my-8 border-slate-200" />
-
-        <h2 className="text-xl font-bold text-slate-900 mb-6">Tạo Mới Lộ Trình</h2>
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -303,19 +215,6 @@ const CreateRoadmapPage = () => {
                     disabled={!formData.category}
                   />
                 </div>
-                <Textarea
-                  label={
-                    <div className="flex items-center gap-1.5">
-                      <Lightbulb className="w-4 h-4 text-amber-500" />
-                      Tip Trick Học Tập
-                    </div>
-                  }
-                  name="studyTips"
-                  placeholder="Chia sẻ những mẹo nhỏ giúp học viên nắm bắt kiến thức nhanh hơn..."
-                  rows={3}
-                  value={formData.studyTips}
-                  onChange={handleInputChange}
-                />
               </div>
             </div>
 
@@ -363,72 +262,13 @@ const CreateRoadmapPage = () => {
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={handleToggleNodeForm}
+                  onClick={handleAddNode}
                   className="gap-2"
                 >
                   <Plus className="w-4 h-4" />
                   Thêm Node
                 </Button>
               </div>
-
-              {showNodeForm && (
-                <div className="bg-slate-50 rounded-xl p-4 mb-4 border border-slate-200">
-                  <h3 className="text-sm font-semibold text-slate-900 mb-3">
-                    {editingNodeId !== null ? 'Chỉnh Sửa Node' : 'Thêm Node Mới'}
-                  </h3>
-                  <div className="space-y-3">
-                    <Input
-                      placeholder="Tên Node"
-                      value={newNode.title}
-                      onChange={(e) => setNewNode(prev => ({ ...prev, title: e.target.value }))}
-                    />
-                    <Textarea
-                      placeholder="Mô tả Node"
-                      rows={3}
-                      value={newNode.description}
-                      onChange={(e) => setNewNode(prev => ({ ...prev, description: e.target.value }))}
-                    />
-                    <Input
-                      placeholder="Thời lượng (VD: 2 tuần)"
-                      value={newNode.duration}
-                      onChange={(e) => setNewNode(prev => ({ ...prev, duration: e.target.value }))}
-                    />
-
-                    {/* Chi tiết Node: Checklist, Tài liệu & Quiz */}
-                    <div className="pt-2">
-                      <NodeDetailEditor
-                        checklists={newNode.checklists || []}
-                        onChecklistsChange={(items) => setNewNode(prev => ({ ...prev, checklists: items }))}
-                        materials={newNode.materials || []}
-                        onMaterialsChange={(mats) => setNewNode(prev => ({ ...prev, materials: mats }))}
-                        quizzes={newNode.quizzes || []}
-                        onQuizzesChange={(qs) => setNewNode(prev => ({ ...prev, quizzes: qs }))}
-                        roadmapId={null}
-                        nodeId={editingNodeId}
-                      />
-                    </div>
-
-                    <div className="flex gap-2 pt-2">
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        onClick={handleSaveNode}
-                        className="flex-1"
-                      >
-                        {editingNodeId !== null ? 'Lưu' : 'Thêm'}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={resetNodeForm}
-                        className="flex-1"
-                      >
-                        Hủy
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* Timeline */}
               <div className="space-y-3">
@@ -524,24 +364,22 @@ const CreateRoadmapPage = () => {
                       className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
                       style={{
                         width: `${(
-                          (formData.name ? 20 : 0) +
-                          (formData.description ? 15 : 0) +
+                          (formData.name ? 25 : 0) +
+                          (formData.description ? 20 : 0) +
                           (formData.category ? 15 : 0) +
                           (formData.subjectId ? 15 : 0) +
-                          (formData.studyTips ? 15 : 0) +
-                          (nodes.length > 0 ? 20 : 0)
+                          (nodes.length > 0 ? 25 : 0)
                         )}%`
                       }}
                     ></div>
                   </div>
                   <p className="text-xs text-slate-600 mt-1">
                     {Math.round(
-                      (formData.name ? 20 : 0) +
-                      (formData.description ? 15 : 0) +
+                      (formData.name ? 25 : 0) +
+                      (formData.description ? 20 : 0) +
                       (formData.category ? 15 : 0) +
                       (formData.subjectId ? 15 : 0) +
-                      (formData.studyTips ? 15 : 0) +
-                      (nodes.length > 0 ? 20 : 0)
+                      (nodes.length > 0 ? 25 : 0)
                     )}%
                   </p>
                 </div>

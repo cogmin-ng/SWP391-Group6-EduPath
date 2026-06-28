@@ -50,3 +50,13 @@ export const deleteQuiz = async (quizId) => {
   const res = await api.delete(`/quizzes/${quizId}`);
   return res.data;
 };
+
+export const submitQuizAttempt = async (quizId, answers) => {
+  const res = await api.post(`/quizzes/${quizId}/attempts`, { answers });
+  return res.data.data;
+};
+
+export const getMyQuizAttempts = async (quizId) => {
+  const res = await api.get(`/quizzes/${quizId}/attempts/me`);
+  return res.data.data;
+};

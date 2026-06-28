@@ -2,8 +2,8 @@ export default function RoadmapTimeline({ phases = [] }) {
   return (
     <section className="mx-auto mt-12 w-full max-w-6xl">
       <div className="mb-6 border-b border-slate-200 pb-3">
-        <h2 className="text-2xl font-bold text-slate-900">Curriculum Path</h2>
-        <p className="mt-1 text-sm text-slate-500">{phases.length} Nodes</p>
+        <h2 className="text-2xl font-bold text-slate-900">Lộ trình học</h2>
+        <p className="mt-1 text-sm text-slate-500">{phases.length} chặng học</p>
       </div>
 
       <div className="space-y-4">
@@ -25,13 +25,13 @@ export default function RoadmapTimeline({ phases = [] }) {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <span className="block text-xs font-semibold uppercase tracking-wide text-indigo-600">
-                      Node {index + 1}
+                      Chặng {index + 1}
                     </span>
                     <h3 className="text-lg font-semibold text-slate-900">{phase.name}</h3>
                   </div>
                 </div>
                 <p className="mt-1 text-sm text-slate-600">
-                  {phase.highlights?.join(', ') || phase.description || 'Complete this phase to unlock the next node.'}
+                  {phase.highlights?.join(', ') || phase.description || 'Hoàn thành chặng này để mở khóa chặng tiếp theo.'}
                 </p>
               </div>
             </div>

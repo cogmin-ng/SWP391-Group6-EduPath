@@ -1,4 +1,5 @@
 const prisma = require('../lib/prisma');
+const nodeRepository = require('./nodeRepository');
 
 const ACTIVE_FILTER = { isDeleted: false };
 
@@ -19,6 +20,24 @@ const ROADMAP_INCLUDE = {
       orderIndex: true,
       createdAt: true,
       updatedAt: true,
+      checklists: {
+        where: ACTIVE_FILTER,
+        orderBy: { orderIndex: 'asc' },
+      },
+      materials: {
+        where: ACTIVE_FILTER,
+        orderBy: { createdAt: 'asc' },
+      },
+      quizzes: {
+        where: ACTIVE_FILTER,
+        orderBy: { createdAt: 'asc' },
+        select: {
+          id: true,
+          title: true,
+          passingScore: true,
+          xpReward: true,
+        },
+      },
     },
   },
 };
@@ -185,6 +204,7 @@ exports.syncNodes = async (learningPathId, nodes, tx = prisma) => {
     const isExisting =
       node.id && typeof node.id === 'string' && existingIds.includes(node.id);
 
+    let nodeId;
     if (isExisting) {
       await tx.node.update({
         where: { id: node.id },
@@ -195,13 +215,117 @@ exports.syncNodes = async (learningPathId, nodes, tx = prisma) => {
           updatedAt: new Date(),
         },
       });
+      nodeId = node.id;
     } else {
-      await tx.node.create({
+      const created = await tx.node.create({
         data: {
           learningPathId,
           title: node.title,
           description: node.description || null,
           orderIndex,
+        },
+      });
+      nodeId = created.id;
+    }
+
+    // Sync node details (checklists & materials) when provided by the client
+    if (Array.isArray(node.checklists)) {
+      await nodeRepository.syncChecklists(nodeId, node.checklists, tx);
+    }
+    if (Array.isArray(node.materials)) {
+      await nodeRepository.syncMaterials(nodeId, node.materials, tx);
+    }
+    if (Array.isArray(node.quizzes)) {
+      await exports.syncQuizzes(nodeId, node.quizzes, tx);
+    }
+  }
+};
+
+/**
+ * Sync Quizzes for a Node
+ * Handles creation, update (cascade to questions/options), and deletion
+ */
+exports.syncQuizzes = async (nodeId, quizzes, tx = prisma) => {
+  const existingIds = await tx.quiz
+    .findMany({
+      where: { nodeId, isDeleted: false },
+      select: { id: true },
+    })
+    .then((rows) => rows.map((r) => r.id));
+
+  const incomingIds = quizzes
+    .filter((q) => q.id && typeof q.id === 'string' && q.id.length > 0)
+    .map((q) => q.id);
+
+  // Soft delete missing quizzes
+  const toDelete = existingIds.filter((id) => !incomingIds.includes(id));
+  if (toDelete.length > 0) {
+    await tx.quiz.updateMany({
+      where: { id: { in: toDelete } },
+      data: { isDeleted: true },
+    });
+  }
+
+  // Upsert each quiz
+  for (const quizData of quizzes) {
+    const isExisting =
+      quizData.id &&
+      typeof quizData.id === 'string' &&
+      existingIds.includes(quizData.id);
+
+    if (isExisting) {
+      // Update existing quiz (cascade sync questions)
+      // For simplicity in sync, we'll delete old questions/options and recreate
+      // (Similar strategy to quizService.updateQuiz)
+      await tx.quizOption.deleteMany({
+        where: { question: { quizId: quizData.id } },
+      });
+      await tx.quizQuestion.deleteMany({
+        where: { quizId: quizData.id },
+      });
+
+      await tx.quiz.update({
+        where: { id: quizData.id },
+        data: {
+          title: quizData.title,
+          description: quizData.description || null,
+          passingScore: quizData.passingScore,
+          xpReward: quizData.xpReward ?? 50,
+          questions: {
+            create: quizData.questions.map((q) => ({
+              question: q.question,
+              explanation: q.explanation || null,
+              options: {
+                create: q.options.map((opt) => ({
+                  content: opt.content,
+                  isCorrect: opt.isCorrect,
+                })),
+              },
+            })),
+          },
+        },
+      });
+    } else {
+      // Create new quiz
+      await tx.quiz.create({
+        data: {
+          nodeId,
+          title: quizData.title,
+          description: quizData.description || null,
+          passingScore: quizData.passingScore,
+          xpReward: quizData.xpReward ?? 50,
+          questions: {
+            create: quizData.questions.map((q) => ({
+              question: q.question,
+              explanation: q.explanation || null,
+              options: {
+                create: q.options.map((opt) => ({
+                  content: opt.content,
+                  isCorrect: opt.isCorrect,
+                })),
+              },
+            })),
+          },
         },
       });
     }

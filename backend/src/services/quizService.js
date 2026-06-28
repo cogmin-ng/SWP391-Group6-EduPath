@@ -10,11 +10,55 @@ const quizMessages = {
   permissionDenied: 'You do not have permission to perform this action',
 };
 
+async function assertQuizReadAccess(quizId, userId, roles = []) {
+  const quiz = await prisma.quiz.findFirst({
+    where: { id: quizId, ...ACTIVE_QUIZ_FILTER },
+    include: {
+      node: {
+        include: {
+          learningPath: true,
+        },
+      },
+      questions: {
+        where: { isDeleted: false },
+        include: {
+          options: {
+            where: { isDeleted: false },
+          },
+        },
+      },
+    },
+  });
+
+  if (!quiz) {
+    throw new ApiError(404, quizMessages.notFound);
+  }
+
+  const isOwner = quiz.node.learningPath.mentorId === userId;
+  const isAdmin = roles.includes('ADMIN');
+
+  const enrollment = await prisma.enrollment.findFirst({
+    where: {
+      userId,
+      learningPathId: quiz.node.learningPathId,
+      isDeleted: false,
+      status: { not: 'DROPPED' },
+    },
+  });
+
+  if (!isOwner && !isAdmin && !enrollment) {
+    throw new ApiError(403, quizMessages.permissionDenied);
+  }
+
+  return quiz;
+}
+
 /**
  * Create a quiz with nested questions and options in a single transaction.
  */
 exports.createQuiz = async (data, mentorId) => {
-  const { nodeId, title, description, passingScore, xpReward, questions } = data;
+  const { nodeId, title, description, passingScore, xpReward, questions } =
+    data;
 
   // Verify node exists and mentor owns the roadmap
   const node = await prisma.node.findFirst({
@@ -69,30 +113,12 @@ exports.createQuiz = async (data, mentorId) => {
 /**
  * Get a quiz by ID with its questions and options.
  */
-exports.getQuizById = async (quizId) => {
+exports.getQuizById = async (quizId, userId, roles = []) => {
   if (!quizId || typeof quizId !== 'string') {
     throw new ApiError(400, quizMessages.invalidId);
   }
 
-  const quiz = await prisma.quiz.findFirst({
-    where: { id: quizId, ...ACTIVE_QUIZ_FILTER },
-    include: {
-      questions: {
-        where: { isDeleted: false },
-        include: {
-          options: {
-            where: { isDeleted: false },
-          },
-        },
-      },
-    },
-  });
-
-  if (!quiz) {
-    throw new ApiError(404, quizMessages.notFound);
-  }
-
-  return quiz;
+  return assertQuizReadAccess(quizId, userId, roles);
 };
 
 /**
@@ -115,6 +141,62 @@ exports.getQuizzesByNode = async (nodeId) => {
   });
 
   return quizzes;
+};
+
+exports.submitQuizAttempt = async (quizId, answers, userId, roles = []) => {
+  const quiz = await assertQuizReadAccess(quizId, userId, roles);
+
+  const submittedAnswers =
+    answers && typeof answers === 'object' ? answers : {};
+  const totalQuestions = quiz.questions.length;
+  const correctCount = quiz.questions.filter((question) => {
+    const correctOption = question.options.find((option) => option.isCorrect);
+    return correctOption && submittedAnswers[question.id] === correctOption.id;
+  }).length;
+  const score =
+    totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+
+  const previousAttempts = await prisma.quizAttempt.count({
+    where: {
+      quizId,
+      userId,
+      isDeleted: false,
+    },
+  });
+
+  const attempt = await prisma.quizAttempt.create({
+    data: {
+      quizId,
+      userId,
+      score,
+      status: score >= quiz.passingScore ? 'PASS' : 'FAIL',
+      attemptCount: previousAttempts + 1,
+    },
+  });
+
+  return {
+    attempt,
+    review: {
+      totalQuestions,
+      correctCount,
+      score,
+      passed: attempt.status === 'PASS',
+      passingScore: quiz.passingScore,
+    },
+  };
+};
+
+exports.getMyQuizAttempts = async (quizId, userId, roles = []) => {
+  await assertQuizReadAccess(quizId, userId, roles);
+
+  return prisma.quizAttempt.findMany({
+    where: {
+      quizId,
+      userId,
+      isDeleted: false,
+    },
+    orderBy: { createdAt: 'desc' },
+  });
 };
 
 /**

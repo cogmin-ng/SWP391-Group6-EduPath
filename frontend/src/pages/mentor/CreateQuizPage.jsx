@@ -176,7 +176,8 @@ const CreateQuizPage = () => {
         await createQuiz(payload);
       }
 
-      navigate(`/mentor/roadmaps/${roadmapId}/nodes/${nodeId}`);
+      // Quay về trang chỉnh sửa lộ trình (nơi mở form quiz từ NodeDetailEditor)
+      navigate(`/mentor/roadmaps/${roadmapId}/edit`);
     } catch (err) {
       const details = err?.response?.data?.error?.details;
       if (details?.fields?.length) {
@@ -192,7 +193,7 @@ const CreateQuizPage = () => {
   };
 
   const handleBack = () => {
-    navigate(`/mentor/roadmaps/${roadmapId}/nodes/${nodeId}`);
+    navigate(`/mentor/roadmaps/${roadmapId}/edit`);
   };
 
   if (loading) {

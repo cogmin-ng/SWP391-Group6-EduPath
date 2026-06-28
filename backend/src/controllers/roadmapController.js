@@ -53,6 +53,19 @@ exports.getRoadmapById = asyncHandler(async (req, res) => {
   });
 });
 
+exports.getRoadmapBySlug = asyncHandler(async (req, res) => {
+  const roadmap = await roadmapService.getRoadmapBySlug(
+    req.params.slug,
+    req.user.id,
+    req.user.roles
+  );
+
+  return sendSuccess(res, {
+    message: 'Roadmap retrieved successfully',
+    data: roadmap,
+  });
+});
+
 /**
  * PUT /api/roadmaps/:id
  * Update a roadmap's info and/or node list (MENTOR owner only).

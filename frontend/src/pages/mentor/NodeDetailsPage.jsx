@@ -196,10 +196,7 @@ const NodeDetailsPage = () => {
                     <span className="text-sm text-slate-600">Node:</span>
                     <span className="font-semibold text-slate-900">{nodeData.nodeNumber} of {nodeData.totalNodes}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">Danh Mục:</span>
-                    <span className="font-semibold text-slate-900">{nodeData.category}</span>
-                  </div>
+
                 </div>
 
                 <div className="h-px bg-slate-200"></div>

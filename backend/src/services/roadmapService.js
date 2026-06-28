@@ -217,14 +217,6 @@ exports.getMentorRoadmaps = async (mentorId, { skip = 0, take = 20 } = {}) => {
 exports.updateRoadmap = async (roadmapId, data, mentorId) => {
   const existing = await assertOwnership(roadmapId, mentorId);
 
-  // If roadmap has already been published, prevent editing
-  if (existing.status === 'PUBLISHED') {
-    throw new ApiError(
-      400,
-      'Cannot edit a PUBLISHED roadmap. Create a new version instead.'
-    );
-  }
-
   const resolvedTitle = data.title || data.name || existing.title;
   const resolvedSubjectId = data.subjectId
     ? await resolveSubjectId(data.subjectId)
@@ -242,6 +234,10 @@ exports.updateRoadmap = async (roadmapId, data, mentorId) => {
     subject: { connect: { id: resolvedSubjectId } },
     updatedAt: new Date(),
   };
+
+  if (data.status) {
+    updatePayload.status = data.status;
+  }
 
   await prisma.$transaction(async (tx) => {
     await roadmapRepository.update(roadmapId, updatePayload, tx);
@@ -277,7 +273,11 @@ exports.deleteRoadmap = async (roadmapId, mentorId) => {
 exports.submitRoadmap = async (roadmapId, mentorId) => {
   const existing = await assertOwnership(roadmapId, mentorId);
 
-  if (existing.status !== 'DRAFT' && existing.status !== 'REJECTED') {
+  if (
+    existing.status !== 'DRAFT' &&
+    existing.status !== 'REJECTED' &&
+    existing.status !== 'PUBLISHED'
+  ) {
     throw new ApiError(400, MSG.cannotSubmit);
   }
 

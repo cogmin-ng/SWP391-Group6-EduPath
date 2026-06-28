@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Link, Navigate, useParams, useNavigate } from 'react-router-dom';
-import { ArrowRight, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronRight, Loader2 } from 'lucide-react';
 import {
   NodeSidebar,
   NodeHeader,
@@ -9,64 +9,57 @@ import {
   QuizSection,
   TipsSection,
 } from '../../components/mentee/node';
-import { myRoadmaps } from '../../mock/mentorDashboardData';
-import { jsQuizQuestions } from '../../mock/quizQuestions';
+import { getRoadmapById } from '../../services/roadmapService';
 
-/**
- * Helper function to generate node data from roadmap phases
- */
-function generateNodeData(phase, phaseIndex, totalPhases) {
+function generateNodeData(node, nodeIndex, totalNodes) {
   return {
-    id: `phase-${phaseIndex}`,
-    title: phase.name,
-    description: `${phase.highlights?.join(', ') || ''}`,
-    nodeNumber: phaseIndex + 1,
-    totalNodes: totalPhases,
-    estimatedHours: parseInt(phase.weeks) * 3 || 8,
+    id: node.id || `node-${nodeIndex}`,
+    title: node.title,
+    description: node.description || '',
+    nodeNumber: nodeIndex + 1,
+    totalNodes: totalNodes,
+    estimatedHours: node.duration || 'N/A',
     mentorGuided: true,
-    updatedAt: 'Oct 24',
+    updatedAt: 'N/A',
   };
 }
 
 /**
- * Helper function to generate checklist from phase highlights
+ * Helper function to generate checklist
  */
-function generateChecklist(phase) {
-  return (phase.highlights || []).map((h, i) => ({
-    id: `cl-${phase.name}-${i}`,
-    title: h,
-    completed: phase.status === 'completed',
+function generateChecklist(node) {
+  return (node.checklists || []).map((c, i) => ({
+    id: c.id || `cl-${i}`,
+    title: c.title,
+    completed: false,
   }));
 }
 
 /**
- * Helper function to generate materials from phase highlights
+ * Helper function to generate materials
  */
-function generateMaterials(phase) {
-  const types = ['VIDEO', 'ARTICLE', 'DOCUMENTATION'];
-  return (phase.highlights || []).slice(0, 3).map((h, i) => ({
-    id: `mat-${phase.name}-${i}`,
-    title: h,
-    type: types[i % types.length],
-    buttonLabel: types[i % types.length] === 'VIDEO' ? 'Watch' : types[i % types.length] === 'ARTICLE' ? 'Read' : 'Open',
-    url: '#',
+function generateMaterials(node) {
+  return (node.materials || []).map((m, i) => ({
+    id: m.id || `mat-${i}`,
+    title: m.title,
+    type: m.type || 'DOCUMENTATION',
+    buttonLabel: 'Open',
+    url: m.url || '#',
   }));
 }
 
 /**
- * Helper function to generate quiz from questions
+ * Helper function to generate quiz
  */
-function generateQuiz(phase) {
-  const questions = jsQuizQuestions.map((q) => ({
-    ...q,
-    id: `${phase.name}-${q.id}`,
-  }));
+function generateQuiz(node) {
+  if (!node.quizzes || node.quizzes.length === 0) return null;
+  const q = node.quizzes[0];
   return {
-    id: `quiz-${phase.name}`,
-    title: `${phase.name} Quiz`,
-    questionCount: questions.length,
+    id: q.id,
+    title: q.title || `${node.title} Quiz`,
+    questionCount: 0,
     durationMinutes: 15,
-    questions,
+    questions: [],
   };
 }
 
@@ -74,62 +67,88 @@ export default function MentorRoadmapLearningPage() {
   const { roadmapId } = useParams();
   const navigate = useNavigate();
 
-  // Find the roadmap from mock data (convert roadmapId to number for comparison)
-  const roadmap = myRoadmaps.find((r) => r.id === parseInt(roadmapId));
-  
-  const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0);
+  const [roadmap, setRoadmap] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [currentNodeIndex, setCurrentNodeIndex] = useState(0);
   const [progress, setProgress] = useState(0);
 
-  if (!roadmap) {
-    return <Navigate to="/mentor/roadmaps" replace />;
-  }
+  useEffect(() => {
+    const fetchRoadmap = async () => {
+      try {
+        setLoading(true);
+        const data = await getRoadmapById(roadmapId);
+        setRoadmap(data);
+      } catch (err) {
+        console.error('Failed to load roadmap:', err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRoadmap();
+  }, [roadmapId]);
 
-  const phases = roadmap.phases || [];
-  const currentPhase = phases[currentPhaseIndex];
+  const nodes = roadmap?.nodes || [];
+  const currentNode = nodes[currentNodeIndex];
+
 
   // Generate sidebar roadmap data
   const roadmapForSidebar = useMemo(() => {
+    if (!roadmap) return null;
     return {
       title: roadmap.title,
       progress,
-      nodes: phases.map((p, i) => ({
-        id: `phase-${i}`,
-        title: p.name,
+      nodes: nodes.map((n, i) => ({
+        id: n.id || `node-${i}`,
+        title: n.title,
         status: 'active', // Mentor sees all phases as accessible
       })),
     };
-  }, [roadmap, progress, phases]);
+  }, [roadmap, progress, nodes]);
 
   // Generate current node data
-  const currentNode = useMemo(() => {
-    if (!currentPhase) return null;
-    return generateNodeData(currentPhase, currentPhaseIndex, phases.length);
-  }, [currentPhase, currentPhaseIndex, phases.length]);
+  const nodeData = useMemo(() => {
+    if (!currentNode) return null;
+    return generateNodeData(currentNode, currentNodeIndex, nodes.length);
+  }, [currentNode, currentNodeIndex, nodes.length]);
 
   // Generate checklist
   const checklist = useMemo(() => {
-    if (!currentPhase) return [];
-    return generateChecklist(currentPhase);
-  }, [currentPhase]);
+    if (!currentNode) return [];
+    return generateChecklist(currentNode);
+  }, [currentNode]);
 
   // Generate materials
   const materials = useMemo(() => {
-    if (!currentPhase) return [];
-    return generateMaterials(currentPhase);
-  }, [currentPhase]);
+    if (!currentNode) return [];
+    return generateMaterials(currentNode);
+  }, [currentNode]);
 
   // Generate quiz
   const quiz = useMemo(() => {
-    if (!currentPhase) return null;
-    return generateQuiz(currentPhase);
-  }, [currentPhase]);
+    if (!currentNode) return null;
+    return generateQuiz(currentNode);
+  }, [currentNode]);
 
   const handleNodeClick = (nodeId) => {
-    const idx = parseInt(nodeId.replace('phase-', ''), 10);
-    if (idx >= 0 && idx < phases.length) {
-      setCurrentPhaseIndex(idx);
+    const idx = nodes.findIndex((n, i) => (n.id || `node-${i}`) === nodeId);
+    if (idx >= 0 && idx < nodes.length) {
+      setCurrentNodeIndex(idx);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <p className="text-slate-500">Đang tải...</p>
+      </div>
+    );
+  }
+
+  if (error || !roadmap) {
+    return <Navigate to="/mentor/roadmaps" replace />;
+  }
 
   const handleManageMentees = () => {
     // Navigate to mentee management page for this roadmap
@@ -152,10 +171,6 @@ export default function MentorRoadmapLearningPage() {
                 Xem như học viên
               </span>
             </div>
-
-            {/* Top Action Buttons */}
-            <div className="flex items-center gap-2">
-            </div>
           </div>
         </div>
       </div>
@@ -163,19 +178,18 @@ export default function MentorRoadmapLearningPage() {
       <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         {/* Phase Navigation Pills */}
         <div className="mb-6 flex flex-wrap items-center gap-2">
-          {phases.map((phase, idx) => (
+          {nodes.map((node, idx) => (
             <button
-              key={phase.name}
-              onClick={() => setCurrentPhaseIndex(idx)}
-              className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all ${
-                idx === currentPhaseIndex
+              key={node.id || idx}
+              onClick={() => setCurrentNodeIndex(idx)}
+              className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all ${idx === currentNodeIndex
                   ? 'bg-indigo-600 text-white shadow-sm'
-                  : idx < currentPhaseIndex
+                  : idx < currentNodeIndex
                     ? 'bg-indigo-50 text-indigo-700'
                     : 'border border-slate-200 bg-white text-slate-500 hover:border-slate-300'
-              }`}
+                }`}
             >
-              {phase.name}
+              {node.title}
             </button>
           ))}
         </div>
@@ -184,21 +198,21 @@ export default function MentorRoadmapLearningPage() {
           {/* Left: Sidebar */}
           <NodeSidebar
             roadmap={roadmapForSidebar}
-            currentNodeId={`phase-${currentPhaseIndex}`}
+            currentNodeId={currentNode?.id || `node-${currentNodeIndex}`}
             onNodeClick={handleNodeClick}
           />
 
           {/* Center: Main content */}
           <main className="min-w-0 flex-1">
-            <NodeHeader node={currentNode} />
+            {nodeData && <NodeHeader node={nodeData} />}
 
-            <div className="flex flex-col gap-6 xl:flex-row">
+            <div className="flex flex-col gap-6 xl:flex-row mt-6">
               {/* Content column */}
               <div className="min-w-0 flex-1 space-y-6">
-                <ChecklistSection items={checklist} onToggle={() => {}} />
+                <ChecklistSection items={checklist} onToggle={() => { }} />
                 <MaterialsSection materials={materials} />
-                <QuizSection quiz={quiz} onStart={() => {}} />
-                <TipsSection tips={[]} onSubmitTip={async () => {}} />
+                <QuizSection quiz={quiz} onStart={() => { }} />
+                <TipsSection tips={[]} onSubmitTip={async () => { }} />
               </div>
             </div>
           </main>

@@ -24,6 +24,7 @@ const EditRoadmapPage = () => {
     category: '',
     subjectId: '',
     thumbnail: null,
+    status: '',
   });
 
   const [nodes, setNodes] = useState([]);
@@ -50,6 +51,7 @@ const EditRoadmapPage = () => {
           category: roadmapData.subject?.categoryId || '',
           subjectId: roadmapData.subjectId || '',
           thumbnail: roadmapData.thumbnail || null,
+          status: roadmapData.status || '',
         });
         setNodes(roadmapData.nodes || []);
       } catch (error) {
@@ -147,18 +149,16 @@ const EditRoadmapPage = () => {
       description: n.description,
       duration: n.duration,
       orderIndex: i,
-      checklists: n.checklists || [],
-      materials: n.materials || [],
-      quizzes: n.quizzes || [],
     }))
   });
 
   const handleSaveDraft = async () => {
     try {
       if (!formData.name) return alert('Vui lòng nhập tên lộ trình');
-      const payload = buildPayload();
+      const payload = { ...buildPayload(), status: 'DRAFT' };
       const updated = await updateRoadmap(roadmapId, payload);
       setNodes(updated.nodes || []);
+      setFormData(prev => ({ ...prev, status: 'DRAFT' }));
       alert('Cập nhật lộ trình thành công!');
     } catch (err) {
       console.error(err);
@@ -188,6 +188,8 @@ const EditRoadmapPage = () => {
     .filter(s => !formData.category || s.categoryId === formData.category)
     .map(s => ({ value: s.id, label: s.name }));
 
+  const isPublished = formData.status === 'PUBLISHED';
+
   if (loading) {
     return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Đang tải...</div>;
   }
@@ -207,6 +209,7 @@ const EditRoadmapPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Form (70%) */}
           <div className="lg:col-span-2 space-y-6">
+
             {/* Card 1: Thông Tin Lộ Trình */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
               <div className="flex items-center gap-2 mb-4">
@@ -447,12 +450,7 @@ const EditRoadmapPage = () => {
               <div className="space-y-4">
                 {/* Stats */}
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">Danh Mục:</span>
-                    <span className="font-semibold text-slate-900">
-                      {categoryOptions.find(c => c.value === formData.category)?.label || 'N/A'}
-                    </span>
-                  </div>
+
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-slate-600">Tổng Node:</span>
                     <span className="font-semibold text-slate-900">{nodes.length}</span>

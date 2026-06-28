@@ -47,6 +47,11 @@ enum NotificationType {
   CERTIFICATE
 }
 
+enum OTPType {
+  VERIFY_EMAIL
+  RESET_PASSWORD
+}
+
 model User {
   id           String     @id @default(cuid())
   name         String?
@@ -61,6 +66,7 @@ model User {
   updatedAt    DateTime   @updatedAt
 
   refreshTokens RefreshToken[]
+  otps          OTP[]
 
   roleId String?
   role   Role?   @relation(fields: [roleId], references: [id])
@@ -468,6 +474,23 @@ model Certificate {
   learningPath LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
 
   @@unique([userId, learningPathId])
+}
+
+model OTP {
+  id        String   @id @default(cuid())
+  code      String?
+  expiredAt DateTime
+  otpType   OTPType
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, otpType])
 }
 
 model Review {

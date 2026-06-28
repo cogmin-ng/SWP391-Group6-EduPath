@@ -36,30 +36,64 @@ const ROADMAP_INCLUDE = {
           title: true,
           passingScore: true,
           xpReward: true,
+          questions: {
+            where: ACTIVE_FILTER,
+            include: {
+              options: {
+                where: ACTIVE_FILTER,
+              },
+            },
+          },
+        },
+      },
+      tips: {
+        where: {
+          isDeleted: false,
+          contributorId: null,
+        },
+        select: {
+          id: true,
+          content: true,
         },
       },
     },
   },
 };
 
+const mapRoadmapNodeTips = (roadmap) => {
+  if (!roadmap) return null;
+  if (Array.isArray(roadmap)) {
+    return roadmap.map(mapRoadmapNodeTips);
+  }
+  if (Array.isArray(roadmap.nodes)) {
+    roadmap.nodes = roadmap.nodes.map(node => ({
+      ...node,
+      studyTips: node.tips?.[0]?.content || '',
+    }));
+  }
+  return roadmap;
+};
+
 /**
  * Create a new learning path (roadmap) with optional nested nodes.
  */
 exports.create = async (data, tx = prisma) => {
-  return tx.learningPath.create({
+  const result = await tx.learningPath.create({
     data,
     include: ROADMAP_INCLUDE,
   });
+  return mapRoadmapNodeTips(result);
 };
 
 /**
  * Find a roadmap by its ID (including nodes, subject, mentor).
  */
 exports.findById = async (id) => {
-  return prisma.learningPath.findFirst({
+  const result = await prisma.learningPath.findFirst({
     where: { id, ...ACTIVE_FILTER },
     include: ROADMAP_INCLUDE,
   });
+  return mapRoadmapNodeTips(result);
 };
 
 /**
@@ -91,13 +125,14 @@ exports.findByMentorId = async (mentorId, { skip = 0, take = 20 } = {}) => {
  * Find roadmaps by status (e.g., PENDING) with pagination.
  */
 exports.findByStatus = async (status, { skip = 0, take = 20 } = {}) => {
-  return prisma.learningPath.findMany({
+  const result = await prisma.learningPath.findMany({
     where: { status, ...ACTIVE_FILTER },
     include: ROADMAP_INCLUDE,
     orderBy: { updatedAt: 'desc' },
     skip,
     take,
   });
+  return mapRoadmapNodeTips(result);
 };
 
 /**
@@ -140,11 +175,12 @@ exports.countByMentorId = async (mentorId) => {
  * Update basic roadmap info (title, description, thumbnail, status, xpReward, subjectId).
  */
 exports.update = async (id, data, tx = prisma) => {
-  return tx.learningPath.update({
+  const result = await tx.learningPath.update({
     where: { id },
     data,
     include: ROADMAP_INCLUDE,
   });
+  return mapRoadmapNodeTips(result);
 };
 
 /**
@@ -175,6 +211,12 @@ exports.findActiveNodeIds = async (learningPathId) => {
  * - Create new nodes
  */
 exports.syncNodes = async (learningPathId, nodes, tx = prisma) => {
+  const lp = await tx.learningPath.findUnique({
+    where: { id: learningPathId },
+    select: { mentorId: true }
+  });
+  const mentorId = lp ? lp.mentorId : null;
+
   const existingIds = await tx.node
     .findMany({
       where: { learningPathId, isDeleted: false },
@@ -226,6 +268,48 @@ exports.syncNodes = async (learningPathId, nodes, tx = prisma) => {
         },
       });
       nodeId = created.id;
+    }
+
+    // Sync study tips for Node
+    if (node.studyTips !== undefined && mentorId) {
+      const existingTip = await tx.tip.findFirst({
+        where: {
+          nodeId,
+          createdById: mentorId,
+          contributorId: null,
+          isDeleted: false,
+        },
+      });
+
+      const trimmedTip = node.studyTips ? node.studyTips.trim() : '';
+
+      if (existingTip) {
+        if (!trimmedTip) {
+          // Soft delete tip if empty
+          await tx.tip.update({
+            where: { id: existingTip.id },
+            data: { isDeleted: true, updatedAt: new Date() },
+          });
+        } else if (existingTip.content !== trimmedTip) {
+          // Update tip if content changed
+          await tx.tip.update({
+            where: { id: existingTip.id },
+            data: { content: trimmedTip, updatedAt: new Date() },
+          });
+        }
+      } else if (trimmedTip) {
+        // Create new tip
+        await tx.tip.create({
+          data: {
+            nodeId,
+            content: trimmedTip,
+            createdById: mentorId,
+            status: 'APPROVED',
+            isPublished: true,
+            publishedAt: new Date(),
+          },
+        });
+      }
     }
 
     // Sync node details (checklists & materials) when provided by the client

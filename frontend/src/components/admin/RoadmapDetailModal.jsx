@@ -9,7 +9,7 @@ import {
   CheckCircle2,
   XCircle,
   Eye,
-  Lightbulb,
+
 } from 'lucide-react';
 import NodeDetailModal from './NodeDetailModal';
 
@@ -116,18 +116,7 @@ const RoadmapDetailModal = ({
             </div>
           )}
 
-          {/* Study Tips (Tip Trick từ Mentor) */}
-          {roadmap.studyTips && (
-            <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-4">
-              <h4 className="flex items-center gap-2 text-xs font-bold text-amber-600 uppercase tracking-wider mb-2">
-                <Lightbulb className="w-3.5 h-3.5" />
-                Tip Trick từ Mentor
-              </h4>
-              <p className="text-sm text-slate-700 whitespace-pre-wrap italic">
-                "{roadmap.studyTips}"
-              </p>
-            </div>
-          )}
+
 
           {/* Quick info grid */}
           <div className="grid grid-cols-2 gap-4">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { ArrowRight, Star, StarHalf, User } from 'lucide-react';
+import { ArrowRight, Star, StarHalf, User, Loader2 } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import { getRoadmapById } from '../../services/roadmapService';
 
@@ -99,7 +99,7 @@ export default function MentorRoadmapDetailPage() {
 
             <div className="mt-6 space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">Số bài học:</span>
+                <span className="text-sm text-slate-600">Nodes:</span>
                 <span className="text-sm font-semibold text-slate-900">{nodes.length}</span>
               </div>
               <div className="flex items-center justify-between">
@@ -124,7 +124,6 @@ export default function MentorRoadmapDetailPage() {
           </aside>
         </section>
 
-        {/* Curriculum Path */}
         <section className="mx-auto mt-16 w-full max-w-4xl">
           <div className="mb-6 border-b border-slate-200 pb-3">
             <h2 className="text-2xl font-bold text-slate-900">Curriculum Path</h2>
@@ -146,16 +145,14 @@ export default function MentorRoadmapDetailPage() {
                   <p className="mt-1 text-sm text-slate-600">
                     {node.description || 'Complete this phase to unlock the next node.'}
                   </p>
-                  {node.duration && (
-                    <p className="mt-1 text-xs text-slate-500">Thời lượng: {node.duration}</p>
-                  )}
                 </div>
               </div>
             ))}
-          </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Feedback & Community */}
+      {/* Feedback & Community */}
+      {(roadmap.status === 'APPROVED' || roadmap.status === 'PUBLISHED') && (
         <section className="mx-auto mt-16 w-full max-w-4xl">
           <div className="mb-6 border-b border-slate-200 pb-3">
             <h2 className="text-2xl font-bold tracking-tight text-slate-900">Feedback &amp; Cộng đồng</h2>
@@ -195,8 +192,9 @@ export default function MentorRoadmapDetailPage() {
             </div>
           </div>
         </section>
-      </main>
-    </div>
+      )}
+    </main>
+    </div >
   );
 }
 

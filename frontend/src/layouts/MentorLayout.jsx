@@ -18,7 +18,7 @@ import { useAuth } from '../hooks/useAuth';
 const MentorLayout = () => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   const handleLogout = async () => {
     try {

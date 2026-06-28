@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Link, Navigate, useParams, useNavigate } from 'react-router-dom';
-import { ArrowRight, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronRight, Loader2 } from 'lucide-react';
 import {
   NodeSidebar,
   NodeHeader,
@@ -11,9 +11,6 @@ import {
 } from '../../components/mentee/node';
 import { getRoadmapById } from '../../services/roadmapService';
 
-/**
- * Helper function to generate node data from roadmap nodes
- */
 function generateNodeData(node, nodeIndex, totalNodes) {
   return {
     id: node.id || `node-${nodeIndex}`,
@@ -95,6 +92,7 @@ export default function MentorRoadmapLearningPage() {
   const nodes = roadmap?.nodes || [];
   const currentNode = nodes[currentNodeIndex];
 
+
   // Generate sidebar roadmap data
   const roadmapForSidebar = useMemo(() => {
     if (!roadmap) return null;
@@ -152,6 +150,11 @@ export default function MentorRoadmapLearningPage() {
     return <Navigate to="/mentor/roadmaps" replace />;
   }
 
+  const handleManageMentees = () => {
+    // Navigate to mentee management page for this roadmap
+    // navigate(`/mentor/roadmaps/${roadmapId}/mentees`);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Breadcrumb & Top Actions */}
@@ -179,13 +182,12 @@ export default function MentorRoadmapLearningPage() {
             <button
               key={node.id || idx}
               onClick={() => setCurrentNodeIndex(idx)}
-              className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all ${
-                idx === currentNodeIndex
+              className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all ${idx === currentNodeIndex
                   ? 'bg-indigo-600 text-white shadow-sm'
                   : idx < currentNodeIndex
                     ? 'bg-indigo-50 text-indigo-700'
                     : 'border border-slate-200 bg-white text-slate-500 hover:border-slate-300'
-              }`}
+                }`}
             >
               {node.title}
             </button>
@@ -194,25 +196,23 @@ export default function MentorRoadmapLearningPage() {
 
         <div className="flex flex-col gap-6 lg:flex-row">
           {/* Left: Sidebar */}
-          {roadmapForSidebar && (
-            <NodeSidebar
-              roadmap={roadmapForSidebar}
-              currentNodeId={currentNode?.id || `node-${currentNodeIndex}`}
-              onNodeClick={handleNodeClick}
-            />
-          )}
+          <NodeSidebar
+            roadmap={roadmapForSidebar}
+            currentNodeId={currentNode?.id || `node-${currentNodeIndex}`}
+            onNodeClick={handleNodeClick}
+          />
 
           {/* Center: Main content */}
           <main className="min-w-0 flex-1">
             {nodeData && <NodeHeader node={nodeData} />}
 
-            <div className="flex flex-col gap-6 xl:flex-row">
+            <div className="flex flex-col gap-6 xl:flex-row mt-6">
               {/* Content column */}
               <div className="min-w-0 flex-1 space-y-6">
-                <ChecklistSection items={checklist} onToggle={() => {}} />
+                <ChecklistSection items={checklist} onToggle={() => { }} />
                 <MaterialsSection materials={materials} />
-                <QuizSection quiz={quiz} onStart={() => {}} />
-                <TipsSection tips={[]} onSubmitTip={async () => {}} />
+                <QuizSection quiz={quiz} onStart={() => { }} />
+                <TipsSection tips={[]} onSubmitTip={async () => { }} />
               </div>
             </div>
           </main>

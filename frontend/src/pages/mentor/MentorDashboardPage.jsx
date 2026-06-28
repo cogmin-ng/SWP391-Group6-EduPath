@@ -5,7 +5,7 @@ import MentorWelcomeBanner from '../../components/mentor/MentorWelcomeBanner';
 import MentorStatsCard from '../../components/mentor/MentorStatsCard';
 import PendingReviewsSection from '../../components/mentor/PendingReviewsSection';
 import PendingTipsSection from '../../components/mentor/PendingTipsSection';
-import { mentorStats, pendingReviews } from '../../mock/mentorDashboardData';
+import { mentorStats } from '../../mock/mentorDashboardData';
 import { getPendingTips, getMentorRoadmaps } from '../../services/roadmapService';
 import { Loader2 } from 'lucide-react';
 
@@ -103,6 +103,20 @@ const MentorDashboardPage = () => {
     ...mentorStats.slice(1)
   ];
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return `Ngày ${date.getDate()} tháng ${date.getMonth() + 1} năm ${date.getFullYear()}`;
+  };
+
+  const pendingRoadmaps = roadmaps
+    .filter((roadmap) => roadmap.status === 'PENDING')
+    .map((roadmap) => ({
+      id: roadmap.id,
+      title: roadmap.title,
+      submittedDate: formatDate(roadmap.updatedAt),
+    }));
+
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Welcome Banner */}
@@ -189,8 +203,8 @@ const MentorDashboardPage = () => {
                 Xem tất cả →
               </button>
             </div>
-            <PendingTipsSection 
-              tips={pendingTips} 
+            <PendingTipsSection
+              tips={pendingTips}
               isLoading={loadingTips}
               onRefresh={handleRefreshTips}
             />
@@ -199,7 +213,7 @@ const MentorDashboardPage = () => {
           {/* Pending Reviews Section */}
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Duyệt Lộ Trình</h2>
-            <PendingReviewsSection reviews={pendingReviews} />
+            <PendingReviewsSection reviews={pendingRoadmaps} />
           </div>
         </div>
       </div>

@@ -79,7 +79,7 @@ exports.createRoadmap = async (data, mentorId) => {
       {
         title: resolvedTitle,
         description: data.description || null,
-        // studyTips: data.studyTips || null,
+        studyTips: data.studyTips || null,
         thumbnail: data.thumbnail || null,
         status: 'DRAFT',
         xpReward: data.xpReward ?? 0,
@@ -226,8 +226,8 @@ exports.updateRoadmap = async (roadmapId, data, mentorId) => {
     title: resolvedTitle,
     description:
       data.description !== undefined ? data.description : existing.description,
-    // studyTips:
-    //   data.studyTips !== undefined ? data.studyTips : existing.studyTips,
+    studyTips:
+      data.studyTips !== undefined ? data.studyTips : existing.studyTips,
     thumbnail:
       data.thumbnail !== undefined ? data.thumbnail : existing.thumbnail,
     xpReward: data.xpReward !== undefined ? data.xpReward : existing.xpReward,

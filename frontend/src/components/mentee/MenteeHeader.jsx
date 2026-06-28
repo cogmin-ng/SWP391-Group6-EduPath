@@ -27,7 +27,7 @@ const accountMenuItems = [
   { label: 'Đăng kí mentor', icon: GraduationCap, to: '/profile/become-mentor' },
   { label: 'Đóng góp', icon: Lightbulb, to: '/mentee/contributions' },
   { label: 'Thành tích', icon: Award, action: 'placeholder' },
-  { label: 'Chứng chỉ của tôi', icon: FileText, action: 'placeholder' },
+  { label: 'Chứng chỉ của tôi', icon: FileText, to: '/my-certificates' },
   { label: 'Cài đặt', icon: Settings, action: 'placeholder' },
   { label: 'Đăng xuất', icon: LogOut, action: 'logout' },
 ];

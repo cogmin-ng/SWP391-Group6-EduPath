@@ -32,7 +32,7 @@ export default function QuizSection({ quiz, roadmapId, nodeId, onStart }) {
           <BrainCircuit className="w-5 h-5 text-indigo-600" />
         </div>
         <h3 className="text-base font-bold text-slate-900">
-          Quizzes & Assessments
+          Bài kiểm tra & đánh giá
         </h3>
       </div>
 
@@ -51,11 +51,11 @@ export default function QuizSection({ quiz, roadmapId, nodeId, onStart }) {
             <div className="flex items-center gap-3 text-xs text-slate-400">
               <span className="flex items-center gap-1">
                 <HelpCircle className="w-3.5 h-3.5" />
-                {quiz.questionCount} Questions
+                {quiz.questionCount} câu hỏi
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5" />
-                {quiz.durationMinutes}m
+                {quiz.durationMinutes} phút
               </span>
             </div>
           </div>
@@ -67,7 +67,7 @@ export default function QuizSection({ quiz, roadmapId, nodeId, onStart }) {
           disabled={!onStart && (!roadmapId || !nodeId)}
           className="px-6 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 active:scale-95 transition-all duration-200 shadow-sm shadow-indigo-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-indigo-600"
         >
-          Start
+          Bắt đầu
         </button>
       </div>
     </section>

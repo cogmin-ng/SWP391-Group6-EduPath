@@ -7,6 +7,7 @@ exports.getAllSubjects = async () => {
       id: true,
       name: true,
       description: true,
+      categoryId: true,
     },
     orderBy: { name: 'asc' },
   });

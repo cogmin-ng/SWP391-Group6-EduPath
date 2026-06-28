@@ -1,22 +1,13 @@
-import React from 'react';
-import { Plus, CheckCircle2, Clock, Edit, Eye, LayoutList, Trophy } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Plus, CheckCircle2, Edit, LayoutList, Trophy, Star, Trash2 } from 'lucide-react';
 
-const QuizSection = ({ quizzes }) => {
-  const navigate = useNavigate();
-  const { roadmapId, nodeId } = useParams();
+const QuizSection = ({ quizzes, onAdd, onEdit, onDelete }) => {
+  const [deletingId, setDeletingId] = useState(null);
 
-  const handleCreateQuiz = () => {
-    navigate(`/mentor/roadmaps/${roadmapId}/nodes/${nodeId}/quiz/create`);
-  };
-
-  const handleEditQuiz = (quizId) => {
-    navigate(`/mentor/roadmaps/${roadmapId}/nodes/${nodeId}/quiz/${quizId}/edit`);
-  };
-
-  const handlePreviewQuiz = (quizId) => {
-    // In a real app, this might open a modal or navigate to a preview page
-    console.log('Preview quiz', quizId);
+  const handleDeleteQuiz = async (quiz) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa bài trắc nghiệm này không?')) {
+      onDelete(quiz);
+    }
   };
 
   return (
@@ -29,20 +20,22 @@ const QuizSection = ({ quizzes }) => {
           </div>
           <h2 className="text-xl font-bold text-slate-900">Quizzes & Assessments</h2>
         </div>
-        <button
-          onClick={handleCreateQuiz}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          Create Quiz
-        </button>
+        {quizzes && quizzes.length > 0 && (
+          <button
+            onClick={onAdd}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            Tạo Quiz
+          </button>
+        )}
       </div>
 
       {/* Content */}
       {quizzes && quizzes.length > 0 ? (
         <div className="space-y-4">
-          {quizzes.map((quiz) => (
-            <div key={quiz.id} className="p-5 border border-slate-100 hover:border-indigo-100 rounded-xl bg-slate-50/50 transition-colors">
+          {quizzes.map((quiz, index) => (
+            <div key={quiz.id || index} className="p-5 border border-slate-100 hover:border-indigo-100 rounded-xl bg-slate-50/50 transition-colors">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 {/* Quiz Info */}
                 <div>
@@ -52,15 +45,15 @@ const QuizSection = ({ quizzes }) => {
                   <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
                     <div className="flex items-center gap-1.5">
                       <LayoutList className="w-4 h-4 text-slate-400" />
-                      <span>{quiz.questionCount || quiz.questions?.length || 0} Questions</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="w-4 h-4 text-slate-400" />
-                      <span>{quiz.duration} Minutes</span>
+                      <span>{quiz.questions?.length || 0} Questions</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Trophy className="w-4 h-4 text-emerald-500" />
                       <span className="text-emerald-600 font-medium">Pass Score {quiz.passingScore}%</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Star className="w-4 h-4 text-amber-500" />
+                      <span className="text-amber-600 font-medium">{quiz.xpReward ?? 50} XP</span>
                     </div>
                   </div>
                 </div>
@@ -68,18 +61,18 @@ const QuizSection = ({ quizzes }) => {
                 {/* Actions */}
                 <div className="flex items-center gap-2 sm:shrink-0">
                   <button
-                    onClick={() => handlePreviewQuiz(quiz.id)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-                  >
-                    <Eye className="w-4 h-4" />
-                    Preview
-                  </button>
-                  <button
-                    onClick={() => handleEditQuiz(quiz.id)}
+                    onClick={() => onEdit(quiz)}
                     className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
                   >
                     <Edit className="w-4 h-4" />
                     Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteQuiz(quiz)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-100 rounded-lg hover:bg-red-100 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
                   </button>
                 </div>
               </div>
@@ -93,7 +86,7 @@ const QuizSection = ({ quizzes }) => {
           </div>
           <p className="text-slate-600 mb-4">Chưa có bài trắc nghiệm cho Node này.</p>
           <button
-            onClick={handleCreateQuiz}
+            onClick={onAdd}
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-medium transition-all"
           >
             <Plus className="w-4 h-4" />

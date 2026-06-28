@@ -242,6 +242,120 @@ const options = {
             total: { type: 'integer' },
           },
         },
+        QuizOptionSchema: {
+          type: 'object',
+          properties: {
+            content: { type: 'string' },
+            isCorrect: { type: 'boolean' },
+          },
+          required: ['content', 'isCorrect'],
+        },
+        QuizQuestionSchema: {
+          type: 'object',
+          properties: {
+            question: { type: 'string' },
+            explanation: { type: ['string', 'null'] },
+            options: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/QuizOptionSchema' },
+              minItems: 2,
+            },
+          },
+          required: ['question', 'options'],
+        },
+        QuizCreateRequest: {
+          type: 'object',
+          properties: {
+            nodeId: { type: 'string' },
+            title: { type: 'string' },
+            description: { type: ['string', 'null'] },
+            passingScore: { type: 'integer', minimum: 1 },
+            xpReward: { type: 'integer', minimum: 0 },
+            questions: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/QuizQuestionSchema' },
+              minItems: 1,
+            },
+          },
+          required: ['nodeId', 'title', 'passingScore', 'questions'],
+        },
+        QuizUpdateRequest: {
+          type: 'object',
+          properties: {
+            title: { type: 'string' },
+            description: { type: ['string', 'null'] },
+            passingScore: { type: 'integer', minimum: 1 },
+            xpReward: { type: 'integer', minimum: 0 },
+            questions: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/QuizQuestionSchema' },
+              minItems: 1,
+            },
+          },
+          required: ['title', 'passingScore', 'questions'],
+        },
+        QuizOptionResponse: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            questionId: { type: 'string' },
+            content: { type: 'string' },
+            isCorrect: { type: 'boolean' },
+            isDeleted: { type: 'boolean' },
+          },
+        },
+        QuizQuestionResponse: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            quizId: { type: 'string' },
+            question: { type: 'string' },
+            explanation: { type: ['string', 'null'] },
+            isDeleted: { type: 'boolean' },
+            createdAt: { type: 'string', format: 'date-time' },
+            options: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/QuizOptionResponse' },
+            },
+          },
+        },
+        QuizResponse: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            nodeId: { type: 'string' },
+            title: { type: 'string' },
+            description: { type: ['string', 'null'] },
+            passingScore: { type: 'integer' },
+            xpReward: { type: 'integer' },
+            isDeleted: { type: 'boolean' },
+            createdAt: { type: 'string', format: 'date-time' },
+            questions: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/QuizQuestionResponse' },
+            },
+          },
+        },
+        CertificateResponse: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            learningPathTitle: { type: 'string' },
+            mentorName: { type: 'string' },
+            issuedAt: { type: 'string', format: 'date-time' },
+            certificateUrl: { type: ['string', 'null'] },
+            verificationId: { type: 'string' },
+          },
+        },
+        CertificateVerifyResponse: {
+          type: 'object',
+          properties: {
+            valid: { type: 'boolean' },
+            learningPath: { type: 'string' },
+            mentor: { type: 'string' },
+            issueDate: { type: 'string', format: 'date-time' },
+          },
+        },
       },
     },
     tags: [
@@ -269,6 +383,14 @@ const options = {
         name: 'Notification',
         description: 'Notification management endpoints',
       },
+      {
+        name: 'Quiz',
+        description: 'Quiz management endpoints for mentors',
+      },
+      {
+        name: 'Certificate',
+        description: 'Certificate management and verification endpoints',
+      },
     ],
   },
   apis: [
@@ -278,6 +400,8 @@ const options = {
     './src/routes/user.js',
     './src/routes/tip.js',
     './src/routes/notification.js',
+    './src/routes/quiz.js',
+    './src/routes/certificate.js',
   ],
 };
 

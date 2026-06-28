@@ -308,7 +308,7 @@ const UserManagementPage = () => {
                       <span
                         className={`px-2.5 py-1 rounded-lg text-xs font-bold inline-flex items-center justify-center ${getStatusColor(user.status)}`}
                       >
-                        {user.status || "ACTIVE"}
+                        {user.status === "ACTIVE" ? "HOẠT ĐỘNG" : user.status === "INACTIVE" ? "NGỪNG HOẠT ĐỘNG" : user.status === "BANNED" ? "BỊ KHÓA" : "CHỜ DUYỆT"}
                       </span>
                     </td>
                     <td className="px-6 py-4">

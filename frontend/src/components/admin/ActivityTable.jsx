@@ -18,20 +18,20 @@ const ActivityTable = () => {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
       <div className="p-6 border-b border-slate-50 flex items-center justify-between">
-        <h3 className="text-lg font-bold text-slate-800">Recent Activities</h3>
+        <h3 className="text-lg font-bold text-slate-800">Hoạt động gần đây</h3>
         <button className="text-indigo-600 text-sm font-semibold hover:text-indigo-700 transition-colors">
-          View All
+          Xem tất cả
         </button>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-50">
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">User</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Action</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Date</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-            </tr>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Người dùng</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Hành động</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Ngày</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Trạng thái</th>
+              </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
             {recentActivities.map((activity) => (

@@ -8,8 +8,8 @@ const DashboardPage = () => {
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Dashboard Overview</h1>
-        <p className="text-slate-500">Welcome back, Admin. Here's what's happening today.</p>
+        <h1 className="text-2xl font-bold text-slate-900">Tổng quan Bảng điều khiển</h1>
+        <p className="text-slate-500">Chào mừng trở lại, Admin. Đây là những gì đang diễn ra hôm nay.</p>
       </div>
 
       {/* Stats Grid */}

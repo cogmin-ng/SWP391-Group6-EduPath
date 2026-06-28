@@ -1,17 +1,16 @@
-import { BookOpen, Clock, Users, CalendarDays } from 'lucide-react';
+import { Clock, Users, CalendarDays } from 'lucide-react';
 
 /**
  * Header section for the node detail page.
  * Displays badge (Node X of Y), title, description, and metadata pills.
  *
  * Props:
- * - node: { title, description, nodeNumber, totalNodes, level, estimatedHours, mentorGuided, updatedAt }
+ * - node: { title, description, nodeNumber, totalNodes, estimatedHours, mentorGuided, updatedAt }
  */
 export default function NodeHeader({ node }) {
   if (!node) return null;
 
   const pills = [
-    { icon: BookOpen, label: node.level },
     { icon: Clock, label: `${node.estimatedHours} Hours` },
     ...(node.mentorGuided
       ? [{ icon: Users, label: 'Mentor Guided' }]

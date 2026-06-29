@@ -60,6 +60,7 @@ model User {
   avatar       String?
   bio          String?
   xp           Int        @default(0)
+  isVerified   Boolean    @default(false)
   status       UserStatus @default(ACTIVE)
   isDeleted    Boolean    @default(false)
   createdAt    DateTime   @default(now())

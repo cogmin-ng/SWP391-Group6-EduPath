@@ -9,6 +9,9 @@ const schema = Joi.object({
     .default('development'),
   JWT_ACCESS_SECRET: Joi.string().min(16).required(),
   JWT_REFRESH_SECRET: Joi.string().min(16).required(),
+  RESEND_API_KEY: Joi.string().optional(),
+  RESEND_FROM_EMAIL: Joi.string().email().default('no-reply@edupath.com'),
+  FRONTEND_BASE_URL: Joi.string().uri().default('http://localhost:3000'),
   CORS_ORIGINS: Joi.string().default('http://localhost:3000'),
   RATE_LIMIT_WINDOW_MS: Joi.number().default(15 * 60 * 1000),
   RATE_LIMIT_MAX: Joi.number().default(100),
@@ -46,6 +49,13 @@ module.exports = {
   rateLimit: {
     windowMs: value.RATE_LIMIT_WINDOW_MS,
     max: value.RATE_LIMIT_MAX,
+  },
+  resend: {
+    apiKey: value.RESEND_API_KEY || null,
+    fromEmail: value.RESEND_FROM_EMAIL,
+  },
+  frontend: {
+    baseUrl: value.FRONTEND_BASE_URL,
   },
   cloudinary: {
     cloudName: cloudinaryCloudName || null,

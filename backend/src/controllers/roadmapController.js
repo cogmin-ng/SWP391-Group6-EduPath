@@ -152,3 +152,16 @@ exports.getRoadmapStats = asyncHandler(async (req, res) => {
     data: stats,
   });
 });
+
+/**
+ * GET /api/roadmaps/mentor/stats
+ * Get mentor dashboard statistics (MENTOR only).
+ */
+exports.getMentorDashboardStats = asyncHandler(async (req, res) => {
+  const stats = await roadmapService.getMentorDashboardStats(req.user.id);
+
+  return sendSuccess(res, {
+    message: 'Mentor dashboard stats retrieved successfully',
+    data: stats,
+  });
+});

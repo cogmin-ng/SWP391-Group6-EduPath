@@ -4,6 +4,7 @@ const { randomUUID } = require('node:crypto');
 const userRepo = require('../repositories/userRepository');
 const roleRepo = require('../repositories/roleRepository');
 const refreshTokenRepo = require('../repositories/refreshTokenRepository');
+const otpService = require('./otpService');
 const config = require('../config');
 const ApiError = require('../utils/ApiError');
 const { auth: authMessages } = require('../constants/messages');
@@ -65,12 +66,50 @@ exports.register = async ({ email, password, name }) => {
     roleId: defaultRole.id,
   });
 
+  try {
+    const otpService = require('./otpService');
+    await otpService.sendOtp({ email: user.email, otpType: 'VERIFY_EMAIL' });
+  } catch (err) {
+    console.error('Failed to send verification email', err.message || err);
+  }
+
   return user;
+};
+
+exports.forgotPassword = async ({ email }) => {
+  const user = await userRepo.findByEmail(email);
+  if (!user) {
+    // Avoid leaking whether the email exists.
+    return { email };
+  }
+
+  try {
+    const otpService = require('./otpService');
+    await otpService.sendOtp({ email: user.email, otpType: 'RESET_PASSWORD' });
+  } catch (err) {
+    console.error('Failed to send password reset email', err.message || err);
+  }
+
+  return { email: user.email };
+};
+
+exports.resetPassword = async ({ email, otp, newPassword }) => {
+  const user = await userRepo.findByEmail(email);
+  if (!user) {
+    throw new ApiError(400, 'Invalid password reset request');
+  }
+
+  await otpService.verifyOtp({ email, otp, otpType: 'RESET_PASSWORD' });
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await userRepo.update(user.id, { passwordHash });
+  await refreshTokenRepo.revokeAllForUser(user.id);
+  return { email: user.email };
 };
 
 exports.login = async ({ email, password }) => {
   const user = await userRepo.findByEmail(email);
   if (!user) throw new ApiError(401, authMessages.invalidCredentials);
+  if (!user.isVerified) throw new ApiError(403, 'Email not verified. Please verify your email to continue.');
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) throw new ApiError(401, authMessages.invalidCredentials);
 

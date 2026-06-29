@@ -45,3 +45,20 @@ exports.getMe = asyncHandler(async (req, res) => {
     data: user,
   });
 });
+
+exports.forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  await authService.forgotPassword({ email });
+  return sendSuccess(res, {
+    message: 'Nếu email tồn tại, mã đặt lại mật khẩu đã được gửi.',
+  });
+});
+
+exports.resetPassword = asyncHandler(async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  await authService.resetPassword({ email, otp, newPassword });
+  return sendSuccess(res, {
+    message: 'Mật khẩu đã được đặt lại thành công.',
+  });
+});
+

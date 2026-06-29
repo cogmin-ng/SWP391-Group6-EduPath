@@ -6,16 +6,41 @@ const notificationMessages = {
   invalidId: 'Invalid notification id',
 };
 
-exports.createNotification = async (userId, { type, title, content, relatedTipId = null }) => {
-  const notification = await notificationRepository.create({
-    userId,
-    type,
-    title,
-    content,
-    relatedTipId,
-  });
+const normalizeNotificationPayload = ({ type, title, content, relatedTipId = null }) => ({
+  type,
+  title,
+  content,
+  relatedTipId,
+});
+
+exports.createNotification = async (userId, payload, prismaClient = null) => {
+  if (!userId) return null;
+
+  const notification = await notificationRepository.create(
+    {
+      userId,
+      ...normalizeNotificationPayload(payload),
+    },
+    prismaClient
+  );
 
   return notification;
+};
+
+exports.createNotifications = async (userIds, payload, prismaClient = null) => {
+  if (!Array.isArray(userIds) || userIds.length === 0) return [];
+
+  const normalizedPayload = normalizeNotificationPayload(payload);
+
+  const notifications = await notificationRepository.createMany(
+    userIds.map((userId) => ({
+      userId,
+      ...normalizedPayload,
+    })),
+    prismaClient
+  );
+
+  return notifications;
 };
 
 exports.getNotificationsByUser = async (userId, { skip = 0, take = 10 }) => {

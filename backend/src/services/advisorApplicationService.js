@@ -1,5 +1,6 @@
 const prisma = require('../lib/prisma');
 const ApiError = require('../utils/ApiError');
+const notificationService = require('./notificationService');
 
 const messages = {
   alreadyPending: 'You already have a pending application',
@@ -109,14 +110,15 @@ exports.createApplication = async (userId, data) => {
 
     // Create notifications for all admins
     if (admins.length > 0) {
-      await tx.notification.createMany({
-        data: admins.map((admin) => ({
-          userId: admin.id,
-          title: 'Yêu cầu làm Mentor mới',
-          content: `Một học viên vừa gửi yêu cầu để trở thành Mentor. Vui lòng kiểm tra trang quản lý.`,
+      await notificationService.createNotifications(
+        admins.map((admin) => admin.id),
+        {
           type: 'SYSTEM',
-        })),
-      });
+          title: 'Yêu cầu làm Mentor mới',
+          content: 'Một học viên vừa gửi yêu cầu để trở thành Mentor. Vui lòng kiểm tra trang quản lý.',
+        },
+        tx
+      );
     }
 
     // Return the full application with relations
@@ -226,6 +228,19 @@ exports.updateApplicationStatus = async (id, status, reviewerId, rejectReason) =
           data: { roleId: mentorRole.id },
         });
       }
+    }
+
+    if (updatedApp.userId) {
+      const notificationPayload = {
+        type: 'SYSTEM',
+        title: status === 'APPROVED' ? 'Đơn đăng ký Mentor được phê duyệt' : 'Đơn đăng ký Mentor bị từ chối',
+        content:
+          status === 'APPROVED'
+            ? 'Đơn đăng ký Mentor của bạn đã được phê duyệt. Bạn có thể bắt đầu tạo lộ trình và hỗ trợ học viên.'
+            : `Đơn đăng ký Mentor của bạn đã bị từ chối.${rejectReason ? ` Lý do: ${rejectReason}` : ''}`,
+      };
+
+      await notificationService.createNotification(updatedApp.userId, notificationPayload, tx);
     }
 
     return updatedApp;

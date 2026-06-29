@@ -68,8 +68,19 @@ exports.countUnreadByUser = async (userId) => {
   });
 };
 
-exports.create = async (data) => {
-  return prisma.notification.create({
+exports.create = async (data, prismaClient = prisma) => {
+  return prismaClient.notification.create({
+    data,
+    include: {
+      relatedTip: true,
+    },
+  });
+};
+
+exports.createMany = async (data, prismaClient = prisma) => {
+  if (!Array.isArray(data) || data.length === 0) return [];
+
+  return prismaClient.notification.createManyAndReturn({
     data,
     include: {
       relatedTip: true,

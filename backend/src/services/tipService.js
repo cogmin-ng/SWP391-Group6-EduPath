@@ -54,8 +54,8 @@ exports.submitTip = async (nodeId, { title, content }, contributorId) => {
   // Create notification for mentor about new tip submission
   await notificationService.createNotification(node.learningPath.mentorId, {
     type: 'CONTRIBUTION',
-    title: 'New Tip Submitted',
-    content: `A new tip has been submitted for "${node.title}" node by a mentee. Please review it.`,
+    title: 'Tip mới cần duyệt',
+    content: `Một tip mới cho node "${node.title}" vừa được gửi bởi học viên. Vui lòng xem xét trước khi công bố.`,
     relatedTipId: tip.id,
   });
 
@@ -121,8 +121,8 @@ exports.approveTip = async (tipId, mentorId) => {
   if (updatedTip.contributorId) {
     await notificationService.createNotification(updatedTip.contributorId, {
       type: 'CONTRIBUTION',
-      title: 'Your Tip Has Been Approved',
-      content: `Your tip submission for "${updatedTip.node?.title || 'a node'}" has been approved and published!`,
+      title: 'Tip của bạn đã được duyệt',
+      content: `Tip của bạn cho node "${updatedTip.node?.title || 'một node'}" đã được mentor phê duyệt và công bố thành công.`,
       relatedTipId: updatedTip.id,
     });
   }
@@ -151,16 +151,6 @@ exports.rejectTip = async (tipId, mentorId, rejectReason) => {
 
   if (tip.status !== 'PENDING') {
     throw new ApiError(400, `Tip status is ${tip.status}, cannot reject`);
-  // Create notification for contributor/mentee about rejection with reason
-  if (updatedTip.contributorId) {
-    await notificationService.createNotification(updatedTip.contributorId, {
-      type: 'CONTRIBUTION',
-      title: 'Your Tip Has Been Rejected',
-      content: `Your tip submission for "${updatedTip.node?.title || 'a node'}" was rejected. Reason: ${rejectReason}`,
-      relatedTipId: updatedTip.id,
-    });
-  }
-
   }
 
   // Update tip status to REJECTED with reason
@@ -170,6 +160,16 @@ exports.rejectTip = async (tipId, mentorId, rejectReason) => {
     reviewedAt: new Date(),
     rejectReason,
   });
+
+  // Create notification for contributor/mentee about rejection with reason
+  if (updatedTip.contributorId) {
+    await notificationService.createNotification(updatedTip.contributorId, {
+      type: 'CONTRIBUTION',
+      title: 'Tip của bạn đã bị từ chối',
+      content: `Tip của bạn cho node "${updatedTip.node?.title || 'một node'}" đã bị mentor từ chối.${rejectReason ? ` Lý do: ${rejectReason}` : ''}`,
+      relatedTipId: updatedTip.id,
+    });
+  }
 
   return updatedTip;
 };

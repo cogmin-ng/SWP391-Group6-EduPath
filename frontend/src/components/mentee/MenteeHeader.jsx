@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Award,
   BarChart3,
+  Bell,
+  Check,
   ChevronDown,
   Compass,
   FileText,
@@ -17,6 +19,7 @@ import {
   User,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { notificationService } from '../../services/notificationService';
 
 const accountMenuItems = [
   { label: 'Trang chủ', icon: Home, to: '/mentee/homepage' },
@@ -46,11 +49,33 @@ export default function MenteeHeader() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const [notifData, unreadData] = await Promise.all([
+          notificationService.getNotifications({ skip: 0, take: 5 }),
+          notificationService.getUnreadCount(),
+        ]);
+        setNotifications(notifData?.notifications || []);
+        setUnreadCount(unreadData?.unreadCount || 0);
+      } catch (error) {
+        console.error('Failed to fetch notifications:', error);
+      }
+    };
+
+    fetchNotifications();
+    const interval = window.setInterval(fetchNotifications, 60000);
+    return () => window.clearInterval(interval);
   }, []);
 
   const displayName = authUser?.name || 'Học viên';
@@ -68,6 +93,30 @@ export default function MenteeHeader() {
     if (item.action === 'logout') {
       await logout();
       return;
+    }
+  };
+
+  const handleMarkAsRead = async (id, currentIsRead) => {
+    if (currentIsRead) return;
+
+    try {
+      await notificationService.markAsRead(id);
+      setNotifications((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, isRead: true } : item))
+      );
+      setUnreadCount((prev) => Math.max(prev - 1, 0));
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+      setNotifications((prev) => prev.map((item) => ({ ...item, isRead: true })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Failed to mark all notifications as read:', error);
     }
   };
 
@@ -112,6 +161,70 @@ export default function MenteeHeader() {
           </nav>
 
           <div className="relative flex shrink-0 items-center gap-3">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setNotificationsOpen((prev) => !prev)}
+                className="rounded-xl p-2 text-slate-600 transition-colors hover:bg-slate-100"
+              >
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute right-1 top-1 flex h-4.5 w-4.5 items-center justify-center rounded-full border-2 border-white bg-red-500 text-[9px] font-black text-white">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {notificationsOpen && (
+                <div className="absolute right-0 top-12 z-50 w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                  <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/70 px-4 py-3">
+                    <span className="text-sm font-semibold text-slate-800">Thông báo</span>
+                    {unreadCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleMarkAllAsRead}
+                        className="flex items-center gap-1 text-xs font-semibold text-indigo-600 transition-colors hover:text-indigo-800"
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                        Đánh dấu đã đọc
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-72 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="px-4 py-8 text-center text-xs font-medium text-slate-400">
+                        Không có thông báo nào.
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-slate-100">
+                        {notifications.map((notif) => (
+                          <button
+                            key={notif.id}
+                            type="button"
+                            onClick={() => handleMarkAsRead(notif.id, notif.isRead)}
+                            className={`flex w-full flex-col gap-1 px-4 py-3 text-left transition-colors hover:bg-slate-50 ${!notif.isRead ? 'bg-indigo-50/20' : ''}`}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <h4 className={`text-xs ${!notif.isRead ? 'font-bold text-slate-900' : 'font-semibold text-slate-600'}`}>
+                                {notif.title}
+                              </h4>
+                              {!notif.isRead && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-indigo-500" />}
+                            </div>
+                            <p className={`text-xs leading-relaxed ${!notif.isRead ? 'text-slate-700' : 'text-slate-500'}`}>
+                              {notif.content}
+                            </p>
+                            <span className="mt-1 text-[10px] font-medium text-slate-400">
+                              {new Date(notif.createdAt).toLocaleString('vi-VN')}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <button
               type="button"
               onClick={() => setMenuOpen((prev) => !prev)}

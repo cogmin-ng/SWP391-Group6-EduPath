@@ -6,7 +6,7 @@ import MentorStatsCard from '../../components/mentor/MentorStatsCard';
 import PendingReviewsSection from '../../components/mentor/PendingReviewsSection';
 import PendingTipsSection from '../../components/mentor/PendingTipsSection';
 import { mentorStats } from '../../mock/mentorDashboardData';
-import { getPendingTips, getMentorRoadmaps } from '../../services/roadmapService';
+import { getPendingTips, getMentorRoadmaps, getMentorDashboardStats } from '../../services/roadmapService';
 import { Loader2 } from 'lucide-react';
 
 const MentorDashboardPage = () => {
@@ -14,6 +14,16 @@ const MentorDashboardPage = () => {
   const [loadingRoadmaps, setLoadingRoadmaps] = useState(true);
   const [pendingTips, setPendingTips] = useState([]);
   const [loadingTips, setLoadingTips] = useState(false);
+  const [stats, setStats] = useState({
+    totalRoadmaps: 0,
+    approvedContributions: 0,
+    contributionsTrend: '+0%',
+    totalStudents: 0,
+    studentsTrend: '+0%',
+    averageRating: 0,
+    ratingTrend: '+0.0'
+  });
+  const [loadingStats, setLoadingStats] = useState(true);
   const navigate = useNavigate();
 
   // Fetch pending tips and roadmaps on mount
@@ -42,8 +52,21 @@ const MentorDashboardPage = () => {
       }
     };
 
+    const fetchStats = async () => {
+      setLoadingStats(true);
+      try {
+        const result = await getMentorDashboardStats();
+        setStats(result);
+      } catch (err) {
+        console.error('Failed to fetch stats:', err);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+
     fetchPendingTips();
     fetchRoadmaps();
+    fetchStats();
   }, []);
 
   const handleRefreshTips = async () => {
@@ -95,12 +118,35 @@ const MentorDashboardPage = () => {
     {
       id: 1,
       label: 'Số Lộ Trình',
-      value: loadingRoadmaps ? '...' : roadmaps.length.toString(),
+      value: loadingStats ? '...' : stats.totalRoadmaps.toString(),
       icon: 'Layers',
       color: 'bg-indigo-500',
       trend: 'Thời gian thực',
     },
-    ...mentorStats.slice(1)
+    {
+      id: 2,
+      label: 'Đóng Góp Được Duyệt',
+      value: loadingStats ? '...' : stats.approvedContributions.toString(),
+      icon: 'CheckCircle',
+      color: 'bg-emerald-500',
+      trend: loadingStats ? '...' : stats.contributionsTrend,
+    },
+    {
+      id: 3,
+      label: 'Tổng Số Học Viên',
+      value: loadingStats ? '...' : stats.totalStudents.toString(),
+      icon: 'Users',
+      color: 'bg-amber-500',
+      trend: loadingStats ? '...' : stats.studentsTrend,
+    },
+    {
+      id: 4,
+      label: 'Đánh Giá Trung Bình',
+      value: loadingStats ? '...' : stats.averageRating.toString(),
+      icon: 'Star',
+      color: 'bg-blue-500',
+      trend: loadingStats ? '...' : stats.ratingTrend,
+    }
   ];
 
   const formatDate = (dateStr) => {
@@ -116,6 +162,10 @@ const MentorDashboardPage = () => {
       title: roadmap.title,
       submittedDate: formatDate(roadmap.updatedAt),
     }));
+
+  const approvedRoadmaps = roadmaps.filter(
+    (roadmap) => roadmap.status === 'APPROVED' || roadmap.status === 'PUBLISHED'
+  );
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -147,14 +197,14 @@ const MentorDashboardPage = () => {
                 <Loader2 className="h-6 w-6 text-indigo-600 animate-spin" />
                 <p className="text-slate-500 mt-2 text-xs">Đang tải danh sách lộ trình...</p>
               </div>
-            ) : roadmaps.length === 0 ? (
+            ) : approvedRoadmaps.length === 0 ? (
               <div className="text-center py-10 bg-slate-50 border border-slate-200 border-dashed rounded-2xl">
-                <h3 className="font-semibold text-slate-800 text-sm">Bạn chưa tạo lộ trình nào</h3>
-                <p className="text-slate-500 text-xs mt-1">Hãy bắt đầu tạo lộ trình đầu tiên của bạn.</p>
+                <h3 className="font-semibold text-slate-800 text-sm">Chưa có lộ trình nào được duyệt</h3>
+                <p className="text-slate-500 text-xs mt-1">Các lộ trình đã được duyệt sẽ hiển thị ở đây.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {roadmaps.slice(0, 4).map((roadmap) => (
+                {approvedRoadmaps.slice(0, 4).map((roadmap) => (
                   <div
                     key={roadmap.id}
                     className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col group justify-between"
@@ -176,16 +226,18 @@ const MentorDashboardPage = () => {
                     <div className="p-3 bg-slate-50 border-t border-slate-100 flex gap-2">
                       <button
                         onClick={() => handleViewRoadmap(roadmap.id)}
-                        className="flex-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 py-1.5 text-xs rounded-xl font-semibold transition cursor-pointer text-center"
+                        className={`flex-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 py-1.5 text-xs rounded-xl font-semibold transition cursor-pointer text-center ${roadmap.status === 'PENDING' ? 'basis-full' : ''}`}
                       >
                         Xem
                       </button>
-                      <button
-                        onClick={() => handleEditRoadmap(roadmap.id)}
-                        className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 text-xs rounded-xl font-semibold transition cursor-pointer text-center"
-                      >
-                        Chỉnh sửa
-                      </button>
+                      {roadmap.status !== 'PENDING' && (
+                        <button
+                          onClick={() => handleEditRoadmap(roadmap.id)}
+                          className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 text-xs rounded-xl font-semibold transition cursor-pointer text-center"
+                        >
+                          Chỉnh sửa
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}

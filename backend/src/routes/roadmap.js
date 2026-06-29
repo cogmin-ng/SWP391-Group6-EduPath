@@ -103,6 +103,26 @@ router.get(
   roadmapController.getMentorRoadmaps
 );
 
+/**
+ * @swagger
+ * /api/roadmaps/mentor/stats:
+ *   get:
+ *     tags:
+ *       - Roadmap
+ *     summary: Lấy thống kê dashboard cho Mentor
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dashboard stats
+ */
+router.get(
+  '/mentor/stats',
+  requireAuth,
+  requireRole(['MENTOR']),
+  roadmapController.getMentorDashboardStats
+);
+
 // --- Admin Section (Must be before parametric routes) ---
 
 /**

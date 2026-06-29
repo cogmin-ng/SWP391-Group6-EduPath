@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "../pages/LandingPage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
+import ForgotPasswordPage from "../pages/ForgotPasswordPage";
+import ResetPasswordPage from "../pages/ResetPasswordPage";
 import ExplorePage from "../pages/ExplorePage";
 import RoadmapDetailPage from "../pages/RoadmapDetailPage";
 import MyRoadmapsPage from "../pages/mentee/MyRoadmapsPage";
@@ -77,6 +79,24 @@ export default function AppRoutes() {
           </PublicRoute>
         }
       />
+      <Route
+        path="/forgot-password"
+        element={
+          <PublicRoute>
+            <ForgotPasswordPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/reset-password"
+        element={
+          <PublicRoute>
+            <ResetPasswordPage />
+          </PublicRoute>
+        }
+      />
+
+      
 
       {/* Redirect from /admin to admin dashboard for now */}
       <Route

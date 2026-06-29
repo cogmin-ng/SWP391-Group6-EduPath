@@ -11,6 +11,35 @@ export const authService = {
     return data;
   },
 
+  async forgotPassword(email) {
+    const { data } = await api.post('/auth/forgot-password', { email });
+    return data;
+  },
+
+  async resetPassword(email, otp, newPassword) {
+    const { data } = await api.post('/auth/reset-password', {
+      email,
+      otp,
+      newPassword,
+    });
+    return data;
+  },
+
+  // OTP endpoints
+  async resendOtp(email, otpType) {
+    const body = { email };
+    if (otpType) body.otpType = otpType;
+    const { data } = await api.post('/otp/resend-otp', body);
+    return data;
+  },
+
+  async verifyOtp(email, otp, otpType) {
+    const body = { email, otp };
+    if (otpType) body.otpType = otpType;
+    const { data } = await api.post('/otp/verify-otp', body);
+    return data;
+  },
+
   async logout(refreshToken) {
     const { data } = await api.post('/auth/logout', { refreshToken });
     return data;

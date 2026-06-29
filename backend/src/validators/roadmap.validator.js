@@ -55,6 +55,7 @@ const roadmapNodeSchema = Joi.object({
   description: Joi.string().trim().allow('', null).optional(),
   orderIndex: Joi.number().integer().min(0).optional(),
   duration: Joi.string().trim().allow('', null).optional(), // Allowed for compatibility with frontend
+  studyTips: Joi.string().trim().allow('', null).optional(),
   checklists: Joi.array().items(nodeChecklistSchema).optional(),
   materials: Joi.array().items(nodeMaterialSchema).optional(),
   quizzes: Joi.array().items(nodeQuizSchema).optional(),

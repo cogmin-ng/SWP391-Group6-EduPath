@@ -18,6 +18,7 @@ const TABS = [
   { key: 'checklists', label: 'Checklist', icon: CheckSquare },
   { key: 'materials', label: 'Tài liệu', icon: FileText },
   { key: 'quizzes', label: 'Bài kiểm tra', icon: HelpCircle },
+  { key: 'tips', label: 'Tip Trick', icon: Lightbulb },
 ];
 
 const NodeDetailModal = ({ nodeId, nodeTitle, isOpen, onClose }) => {
@@ -302,6 +303,39 @@ const NodeDetailModal = ({ nodeId, nodeTitle, isOpen, onClose }) => {
                             ))}
                           </div>
                         )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* Tips Tab */}
+              {activeTab === 'tips' && (
+                <div className="space-y-3">
+                  {tips.length === 0 ? (
+                    <EmptyState icon={Lightbulb} text="Chưa có tip trick nào." />
+                  ) : (
+                    tips.map((tip, idx) => (
+                      <div
+                        key={tip.id || idx}
+                        className="flex items-start gap-3 p-4 rounded-xl bg-amber-50/50 border border-amber-100 hover:border-amber-200 transition-all"
+                      >
+                        <div className="flex-shrink-0 w-6 h-6 rounded-lg bg-amber-100 text-amber-600 text-xs font-bold flex items-center justify-center mt-0.5">
+                          <Lightbulb className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          {tip.title && (
+                            <p className="text-sm font-bold text-slate-800">{tip.title}</p>
+                          )}
+                          {tip.content && (
+                            <p className={`text-sm text-slate-600 whitespace-pre-wrap ${tip.title ? 'mt-1' : ''}`}>
+                              {tip.content}
+                            </p>
+                          )}
+                          {!tip.title && !tip.content && (
+                            <p className="text-sm text-slate-400 italic">(Không có nội dung)</p>
+                          )}
+                        </div>
                       </div>
                     ))
                   )}

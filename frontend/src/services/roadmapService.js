@@ -263,3 +263,13 @@ export const reviewRoadmap = async (id, status, feedback) => {
   const res = await api.post(`/roadmaps/${id}/review`, payload);
   return res.data.data;
 };
+
+/**
+ * Fetch mentor dashboard stats.
+ * @returns {Promise<Object>} Mentor stats
+ */
+export const getMentorDashboardStats = async () => {
+  const res = await api.get('/roadmaps/mentor/stats');
+  return res.data.data;
+};
+

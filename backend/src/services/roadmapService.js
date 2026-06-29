@@ -348,3 +348,125 @@ exports.reviewRoadmap = async (roadmapId, { status }) => {
 exports.getRoadmapStats = async () => {
   return roadmapRepository.getStatusStats();
 };
+
+/**
+ * Get mentor dashboard statistics
+ */
+exports.getMentorDashboardStats = async (mentorId) => {
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+  // 1. Total Roadmaps
+  const totalRoadmaps = await prisma.learningPath.count({
+    where: { mentorId, isDeleted: false },
+  });
+
+  // 2. Approved Contributions & Trend
+  const approvedContributions = await prisma.tip.count({
+    where: {
+      node: { learningPath: { mentorId, isDeleted: false } },
+      status: 'APPROVED',
+      isDeleted: false,
+    },
+  });
+
+  const currentMonthContributions = await prisma.tip.count({
+    where: {
+      node: { learningPath: { mentorId, isDeleted: false } },
+      status: 'APPROVED',
+      isDeleted: false,
+      reviewedAt: { gte: startOfMonth },
+    },
+  });
+
+  const lastMonthContributions = await prisma.tip.count({
+    where: {
+      node: { learningPath: { mentorId, isDeleted: false } },
+      status: 'APPROVED',
+      isDeleted: false,
+      reviewedAt: { gte: startOfLastMonth, lt: startOfMonth },
+    },
+  });
+
+  let contributionsTrend = '+0%';
+  if (lastMonthContributions === 0) {
+    contributionsTrend = currentMonthContributions > 0 ? `+${currentMonthContributions * 100}%` : '0%';
+  } else {
+    const diff = currentMonthContributions - lastMonthContributions;
+    const percent = Math.round((diff / lastMonthContributions) * 100);
+    contributionsTrend = percent >= 0 ? `+${percent}%` : `${percent}%`;
+  }
+
+  // 3. Total Students & Trend
+  const totalStudentsAggr = await prisma.enrollment.groupBy({
+    by: ['userId'],
+    where: {
+      learningPath: { mentorId, isDeleted: false },
+      isDeleted: false,
+    },
+  });
+  const totalStudents = totalStudentsAggr.length;
+
+  const currentMonthStudentsAggr = await prisma.enrollment.groupBy({
+    by: ['userId'],
+    where: {
+      learningPath: { mentorId, isDeleted: false },
+      isDeleted: false,
+      enrolledAt: { gte: startOfMonth },
+    },
+  });
+  const currentMonthStudents = currentMonthStudentsAggr.length;
+
+  const lastMonthStudentsAggr = await prisma.enrollment.groupBy({
+    by: ['userId'],
+    where: {
+      learningPath: { mentorId, isDeleted: false },
+      isDeleted: false,
+      enrolledAt: { gte: startOfLastMonth, lt: startOfMonth },
+    },
+  });
+  const lastMonthStudents = lastMonthStudentsAggr.length;
+
+  let studentsTrend = '+0%';
+  if (lastMonthStudents === 0) {
+    studentsTrend = currentMonthStudents > 0 ? `+${currentMonthStudents * 100}%` : '0%';
+  } else {
+    const diff = currentMonthStudents - lastMonthStudents;
+    const percent = Math.round((diff / lastMonthStudents) * 100);
+    studentsTrend = percent >= 0 ? `+${percent}%` : `${percent}%`;
+  }
+
+  // 4. Average Rating & Trend
+  const reviewAggr = await prisma.review.aggregate({
+    _avg: { rating: true },
+    where: {
+      learningPath: { mentorId, isDeleted: false },
+      isDeleted: false,
+    },
+  });
+  const averageRating = reviewAggr._avg.rating ? Number(reviewAggr._avg.rating.toFixed(1)) : 0;
+
+  const reviewAggrBeforeThisMonth = await prisma.review.aggregate({
+    _avg: { rating: true },
+    where: {
+      learningPath: { mentorId, isDeleted: false },
+      isDeleted: false,
+      createdAt: { lt: startOfMonth },
+    },
+  });
+  const prevAverageRating = reviewAggrBeforeThisMonth._avg.rating ? Number(reviewAggrBeforeThisMonth._avg.rating.toFixed(1)) : averageRating;
+  
+  const ratingDiff = (averageRating - prevAverageRating).toFixed(1);
+  const ratingTrend = ratingDiff >= 0 ? `+${ratingDiff}` : `${ratingDiff}`;
+
+  return {
+    totalRoadmaps,
+    approvedContributions,
+    contributionsTrend,
+    totalStudents,
+    studentsTrend,
+    averageRating,
+    ratingTrend,
+  };
+};

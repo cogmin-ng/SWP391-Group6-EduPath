@@ -83,6 +83,7 @@ async function main() {
       update: {
         name,
         passwordHash,
+        isVerified: true,
         role: {
           connect: { id: roles[name].id },
         },
@@ -91,6 +92,7 @@ async function main() {
         email,
         name,
         passwordHash,
+        isVerified: true,
         role: {
           connect: { id: roles[name].id },
         },
@@ -114,6 +116,7 @@ async function main() {
       update: {
         name: profile.name,
         passwordHash,
+        isVerified: true,
         role: {
           connect: { id: roles.MENTOR.id },
         },
@@ -122,6 +125,7 @@ async function main() {
         email: profile.email,
         name: profile.name,
         passwordHash,
+        isVerified: true,
         role: {
           connect: { id: roles.MENTOR.id },
         },

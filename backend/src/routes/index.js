@@ -14,6 +14,7 @@ const roadmapRoutes = require('./roadmap');
 const nodeRoutes = require('./node');
 const enrollmentRoutes = require('./enrollment');
 const certificateRoutes = require('./certificate');
+const otpRoutes = require('./otp');
 const quizController = require('../controllers/quizController');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
@@ -34,6 +35,7 @@ router.use('/roadmaps', roadmapRoutes);
 router.use('/nodes', nodeRoutes);
 router.use('/enrollments', enrollmentRoutes);
 router.use('/certificates', certificateRoutes);
+router.use('/otp', otpRoutes);
 
 // Node-scoped quiz endpoint
 router.get(

@@ -19,4 +19,8 @@ module.exports = {
     uploadSuccess: 'Media uploaded successfully',
     deleteSuccess: 'Media deleted successfully',
   },
+  otp: {
+    userNotFound: 'User not found',
+    invalidOrExpiredOtp: 'OTP is invalid or expired',
+  },
 };

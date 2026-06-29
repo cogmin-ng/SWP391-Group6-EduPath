@@ -51,6 +51,68 @@ const options = {
             refreshToken: { type: 'string' },
           },
         },
+        SendOtpRequest: {
+          type: 'object',
+          properties: {
+            email: { type: 'string', format: 'email' },
+          },
+          required: ['email'],
+        },
+        ResendOtpRequest: {
+          type: 'object',
+          properties: {
+            email: { type: 'string', format: 'email' },
+          },
+          required: ['email'],
+        },
+        VerifyOtpRequest: {
+          type: 'object',
+          properties: {
+            email: { type: 'string', format: 'email' },
+            otp: { type: 'string', minLength: 6, maxLength: 6 },
+          },
+          required: ['email', 'otp'],
+        },
+        ForgotPasswordRequest: {
+          type: 'object',
+          properties: { email: { type: 'string', format: 'email' } },
+          required: ['email'],
+        },
+        ResetPasswordRequest: {
+          type: 'object',
+          properties: {
+            email: { type: 'string', format: 'email' },
+            otp: { type: 'string', minLength: 6, maxLength: 6 },
+            newPassword: { type: 'string', minLength: 8 },
+          },
+          required: ['email', 'otp', 'newPassword'],
+        },
+        OtpSendResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            message: { type: 'string' },
+            data: {
+              type: 'object',
+              properties: {
+                email: { type: 'string', format: 'email' },
+              },
+            },
+          },
+        },
+        OtpVerifyResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            message: { type: 'string' },
+            data: {
+              type: 'object',
+              properties: {
+                verified: { type: 'boolean' },
+              },
+            },
+          },
+        },
         RoleCreateRequest: {
           type: 'object',
           properties: {
@@ -364,6 +426,10 @@ const options = {
         description: 'Authentication and authorization endpoints',
       },
       {
+        name: 'OTP',
+        description: 'One-time password email verification endpoints',
+      },
+      {
         name: 'Role',
         description: 'Role management endpoints',
       },
@@ -402,6 +468,7 @@ const options = {
     './src/routes/notification.js',
     './src/routes/quiz.js',
     './src/routes/certificate.js',
+    './src/routes/otp.js',
   ],
 };
 

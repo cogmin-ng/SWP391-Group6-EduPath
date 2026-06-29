@@ -9,6 +9,7 @@ import AuthLayout from '../layouts/AuthLayout';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { useAuth } from '../hooks/useAuth';
+import { authService } from '../services/authService';
 
 const registerSchema = z
   .object({
@@ -51,6 +52,7 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const { register: registerUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState(null);
 
   const {
     register,
@@ -75,12 +77,25 @@ export default function RegisterPage() {
     setIsLoading(true);
     try {
       await registerUser(data.name, data.email, data.password);
-      toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
-      navigate('/login', { replace: true });
+      // show check-email screen instead of auto-navigate
+      setRegisteredEmail(data.email);
     } catch (error) {
       const message =
         error.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.';
       toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setIsLoading(true);
+    try {
+      await authService.resendOtp(registeredEmail, 'VERIFY_EMAIL');
+      toast.success('Đã gửi lại mã xác thực. Vui lòng kiểm tra email.');
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Gửi lại thất bại. Vui lòng thử lại.';
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
@@ -111,6 +126,54 @@ export default function RegisterPage() {
       </div>
 
       <div>
+        {registeredEmail ? (
+          <div className="p-6 bg-white rounded-lg shadow-sm">
+            <h3 className="text-xl font-semibold mb-2">Xác thực email</h3>
+            <p className="text-sm text-slate-600 mb-4">
+              Chúng tôi đã gửi mã xác thực 6 chữ số tới <strong>{registeredEmail}</strong>.
+              Vui lòng kiểm tra hộp thư và nhập mã để hoàn tất đăng ký.
+            </p>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const form = new FormData(e.target);
+                const otp = form.get('otp');
+                if (!otp || otp.toString().trim().length !== 6) {
+                  toast.error('Vui lòng nhập mã 6 chữ số');
+                  return;
+                }
+                setIsLoading(true);
+                try {
+                  await authService.verifyOtp(registeredEmail, otp.toString().trim(), 'VERIFY_EMAIL');
+                  toast.success('Email đã được xác thực. Bạn có thể đăng nhập.');
+                  navigate('/login');
+                } catch (err) {
+                  const msg = err.response?.data?.message || 'Xác thực thất bại.';
+                  toast.error(msg);
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <Input name="otp" label="Mã xác thực (6 chữ số)" placeholder="123456" />
+              </div>
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => navigate('/login')}>
+                  Quay lại đăng nhập
+                </Button>
+                <Button type="submit" variant="primary" isLoading={isLoading}>
+                  Xác thực
+                </Button>
+                <Button type="button" variant="ghost" onClick={handleResend}>
+                  Gửi lại mã
+                </Button>
+              </div>
+            </form>
+          </div>
+        ) : (
+        <>
         <h2 className="text-3xl font-bold text-slate-900 mb-2">Tạo tài khoản</h2>
         <p className="text-slate-500 mb-8">
           Bắt đầu hành trình của bạn với EduPath ngay hôm nay.
@@ -218,6 +281,8 @@ export default function RegisterPage() {
             Đăng ký tài khoản
           </Button>
         </form>
+        </>
+        )}
 
         <p className="text-center text-sm text-slate-500 mt-6">
           Đã có tài khoản?{' '}

@@ -6,6 +6,8 @@ const {
   registerSchema,
   loginSchema,
   refreshTokenSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } = require('../validators/auth.validator');
 
 const router = Router();
@@ -33,11 +35,7 @@ const router = Router();
  *       400:
  *         description: Invalid input
  */
-router.post(
-  '/register',
-  validateSchema(registerSchema),
-  authController.register
-);
+router.post('/register', validateSchema(registerSchema), authController.register);
 
 /**
  * @swagger
@@ -95,6 +93,54 @@ router.post(
 
 /**
  * @swagger
+ * /api/auth/forgot-password:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Send a password reset code to email
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ForgotPasswordRequest'
+ *     responses:
+ *       200:
+ *         description: Password reset email sent if the account exists
+ */
+router.post(
+  '/forgot-password',
+  validateSchema(forgotPasswordSchema),
+  authController.forgotPassword
+);
+
+/**
+ * @swagger
+ * /api/auth/reset-password:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Reset password using OTP code
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ResetPasswordRequest'
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *       400:
+ *         description: Password reset failed
+ */
+router.post(
+  '/reset-password',
+  validateSchema(resetPasswordSchema),
+  authController.resetPassword
+);
+
+/**
+ * @swagger
  * /api/auth/logout:
  *   post:
  *     tags:
@@ -136,5 +182,6 @@ router.post(
  *         description: Unauthorized
  */
 router.get('/me', requireAuth, authController.getMe);
+ 
 
 module.exports = router;

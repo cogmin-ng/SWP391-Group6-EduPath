@@ -109,3 +109,10 @@ exports.hardDelete = async (id, tx = prisma) => {
     where: { id },
   });
 };
+
+exports.markVerified = async (id, tx = prisma) => {
+  return tx.user.update({
+    where: { id },
+    data: { isVerified: true, updatedAt: new Date() },
+  });
+};

@@ -1,39 +1,67 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, X, Pencil, Trash2, Cloud } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Plus, X, Pencil, Trash2, Cloud, BookOpen, Lightbulb } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Textarea from '../../components/ui/Textarea';
 import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
+import { createRoadmap, submitRoadmap } from '../../services/roadmapService';
+import { subjectCategoryService } from '../../services/subjectCategoryService';
+import { subjectService } from '../../services/subjectService';
 
 const CreateRoadmapPage = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    category: '',
-    level: '',
-    thumbnail: null,
+  const location = useLocation();
+
+  const [formData, setFormData] = useState(() => {
+    if (location.state?.formData) {
+      return location.state.formData;
+    }
+    return {
+      name: '',
+      description: '',
+      category: '',
+      subjectId: '',
+      thumbnail: null,
+    };
   });
 
-  const [nodes, setNodes] = useState([
-    {
-      id: 1,
-      title: 'Node 1: Giới thiệu',
-      description: 'Tìm hiểu cơ bản',
-      duration: '2 tuần',
-    },
-    {
-      id: 2,
-      title: 'Node 2: Nâng cao',
-      description: 'Kỹ năng nâng cao',
-      duration: '3 tuần',
-    },
-  ]);
+  const [nodes, setNodes] = useState(() => {
+    if (location.state?.nodes) {
+      return location.state.nodes;
+    }
+    return [];
+  });
+  const [categories, setCategories] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [loadingInitial, setLoadingInitial] = useState(true);
 
-  const [showNodeForm, setShowNodeForm] = useState(false);
-  const [newNode, setNewNode] = useState({ title: '', description: '', duration: '' });
+
+  const loadInitialData = async () => {
+    try {
+      setLoadingInitial(true);
+      const [catData, subData] = await Promise.all([
+        subjectCategoryService.getSubjectCategories(),
+        subjectService.getAllSubjects(),
+      ]);
+      setCategories(catData || []);
+      setSubjects(subData || []);
+    } catch (err) {
+      console.error('Lỗi khi tải dữ liệu ban đầu:', err);
+    } finally {
+      setLoadingInitial(false);
+    }
+  };
+
+
+
+  // Fetch initial data when page loads
+  useEffect(() => {
+    loadInitialData();
+  }, []);
+
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -52,50 +80,80 @@ const CreateRoadmapPage = () => {
   };
 
   const handleAddNode = () => {
-    if (newNode.title.trim()) {
-      setNodes(prev => [
-        ...prev,
-        { id: Date.now(), ...newNode }
-      ]);
-      setNewNode({ title: '', description: '', duration: '' });
-      setShowNodeForm(false);
-    }
+    navigate('/mentor/roadmaps/new/nodes/new/edit', {
+      state: {
+        formData,
+        nodes,
+      },
+    });
+  };
+
+  const handleEditNode = (node) => {
+    navigate(`/mentor/roadmaps/new/nodes/${node.id}/edit`, {
+      state: {
+        formData,
+        nodes,
+      },
+    });
   };
 
   const handleDeleteNode = (id) => {
     setNodes(prev => prev.filter(node => node.id !== id));
   };
 
-  const handleEditNode = (node) => {
-    // Navigate to Node Details page with node data in state
-    // Using 'new' as temporary roadmapId since roadmap hasn't been saved yet
-    navigate(`/mentor/roadmaps/new/nodes/${node.id}`, {
-      state: { nodeData: node, roadmapData: formData }
-    });
+  const buildPayload = () => ({
+    title: formData.name,
+    description: formData.description,
+    subjectId: formData.subjectId || null,
+    thumbnail: formData.thumbnail,
+    nodes: nodes.map((n, i) => ({
+      title: n.title,
+      description: n.description,
+      duration: n.duration,
+      studyTips: n.studyTips || '',
+      orderIndex: i,
+      checklists: n.checklists || [],
+      materials: n.materials || [],
+      quizzes: n.quizzes || [],
+    }))
+  });
+
+  const handleSaveDraft = async () => {
+    try {
+      if (!formData.name) return alert('Vui lòng nhập tên lộ trình');
+
+      const payload = buildPayload();
+      const created = await createRoadmap(payload);
+      alert('Lưu nháp Lộ trình thành công!');
+      navigate(`/mentor/roadmaps/${created.id}/edit`);
+    } catch (err) {
+      console.error(err);
+      alert('Lỗi lưu nháp: ' + (err.response?.data?.message || err.message));
+    }
   };
 
-  const handleSaveDraft = () => {
-    console.log('Save draft:', { formData, nodes });
+  const handleSubmitApproval = async () => {
+    try {
+      if (!formData.name) return alert('Vui lòng nhập tên lộ trình');
+      if (nodes.length === 0) return alert('Lộ trình cần ít nhất 1 Node');
+      if (!formData.subjectId) return alert('Vui lòng chọn Môn học');
+
+      const payload = buildPayload();
+      const created = await createRoadmap(payload);
+      await submitRoadmap(created.id);
+
+      alert('Đã tạo và gửi phê duyệt thành công!');
+      navigate(`/mentor/roadmaps/${created.id}/edit`);
+    } catch (err) {
+      console.error(err);
+      alert('Lỗi gửi phê duyệt: ' + (err.response?.data?.message || err.message));
+    }
   };
 
-  // preview removed per request
-
-  const handleSubmitApproval = () => {
-    console.log('Submit for approval:', { formData, nodes });
-  };
-
-  const categoryOptions = [
-    { value: 'programming', label: 'Lập trình' },
-    { value: 'design', label: 'Thiết kế' },
-    { value: 'business', label: 'Kinh doanh' },
-    { value: 'data', label: 'Dữ liệu' },
-  ];
-
-  const levelOptions = [
-    { value: 'beginner', label: 'Cơ bản' },
-    { value: 'intermediate', label: 'Trung cấp' },
-    { value: 'advanced', label: 'Nâng cao' },
-  ];
+  const categoryOptions = categories.map(c => ({ value: c.id, label: c.name }));
+  const subjectOptions = subjects
+    .filter(s => !formData.category || s.categoryId === formData.category)
+    .map(s => ({ value: s.id, label: s.name }));
 
   return (
     <div className="min-h-screen bg-slate-50 py-8">
@@ -108,13 +166,18 @@ const CreateRoadmapPage = () => {
           </div>
         </div>
 
+
+
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Form (70%) */}
           <div className="lg:col-span-2 space-y-6">
             {/* Card 1: Thông Tin Lộ Trình */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-              <h2 className="text-lg font-semibold text-slate-900 mb-4">Thông Tin Lộ Trình</h2>
+              <div className="flex items-center gap-2 mb-4">
+                <BookOpen className="w-5 h-5 text-indigo-500" />
+                <h2 className="text-lg font-semibold text-slate-900">Thông Tin Lộ Trình</h2>
+              </div>
               <div className="space-y-4">
                 <Input
                   label="Tên Lộ Trình"
@@ -131,20 +194,25 @@ const CreateRoadmapPage = () => {
                   value={formData.description}
                   onChange={handleInputChange}
                 />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Select
-                    label="Danh Mục"
+                    label="Chuyên Ngành"
                     name="category"
                     options={categoryOptions}
                     value={formData.category}
-                    onChange={handleInputChange}
+                    onChange={(e) => {
+                      handleInputChange(e);
+                      // Reset subject when category changes
+                      setFormData(prev => ({ ...prev, subjectId: '' }));
+                    }}
                   />
                   <Select
-                    label="Trình Độ"
-                    name="level"
-                    options={levelOptions}
-                    value={formData.level}
+                    label="Môn Học"
+                    name="subjectId"
+                    options={subjectOptions}
+                    value={formData.subjectId}
                     onChange={handleInputChange}
+                    disabled={!formData.category}
                   />
                 </div>
               </div>
@@ -153,7 +221,7 @@ const CreateRoadmapPage = () => {
             {/* Card 2: Upload Thumbnail */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
               <h2 className="text-lg font-semibold text-slate-900 mb-4">Hình Đại Diện</h2>
-              
+
               {formData.thumbnail ? (
                 <div className="relative">
                   <img
@@ -194,54 +262,13 @@ const CreateRoadmapPage = () => {
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={() => setShowNodeForm(!showNodeForm)}
+                  onClick={handleAddNode}
                   className="gap-2"
                 >
                   <Plus className="w-4 h-4" />
                   Thêm Node
                 </Button>
               </div>
-
-              {showNodeForm && (
-                <div className="bg-slate-50 rounded-xl p-4 mb-4 border border-slate-200">
-                  <div className="space-y-3">
-                    <Input
-                      placeholder="Tên Node"
-                      value={newNode.title}
-                      onChange={(e) => setNewNode(prev => ({ ...prev, title: e.target.value }))}
-                    />
-                    <Textarea
-                      placeholder="Mô tả Node"
-                      rows={3}
-                      value={newNode.description}
-                      onChange={(e) => setNewNode(prev => ({ ...prev, description: e.target.value }))}
-                    />
-                    <Input
-                      placeholder="Thời lượng (VD: 2 tuần)"
-                      value={newNode.duration}
-                      onChange={(e) => setNewNode(prev => ({ ...prev, duration: e.target.value }))}
-                    />
-                    <div className="flex gap-2 pt-2">
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        onClick={handleAddNode}
-                        className="flex-1"
-                      >
-                        Thêm
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => setShowNodeForm(false)}
-                        className="flex-1"
-                      >
-                        Hủy
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* Timeline */}
               <div className="space-y-3">
@@ -268,6 +295,11 @@ const CreateRoadmapPage = () => {
                             <h3 className="font-semibold text-slate-900">{node.title}</h3>
                             <p className="text-sm text-slate-600 mt-1">{node.description}</p>
                             <p className="text-xs text-slate-500 mt-2">Thời lượng: {node.duration}</p>
+                            {((node.checklists?.length || 0) > 0 || (node.materials?.length || 0) > 0) && (
+                              <p className="text-xs text-indigo-500 mt-1">
+                                {node.checklists?.length || 0} checklist · {node.materials?.length || 0} tài liệu
+                              </p>
+                            )}
                           </div>
                           <div className="flex gap-2">
                             <button
@@ -305,7 +337,7 @@ const CreateRoadmapPage = () => {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 sticky top-8">
               <h2 className="text-lg font-semibold text-slate-900 mb-4">Tóm Tắt Lộ Trình</h2>
-              
+
               <div className="space-y-4">
                 {/* Stats */}
                 <div className="space-y-3">
@@ -331,25 +363,23 @@ const CreateRoadmapPage = () => {
                     <div
                       className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
                       style={{
-                        width: `${
-                          (
-                            (formData.name ? 25 : 0) +
-                            (formData.description ? 25 : 0) +
-                            (formData.category ? 25 : 0) +
-                            (nodes.length > 0 ? 25 : 0)
-                          ) / 100
-                        }%`
+                        width: `${(
+                          (formData.name ? 25 : 0) +
+                          (formData.description ? 20 : 0) +
+                          (formData.category ? 15 : 0) +
+                          (formData.subjectId ? 15 : 0) +
+                          (nodes.length > 0 ? 25 : 0)
+                        )}%`
                       }}
                     ></div>
                   </div>
                   <p className="text-xs text-slate-600 mt-1">
                     {Math.round(
-                      (
-                        (formData.name ? 25 : 0) +
-                        (formData.description ? 25 : 0) +
-                        (formData.category ? 25 : 0) +
-                        (nodes.length > 0 ? 25 : 0)
-                      )
+                      (formData.name ? 25 : 0) +
+                      (formData.description ? 20 : 0) +
+                      (formData.category ? 15 : 0) +
+                      (formData.subjectId ? 15 : 0) +
+                      (nodes.length > 0 ? 25 : 0)
                     )}%
                   </p>
                 </div>

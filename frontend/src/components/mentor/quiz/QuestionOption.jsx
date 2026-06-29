@@ -1,8 +1,9 @@
 import React from 'react';
+import { X } from 'lucide-react';
 
-const QuestionOption = ({ label, option, value, isCorrect, onChange, onSelectCorrect }) => {
+const QuestionOption = ({ label, option, value, isCorrect, onChange, onSelectCorrect, onDelete, canDelete }) => {
   return (
-    <label
+    <div
       className={`
         flex items-center gap-3 p-3 rounded-lg border transition-all
         ${
@@ -29,7 +30,16 @@ const QuestionOption = ({ label, option, value, isCorrect, onChange, onSelectCor
         placeholder={`Nhập nội dung đáp án ${option}...`}
         className="flex-1 bg-transparent border-none outline-none text-sm text-slate-800 placeholder-slate-400 focus:ring-0"
       />
-    </label>
+      {canDelete && (
+        <button
+          onClick={onDelete}
+          className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+          title="Xóa đáp án"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
+    </div>
   );
 };
 

@@ -111,12 +111,12 @@ export default function LoginPage() {
                 Ghi nhớ đăng nhập
               </span>
             </label>
-            <a
-              href="#"
+            <Link
+              to="/forgot-password"
               className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
             >
               Quên mật khẩu?
-            </a>
+            </Link>
           </div>
 
           <Button

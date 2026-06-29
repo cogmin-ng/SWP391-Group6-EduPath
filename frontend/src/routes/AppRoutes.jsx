@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "../pages/LandingPage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
+import ForgotPasswordPage from "../pages/ForgotPasswordPage";
+import ResetPasswordPage from "../pages/ResetPasswordPage";
 import ExplorePage from "../pages/ExplorePage";
 import RoadmapDetailPage from "../pages/RoadmapDetailPage";
 import MyRoadmapsPage from "../pages/mentee/MyRoadmapsPage";
@@ -20,6 +22,7 @@ import MentorDashboardPage from "../pages/mentor/MentorDashboardPage";
 import MentorRoadmapsPage from "../pages/mentor/MentorRoadmapsPage";
 import CreateRoadmapPage from "../pages/mentor/CreateRoadmapPage";
 import EditRoadmapPage from "../pages/mentor/EditRoadmapPage";
+import NodeEditorPage from "../pages/mentor/NodeEditorPage";
 import MentorProfilePage from "../pages/mentor/MentorProfilePage";
 import NodeDetailsPage from "../pages/mentor/NodeDetailsPage";
 import BecomeMentorPage from "../pages/mentee/BecomeMentorPage";
@@ -27,6 +30,8 @@ import MenteeNodeDetailsPage from "../pages/mentee/MenteeNodeDetailsPage";
 import QuizPage from "../pages/mentee/QuizPage";
 import RoadmapQuizPage from "../pages/mentee/RoadmapQuizPage";
 import ContributionHistoryPage from "../pages/mentee/ContributionHistoryPage";
+import MyCertificatesPage from "../pages/mentee/MyCertificatesPage";
+import CertificateDetailPage from "../pages/mentee/CertificateDetailPage";
 import PendingTipsPage from "../pages/mentor/PendingTipsPage";
 import UploadMaterialsPage from "../pages/mentor/UploadMaterialsPage";
 import CreateQuizPage from "../pages/mentor/CreateQuizPage";
@@ -40,7 +45,7 @@ function PlaceholderPage({ title }) {
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
       <div className="text-center">
         <h1 className="text-3xl font-bold text-slate-900 mb-4">{title}</h1>
-        <p className="text-slate-500">This page is under development.</p>
+        <p className="text-slate-500">Trang này đang trong quá trình phát triển.</p>
       </div>
     </div>
   );
@@ -75,6 +80,24 @@ export default function AppRoutes() {
           </PublicRoute>
         }
       />
+      <Route
+        path="/forgot-password"
+        element={
+          <PublicRoute>
+            <ForgotPasswordPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/reset-password"
+        element={
+          <PublicRoute>
+            <ResetPasswordPage />
+          </PublicRoute>
+        }
+      />
+
+      
 
       {/* Redirect from /admin to admin dashboard for now */}
       <Route
@@ -119,6 +142,24 @@ export default function AppRoutes() {
         }
       />
 
+      {/* Mentee Certificates */}
+      <Route
+        path="/my-certificates"
+        element={
+          <ProtectedRoute allowedRoles={["MENTEE"]}>
+            <MyCertificatesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/my-certificates/:id"
+        element={
+          <ProtectedRoute allowedRoles={["MENTEE"]}>
+            <CertificateDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Mentee Node Details */}
       <Route
         path="/mentee/roadmaps/:roadmapId/nodes/:nodeId"
@@ -154,6 +195,7 @@ export default function AppRoutes() {
         <Route path="roadmaps/:roadmapId" element={<MentorRoadmapDetailPage />} />
         <Route path="roadmaps/:roadmapId/learn" element={<MentorRoadmapLearningPage />} />
         <Route path="roadmaps/:roadmapId/edit" element={<EditRoadmapPage />} />
+        <Route path="roadmaps/:roadmapId/nodes/:nodeId/edit" element={<NodeEditorPage />} />
         <Route path="profile" element={<MentorProfilePage />} />
         <Route
           path="roadmaps/:roadmapId/nodes/:nodeId"
@@ -236,13 +278,13 @@ export default function AppRoutes() {
             <div className="text-center">
               <h1 className="text-6xl font-bold text-slate-900 mb-4">404</h1>
               <p className="text-slate-500 mb-6">
-                Oops! The page you're looking for doesn't exist.
+                Rất tiếc! Trang bạn đang tìm kiếm không tồn tại.
               </p>
               <a
                 href="/admin/dashboard"
                 className="text-indigo-600 font-semibold hover:underline"
               >
-                Go back to Dashboard
+                Quay lại Bảng điều khiển
               </a>
             </div>
           </div>

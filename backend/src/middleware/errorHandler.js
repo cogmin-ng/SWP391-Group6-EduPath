@@ -58,7 +58,8 @@ function errorHandler(err, req, res, next) {
 
   const payload = {
     success: false,
-    message: 'Request failed',
+    // Surface the actual error message for client when it's a handled error
+    message,
     error: {
       message,
       ...(details ? { details } : {}),

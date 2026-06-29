@@ -6,21 +6,19 @@ import {
   Layers,
   ClipboardList,
   BarChart3,
-  Settings,
   Bell,
   Search,
   User,
   ChevronDown,
   Plus,
   Award,
-  Library,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 const MentorLayout = () => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -39,8 +37,6 @@ const MentorLayout = () => {
     { title: 'Tạo lộ trình', icon: Plus, path: '/mentor/create-roadmap' },
     { title: 'Hồ sơ cá nhân', icon: User, path: '/mentor/profile' },
     { title: 'Thành tích', icon: Award, path: '/mentor/achievements' },
-    { title: 'Cài đặt', icon: Settings, path: '/mentor/settings' },
-    { title: 'Kho lộ trình', icon: Library, path: '/mentor/roadmap-repository' },
   ];
 
   return (
@@ -101,9 +97,6 @@ const MentorLayout = () => {
                   <p className="text-sm font-semibold text-slate-800 leading-none">
                     Mentor User
                   </p>
-                  <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-medium">
-                    Level 12
-                  </p>
                 </div>
                 <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -114,7 +107,6 @@ const MentorLayout = () => {
                   {/* Profile Header */}
                   <div className="px-4 py-3 border-b border-slate-100">
                     <p className="text-sm font-semibold text-slate-900">Mentor User</p>
-                    <p className="text-xs text-slate-500 mt-1">Level 12</p>
                   </div>
 
                   {/* Menu Items */}

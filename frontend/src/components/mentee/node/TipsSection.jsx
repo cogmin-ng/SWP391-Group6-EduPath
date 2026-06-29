@@ -25,7 +25,7 @@ export default function TipsSection({ tips: initialTips, nodeId, onRefresh }) {
               <Lightbulb className="w-5 h-5 text-amber-500" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900">Kinh nghiệm & Bí kíp</h3>
+              <h3 className="text-base font-bold text-slate-900">Tip Trick</h3>
               <p className="text-xs text-slate-400">Cộng đồng chia sẻ và học hỏi lẫn nhau.</p>
             </div>
           </div>

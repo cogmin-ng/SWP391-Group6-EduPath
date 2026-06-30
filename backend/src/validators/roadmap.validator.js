@@ -1,5 +1,11 @@
 const Joi = require('joi');
 
+const durationPartsSchema = Joi.object({
+  months: Joi.number().integer().min(0).default(0),
+  weeks: Joi.number().integer().min(0).default(0),
+  days: Joi.number().integer().min(0).default(0),
+});
+
 const nodeChecklistSchema = Joi.object({
   id: Joi.any().optional(), // Can have temporary client-side IDs (e.g. "temp-...")
   title: Joi.string().trim().required(),
@@ -54,7 +60,13 @@ const roadmapNodeSchema = Joi.object({
   }),
   description: Joi.string().trim().allow('', null).optional(),
   orderIndex: Joi.number().integer().min(0).optional(),
-  duration: Joi.string().trim().allow('', null).optional(), // Allowed for compatibility with frontend
+  duration: Joi.alternatives()
+    .try(
+      Joi.string().trim().allow('', null).optional(),
+      durationPartsSchema.optional()
+    )
+    .optional(),
+  durationParts: durationPartsSchema.optional(),
   studyTips: Joi.string().trim().allow('', null).optional(),
   checklists: Joi.array().items(nodeChecklistSchema).optional(),
   materials: Joi.array().items(nodeMaterialSchema).optional(),

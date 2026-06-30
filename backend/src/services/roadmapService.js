@@ -7,6 +7,7 @@ const {
   toRoadmapSlug,
 } = require('../utils/roadmapSlug');
 const nodeRepository = require('../repositories/nodeRepository');
+const { normalizeDurationParts, serializeDuration } = require('../utils/duration');
 
 const MSG = {
   notFound: 'Roadmap not found',
@@ -114,6 +115,15 @@ exports.createRoadmap = async (data, mentorId) => {
   const resolvedSubjectId = await resolveSubjectId(data.subjectId);
 
   const nodes = data.nodes || [];
+  const normalizedNodes = nodes.map((node, idx) => {
+    const durationParts = normalizeDurationParts(node.durationParts || node.duration);
+    return {
+      ...node,
+      orderIndex: node.orderIndex !== undefined ? node.orderIndex : idx,
+      duration: serializeDuration(durationParts),
+      durationParts,
+    };
+  });
 
   const roadmapId = await prisma.$transaction(async (tx) => {
     const created = await roadmapRepository.create(
@@ -127,10 +137,10 @@ exports.createRoadmap = async (data, mentorId) => {
         mentor: { connect: { id: mentorId } },
         subject: { connect: { id: resolvedSubjectId } },
         nodes: {
-          create: nodes.map((node, idx) => ({
+          create: normalizedNodes.map((node) => ({
             title: node.title,
             description: node.description || null,
-            orderIndex: node.orderIndex !== undefined ? node.orderIndex : idx,
+            orderIndex: node.orderIndex,
           })),
         },
       },
@@ -142,10 +152,18 @@ exports.createRoadmap = async (data, mentorId) => {
     const createdNodes = [...(created.nodes || [])].sort(
       (a, b) => a.orderIndex - b.orderIndex
     );
-    for (let i = 0; i < nodes.length; i++) {
-      const input = nodes[i];
+    for (let i = 0; i < normalizedNodes.length; i++) {
+      const input = normalizedNodes[i];
       const target = createdNodes[i];
       if (!target) continue;
+      await tx.node.update({
+        where: { id: target.id },
+        data: {
+          duration: input.duration || null,
+          updatedAt: new Date(),
+        },
+      });
+
       if (Array.isArray(input.checklists)) {
         await nodeRepository.syncChecklists(target.id, input.checklists, tx);
       }
@@ -285,7 +303,16 @@ exports.updateRoadmap = async (roadmapId, data, mentorId) => {
 
     // Sync nodes if provided
     if (Array.isArray(data.nodes)) {
-      await roadmapRepository.syncNodes(roadmapId, data.nodes, tx);
+      const normalizedNodesForUpdate = data.nodes.map((node, idx) => {
+        const durationParts = normalizeDurationParts(node.durationParts || node.duration);
+        return {
+          ...node,
+          orderIndex: node.orderIndex !== undefined ? node.orderIndex : idx,
+          duration: serializeDuration(durationParts),
+          durationParts,
+        };
+      });
+      await roadmapRepository.syncNodes(roadmapId, normalizedNodesForUpdate, tx);
     }
 
     return null;

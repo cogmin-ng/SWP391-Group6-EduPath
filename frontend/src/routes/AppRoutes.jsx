@@ -233,7 +233,7 @@ export default function AppRoutes() {
       <Route
         path="/profile/become-mentor"
         element={
-          <ProtectedRoute allowedRoles={["MENTEE"]}>
+          <ProtectedRoute allowedRoles={["MENTEE", "MENTOR"]}>
             <BecomeMentorPage />
           </ProtectedRoute>
         }

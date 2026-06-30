@@ -54,6 +54,11 @@ async function main() {
       categoryId: mathematics.id,
     },
     {
+      name: 'MAS101',
+      description: 'Calculus',
+      categoryId: mathematics.id,
+    },
+    {
       name: 'PRJ301',
       description: 'Java Web Application Development',
       categoryId: backendDevelopment.id,

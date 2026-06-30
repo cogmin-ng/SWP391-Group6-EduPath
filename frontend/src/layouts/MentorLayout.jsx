@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Plus,
   Award,
+  GraduationCap,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { notificationService } from '../services/notificationService';
@@ -112,6 +113,7 @@ const MentorLayout = () => {
     { title: 'Tạo lộ trình', icon: Plus, path: '/mentor/create-roadmap' },
     { title: 'Hồ sơ cá nhân', icon: User, path: '/mentor/profile' },
     { title: 'Thành tích', icon: Award, path: '/mentor/achievements' },
+    { title: 'Đăng ký Mentor', icon: GraduationCap, path: '/profile/become-mentor' },
   ];
 
   return (

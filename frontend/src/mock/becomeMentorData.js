@@ -10,25 +10,24 @@
 
 export const SPECIALIZATION_OPTIONS = [
   { value: "", label: "Chọn chuyên ngành" },
-  { value: "software-engineering", label: "Software Engineering" },
-  { value: "information-assurance", label: "Information Assurance" },
-  { value: "artificial-intelligence", label: "Artificial Intelligence" },
-  { value: "digital-art-design", label: "Digital Art & Design" },
-  { value: "information-system", label: "Information System" },
-  { value: "iot", label: "IoT" },
+  { value: "information-technology", label: "Công nghệ thông tin" },
+  { value: "computer-science", label: "Khoa học máy tính" },
+  { value: "communication-technology", label: "Công nghệ truyền thông" },
+  { value: "business-administration", label: "Quản trị kinh doanh" },
+  { value: "languages", label: "Ngôn ngữ" },
 ];
 
 export const SEMESTER_OPTIONS = [
   { value: "", label: "Chọn kỳ học" },
-  { value: "1", label: "Semester 1" },
-  { value: "2", label: "Semester 2" },
-  { value: "3", label: "Semester 3" },
-  { value: "4", label: "Semester 4" },
-  { value: "5", label: "Semester 5" },
-  { value: "6", label: "Semester 6" },
-  { value: "7", label: "Semester 7" },
-  { value: "8", label: "Semester 8" },
-  { value: "9", label: "Semester 9" },
+  { value: "1", label: "Kì 1" },
+  { value: "2", label: "Kì 2" },
+  { value: "3", label: "Kì 3" },
+  { value: "4", label: "Kì 4" },
+  { value: "5", label: "Kì 5" },
+  { value: "6", label: "Kì 6" },
+  { value: "7", label: "Kì 7" },
+  { value: "8", label: "Kì 8" },
+  { value: "9", label: "Kì 9" },
 ];
 
 /* ------------------------------------------------------------------ */

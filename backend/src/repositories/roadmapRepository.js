@@ -1,5 +1,6 @@
 const prisma = require('../lib/prisma');
 const nodeRepository = require('./nodeRepository');
+const { normalizeDurationParts, serializeDuration } = require('../utils/duration');
 
 const ACTIVE_FILTER = { isDeleted: false };
 
@@ -20,6 +21,7 @@ const ROADMAP_INCLUDE = {
       orderIndex: true,
       createdAt: true,
       updatedAt: true,
+      duration: true,
       checklists: {
         where: ACTIVE_FILTER,
         orderBy: { orderIndex: 'asc' },
@@ -66,8 +68,10 @@ const mapRoadmapNodeTips = (roadmap) => {
     return roadmap.map(mapRoadmapNodeTips);
   }
   if (Array.isArray(roadmap.nodes)) {
-    roadmap.nodes = roadmap.nodes.map(node => ({
+    roadmap.nodes = roadmap.nodes.map((node) => ({
       ...node,
+      duration: node.duration || serializeDuration(normalizeDurationParts(node.durationParts || node.duration)),
+      durationParts: normalizeDurationParts(node.durationParts || node.duration),
       studyTips: node.tips?.[0]?.content || '',
     }));
   }
@@ -264,11 +268,23 @@ exports.syncNodes = async (learningPathId, nodes, tx = prisma) => {
           learningPathId,
           title: node.title,
           description: node.description || null,
+          duration: node.duration || null,
           orderIndex,
         },
       });
       nodeId = created.id;
     }
+
+    const durationParts = normalizeDurationParts(node.durationParts || node.duration);
+    const normalizedDuration = serializeDuration(durationParts);
+
+    await tx.node.update({
+      where: { id: nodeId },
+      data: {
+        duration: normalizedDuration,
+        updatedAt: new Date(),
+      },
+    });
 
     // Sync study tips for Node
     if (node.studyTips !== undefined && mentorId) {

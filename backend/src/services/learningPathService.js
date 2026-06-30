@@ -9,7 +9,10 @@ function toSlug(value) {
 
 exports.getExploreLearningPaths = async () => {
   const learningPaths = await prisma.learningPath.findMany({
-    where: { isDeleted: false },
+    where: {
+      isDeleted: false,
+      OR: [{ status: 'APPROVED' }, { status: 'PUBLISHED' }, { isPublic: true }],
+    },
     include: {
       mentor: {
         select: {
@@ -25,6 +28,10 @@ exports.getExploreLearningPaths = async () => {
             },
           },
         },
+      },
+      nodes: {
+        where: { isDeleted: false },
+        select: { duration: true },
       },
     },
     orderBy: [
@@ -45,5 +52,12 @@ exports.getExploreLearningPaths = async () => {
     status: learningPath.status,
     isPublic: learningPath.isPublic,
     xpReward: learningPath.xpReward,
+    duration: learningPath.nodes?.length
+      ? learningPath.nodes
+          .filter(Boolean)
+          .map((node) => node.duration)
+          .filter(Boolean)
+          .join(' • ')
+      : 'N/A',
   }));
 };

@@ -1,6 +1,7 @@
 const prisma = require('../lib/prisma');
 const ApiError = require('../utils/ApiError');
 const roadmapRepository = require('../repositories/roadmapRepository');
+const notificationService = require('./notificationService');
 const {
   findLearningPathIdBySlug,
   toRoadmapSlug,
@@ -59,6 +60,46 @@ async function assertOwnership(roadmapId, mentorId) {
   if (!roadmap) throw new ApiError(404, MSG.notFound);
   if (roadmap.mentorId !== mentorId) throw new ApiError(403, MSG.forbidden);
   return roadmap;
+}
+
+async function notifyAdminsAboutPendingRoadmap(tx, roadmap) {
+  const admins = await tx.user.findMany({
+    where: {
+      role: { name: 'ADMIN' },
+      isDeleted: false,
+      status: 'ACTIVE',
+    },
+    select: { id: true },
+  });
+
+  if (admins.length > 0) {
+    await notificationService.createNotifications(
+      admins.map((admin) => admin.id),
+      {
+        type: 'ROADMAP',
+        title: 'Lộ trình mới cần duyệt',
+        content: `Mentor vừa gửi lộ trình "${roadmap.title}" để admin xem xét.`,
+      },
+      tx
+    );
+  }
+}
+
+async function notifyMentorAboutRoadmapReview(tx, roadmap, status, feedback) {
+  const message =
+    status === 'APPROVED'
+      ? `Lộ trình "${roadmap.title}" của bạn đã được phê duyệt.`
+      : `Lộ trình "${roadmap.title}" của bạn đã bị từ chối.${feedback ? ` Lý do: ${feedback}` : ''}`;
+
+  await notificationService.createNotification(
+    roadmap.mentorId,
+    {
+      type: 'ROADMAP',
+      title: status === 'APPROVED' ? 'Lộ trình được phê duyệt' : 'Lộ trình bị từ chối',
+      content: message,
+    },
+    tx
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -281,12 +322,22 @@ exports.submitRoadmap = async (roadmapId, mentorId) => {
     throw new ApiError(400, MSG.cannotSubmit);
   }
 
-  await roadmapRepository.update(roadmapId, {
-    status: 'PENDING',
-    updatedAt: new Date(),
+  const submittedRoadmap = await prisma.$transaction(async (tx) => {
+    const updated = await roadmapRepository.update(
+      roadmapId,
+      {
+        status: 'PENDING',
+        updatedAt: new Date(),
+      },
+      tx
+    );
+
+    await notifyAdminsAboutPendingRoadmap(tx, updated);
+
+    return updated;
   });
 
-  return roadmapRepository.findById(roadmapId);
+  return roadmapRepository.findById(submittedRoadmap.id);
 };
 
 /**
@@ -303,7 +354,7 @@ exports.getPendingRoadmaps = async ({ skip = 0, take = 20 } = {}) => {
 /**
  * Review a roadmap (ADMIN only).
  */
-exports.reviewRoadmap = async (roadmapId, { status }) => {
+exports.reviewRoadmap = async (roadmapId, { status, feedback }) => {
   const roadmap = await roadmapRepository.findById(roadmapId);
   if (!roadmap) throw new ApiError(404, MSG.notFound);
 
@@ -311,33 +362,42 @@ exports.reviewRoadmap = async (roadmapId, { status }) => {
     throw new ApiError(400, 'Only PENDING roadmaps can be reviewed');
   }
 
-  const updated = await roadmapRepository.update(roadmapId, {
-    status,
-    updatedAt: new Date(),
-  });
-
-  // Auto-enroll mentor if approved
-  if (status === 'APPROVED') {
-    const existingEnrollment = await prisma.enrollment.findUnique({
-      where: {
-        userId_learningPathId: {
-          userId: updated.mentorId,
-          learningPathId: updated.id,
-        },
+  const updated = await prisma.$transaction(async (tx) => {
+    const reviewed = await roadmapRepository.update(
+      roadmapId,
+      {
+        status,
+        updatedAt: new Date(),
       },
-    });
+      tx
+    );
 
-    if (!existingEnrollment) {
-      await prisma.enrollment.create({
-        data: {
-          userId: updated.mentorId,
-          learningPathId: updated.id,
-          status: 'ACTIVE',
-          progressPercent: 0,
+    if (status === 'APPROVED') {
+      const existingEnrollment = await tx.enrollment.findUnique({
+        where: {
+          userId_learningPathId: {
+            userId: reviewed.mentorId,
+            learningPathId: reviewed.id,
+          },
         },
       });
+
+      if (!existingEnrollment) {
+        await tx.enrollment.create({
+          data: {
+            userId: reviewed.mentorId,
+            learningPathId: reviewed.id,
+            status: 'ACTIVE',
+            progressPercent: 0,
+          },
+        });
+      }
     }
-  }
+
+    await notifyMentorAboutRoadmapReview(tx, reviewed, status, feedback);
+
+    return reviewed;
+  });
 
   return updated;
 };

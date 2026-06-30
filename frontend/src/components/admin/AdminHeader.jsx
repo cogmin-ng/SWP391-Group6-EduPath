@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { getNotificationTargetRoute } from '../../utils/notificationRoutes';
 import {
   LayoutDashboard,
   Users,
@@ -59,6 +60,21 @@ export default function AdminHeader() {
     const interval = setInterval(fetchNotifications, 60000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleNotificationClick = async (notification) => {
+    const route = getNotificationTargetRoute(notification, 'ADMIN');
+
+    if (!notification.isRead) {
+      try {
+        await notificationService.markAsRead(notification.id);
+        fetchNotifications();
+      } catch (error) {
+        console.error('Failed to mark notification as read:', error);
+      }
+    }
+
+    navigate(route);
+  };
 
   const handleMarkAsRead = async (id, currentIsRead) => {
     if (currentIsRead) return;
@@ -173,7 +189,7 @@ export default function AdminHeader() {
                       {notifications.map((notif) => (
                         <div 
                           key={notif.id} 
-                          onClick={() => handleMarkAsRead(notif.id, notif.isRead)}
+                          onClick={() => handleNotificationClick(notif)}
                           className={`px-4 py-3 cursor-pointer transition-colors hover:bg-slate-50 flex flex-col gap-1 ${!notif.isRead ? 'bg-indigo-50/20' : ''}`}
                         >
                           <div className="flex items-start justify-between gap-2">

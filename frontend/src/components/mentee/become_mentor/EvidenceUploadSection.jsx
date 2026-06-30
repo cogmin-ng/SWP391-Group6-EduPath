@@ -103,20 +103,18 @@ export default function EvidenceUploadSection({
           onDragLeave={() => setIsDragOver(false)}
           onDrop={handleFileDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-12 text-center transition-all duration-200 cursor-pointer ${
-            isDragOver
+          className={`relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-12 text-center transition-all duration-200 cursor-pointer ${isDragOver
               ? "border-indigo-400 bg-indigo-50/50"
               : uploadError
-              ? "border-red-300 bg-red-50/30"
-              : "border-slate-200 bg-slate-50/50 hover:border-indigo-300 hover:bg-indigo-50/30"
-          }`}
+                ? "border-red-300 bg-red-50/30"
+                : "border-slate-200 bg-slate-50/50 hover:border-indigo-300 hover:bg-indigo-50/30"
+            }`}
         >
           <div
-            className={`flex items-center justify-center w-14 h-14 rounded-2xl ${
-              isDragOver
+            className={`flex items-center justify-center w-14 h-14 rounded-2xl ${isDragOver
                 ? "bg-indigo-100 text-indigo-600"
                 : "bg-slate-100 text-slate-400"
-            } transition-colors`}
+              } transition-colors`}
           >
             <Upload className="w-6 h-6" />
           </div>

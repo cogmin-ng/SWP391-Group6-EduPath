@@ -12,18 +12,10 @@ import {
  * @param {{ register: Function, errors: Object }} props
  */
 export default function MentorInfoSection({ register, errors }) {
-  const inputCls = (hasError) =>
-    `w-full rounded-xl border bg-white text-slate-800 text-sm placeholder:text-slate-400 px-4 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 ${
-      hasError
-        ? "border-red-300 focus:ring-red-500/20 focus:border-red-500"
-        : "border-slate-200 hover:border-slate-300"
-    }`;
-
   const selectCls = (hasError) =>
-    `w-full appearance-none rounded-xl border bg-white text-slate-800 text-sm px-4 py-3 pr-10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer ${
-      hasError
-        ? "border-red-300 focus:ring-red-500/20 focus:border-red-500"
-        : "border-slate-200 hover:border-slate-300"
+    `w-full appearance-none rounded-xl border bg-white text-slate-800 text-sm px-4 py-3 pr-10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer ${hasError
+      ? "border-red-300 focus:ring-red-500/20 focus:border-red-500"
+      : "border-slate-200 hover:border-slate-300"
     }`;
 
   return (
@@ -39,25 +31,6 @@ export default function MentorInfoSection({ register, errors }) {
       </div>
 
       <div className="space-y-5">
-        {/* Họ và tên */}
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">
-            Họ và tên <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            placeholder="Nguyễn Văn A"
-            {...register("fullName", {
-              required: "Vui lòng nhập họ và tên.",
-            })}
-            className={inputCls(errors.fullName)}
-          />
-          {errors.fullName && (
-            <p className="mt-1.5 text-xs text-red-500">
-              {errors.fullName.message}
-            </p>
-          )}
-        </div>
 
         {/* Row: Chuyên ngành + Kỳ học */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">

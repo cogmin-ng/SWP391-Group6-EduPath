@@ -6,21 +6,21 @@ import { HERO_CONTENT } from "../../../mock/becomeMentorData";
  */
 export default function MentorHero() {
   return (
-    <section className="rounded-3xl bg-[#635BFF] p-6 lg:p-8 mb-8 overflow-hidden animate-fadeIn">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 lg:gap-12">
+    <section className="rounded-3xl bg-[#635BFF] p-5 lg:p-6 mb-6 overflow-hidden animate-fadeIn">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-8">
         {/* ---- Text ---- */}
-        <div className="w-full lg:w-[55%] xl:w-[60%] space-y-4">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white leading-tight">
+        <div className="w-full lg:w-[55%] xl:w-[60%] space-y-2">
+          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white leading-tight">
             {HERO_CONTENT.title}
           </h1>
-          <p className="text-blue-100 text-sm sm:text-base lg:text-lg leading-relaxed">
+          <p className="text-blue-100 text-sm sm:text-base leading-relaxed">
             {HERO_CONTENT.description}
           </p>
         </div>
 
         {/* ---- Illustration (inline SVG) ---- */}
         <div className="hidden lg:flex w-full lg:w-[45%] xl:w-[40%] shrink-0 items-center justify-center lg:justify-end">
-          <div className="relative w-full max-w-[380px] aspect-[320/220] flex items-end justify-center">
+          <div className="relative w-full max-w-[240px] aspect-[320/220] flex items-end justify-center">
             {/* Background card */}
             <div className="absolute inset-0 rounded-2xl bg-white/20 backdrop-blur-sm" />
 

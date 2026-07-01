@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { getNotificationTargetRoute } from '../utils/notificationRoutes';
 import {
   LogOut,
   Home,
@@ -12,13 +13,45 @@ import {
   ChevronDown,
   Plus,
   Award,
+  GraduationCap,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { notificationService } from '../services/notificationService';
 
 const MentorLayout = () => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
   const { logout, user } = useAuth();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchNotifications = async () => {
+      try {
+        const [notifData, unreadData] = await Promise.all([
+          notificationService.getNotifications({ skip: 0, take: 5 }),
+          notificationService.getUnreadCount(),
+        ]);
+
+        if (!isMounted) return;
+        setNotifications(notifData?.notifications || []);
+        setUnreadCount(unreadData?.unreadCount || 0);
+      } catch (error) {
+        console.error('Failed to fetch mentor notifications:', error);
+      }
+    };
+
+    fetchNotifications();
+    const interval = window.setInterval(fetchNotifications, 60000);
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(interval);
+    };
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -26,6 +59,49 @@ const MentorLayout = () => {
       navigate('/login');
     } catch (error) {
       console.error('Logout failed:', error);
+    }
+  };
+
+  const handleNotificationClick = async (notification) => {
+    const route = getNotificationTargetRoute(notification, 'MENTOR');
+
+    if (!notification.isRead) {
+      try {
+        await notificationService.markAsRead(notification.id);
+        setNotifications((prev) =>
+          prev.map((item) => (item.id === notification.id ? { ...item, isRead: true } : item))
+        );
+        setUnreadCount((prev) => Math.max(prev - 1, 0));
+      } catch (error) {
+        console.error('Failed to mark mentor notification as read:', error);
+      }
+    }
+
+    setIsNotificationOpen(false);
+    navigate(route);
+  };
+
+  const handleMarkAsRead = async (notificationId, alreadyRead) => {
+    if (alreadyRead) return;
+
+    try {
+      await notificationService.markAsRead(notificationId);
+      setNotifications((prev) =>
+        prev.map((item) => (item.id === notificationId ? { ...item, isRead: true } : item))
+      );
+      setUnreadCount((prev) => Math.max(prev - 1, 0));
+    } catch (error) {
+      console.error('Failed to mark mentor notification as read:', error);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+      setNotifications((prev) => prev.map((item) => ({ ...item, isRead: true })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Failed to mark all mentor notifications as read:', error);
     }
   };
 
@@ -37,6 +113,7 @@ const MentorLayout = () => {
     { title: 'Tạo lộ trình', icon: Plus, path: '/mentor/create-roadmap' },
     { title: 'Hồ sơ cá nhân', icon: User, path: '/mentor/profile' },
     { title: 'Thành tích', icon: Award, path: '/mentor/achievements' },
+    { title: 'Đăng ký Mentor', icon: GraduationCap, path: '/profile/become-mentor' },
   ];
 
   return (
@@ -67,20 +144,69 @@ const MentorLayout = () => {
           {/* Right Side: Icons & Profile */}
           <div className="flex items-center gap-3">
             {/* Notifications */}
-            <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 relative group">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsNotificationOpen((prev) => !prev)}
+                className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 relative"
+              >
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 min-w-4 h-4 px-1 rounded-full bg-red-500 text-[10px] text-white flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
 
-              {/* Notifications Dropdown */}
-              <div className="absolute top-full right-0 mt-2 w-72 bg-white border border-slate-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 py-2">
-                <div className="px-4 py-2 border-b border-slate-100 font-semibold text-slate-800">
-                  Notifications
+              {isNotificationOpen && (
+                <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-xl py-2 z-50">
+                  <div className="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
+                    <span className="font-semibold text-slate-800">Thông báo</span>
+                    {notifications.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleMarkAllAsRead();
+                        }}
+                        className="text-xs text-indigo-600 hover:text-indigo-700"
+                      >
+                        Đọc tất cả
+                      </button>
+                    )}
+                  </div>
+
+                  {notifications.length === 0 ? (
+                    <div className="px-4 py-3 text-sm text-slate-500">Không có thông báo mới.</div>
+                  ) : (
+                    <div className="max-h-80 overflow-y-auto">
+                      {notifications.map((notif) => (
+                        <button
+                          key={notif.id}
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleNotificationClick(notif);
+                          }}
+                          className={`w-full text-left px-4 py-3 border-b border-slate-100 last:border-b-0 hover:bg-slate-50 ${!notif.isRead ? 'bg-indigo-50/70' : 'bg-white'}`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-slate-800 truncate">{notif.title}</p>
+                              <p className="text-sm text-slate-600 mt-1 line-clamp-2">{notif.content}</p>
+                            </div>
+                            {!notif.isRead && <span className="w-2 h-2 rounded-full bg-indigo-500 mt-1.5 flex-shrink-0"></span>}
+                          </div>
+                          <p className="text-xs text-slate-400 mt-2">
+                            {new Date(notif.createdAt).toLocaleString('vi-VN')}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="px-4 py-3 text-sm text-slate-500">
-                  No new notifications
-                </div>
-              </div>
-            </button>
+              )}
+            </div>
 
             <div className="h-8 w-px bg-slate-200 mx-2 hidden sm:block"></div>
 
@@ -95,7 +221,7 @@ const MentorLayout = () => {
                 </div>
                 <div className="hidden sm:block text-left">
                   <p className="text-sm font-semibold text-slate-800 leading-none">
-                    Mentor User
+                    {user?.name || 'Mentor User'}
                   </p>
                 </div>
                 <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
@@ -106,7 +232,7 @@ const MentorLayout = () => {
                 <div className="absolute top-full right-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl py-2 z-50">
                   {/* Profile Header */}
                   <div className="px-4 py-3 border-b border-slate-100">
-                    <p className="text-sm font-semibold text-slate-900">Mentor User</p>
+                    <p className="text-sm font-semibold text-slate-900">{user?.name || 'Mentor User'}</p>
                   </div>
 
                   {/* Menu Items */}

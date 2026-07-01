@@ -5,6 +5,7 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Textarea from '../../components/ui/Textarea';
 import NodeDetailEditor from '../../components/mentor/NodeDetailEditor';
+import { parseDurationValue, serializeDurationValue } from '../../utils/roadmapDuration';
 
 const NodeEditorPage = () => {
   const { roadmapId, nodeId } = useParams();
@@ -20,6 +21,7 @@ const NodeEditorPage = () => {
     title: '',
     description: '',
     duration: '',
+    durationParts: { months: 0, weeks: 0, days: 0 },
     studyTips: '',
     checklists: [],
     materials: [],
@@ -51,6 +53,7 @@ const NodeEditorPage = () => {
           title: foundNode.title || '',
           description: foundNode.description || '',
           duration: foundNode.duration || '',
+          durationParts: foundNode.durationParts || parseDurationValue(foundNode.duration),
           studyTips: foundNode.studyTips || '',
           checklists: foundNode.checklists || [],
           materials: foundNode.materials || [],
@@ -65,6 +68,22 @@ const NodeEditorPage = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNodeData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleDurationPartChange = (field, value) => {
+    const nextValue = Math.max(0, Number(value) || 0);
+    setNodeData((prev) => ({
+      ...prev,
+      durationParts: {
+        ...prev.durationParts,
+        [field]: nextValue,
+      },
+      duration: serializeDurationValue({
+        months: field === 'months' ? nextValue : prev.durationParts.months,
+        weeks: field === 'weeks' ? nextValue : prev.durationParts.weeks,
+        days: field === 'days' ? nextValue : prev.durationParts.days,
+      }),
+    }));
   };
 
   const handleSaveNode = () => {
@@ -160,13 +179,45 @@ const NodeEditorPage = () => {
               onChange={handleInputChange}
             />
 
-            <Input
-              label="Thời lượng học"
-              name="duration"
-              placeholder="VD: 2 tuần, 5 ngày..."
-              value={nodeData.duration}
-              onChange={handleInputChange}
-            />
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-slate-700">Thời lượng học</label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="text-xs text-slate-500 mb-1 block">Tháng</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    name="months"
+                    placeholder="0"
+                    value={nodeData.durationParts?.months ?? 0}
+                    onChange={(e) => handleDurationPartChange('months', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-500 mb-1 block">Tuần</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    name="weeks"
+                    placeholder="0"
+                    value={nodeData.durationParts?.weeks ?? 0}
+                    onChange={(e) => handleDurationPartChange('weeks', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-500 mb-1 block">Ngày</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    name="days"
+                    placeholder="0"
+                    value={nodeData.durationParts?.days ?? 0}
+                    onChange={(e) => handleDurationPartChange('days', e.target.value)}
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-slate-500">Ví dụ: 1 tháng • 2 tuần • 3 ngày</p>
+            </div>
 
             {/* Tip Trick Học Tập */}
             <Textarea

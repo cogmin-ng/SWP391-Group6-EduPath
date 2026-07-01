@@ -113,11 +113,21 @@ export default function RoadmapLearningPage() {
       progress: Math.round(roadmap.enrollment?.progressPercent || 0),
       nodes: phases.map((node, i) => ({
         id: node.id,
+        index: i + 1,
         title: node.title,
         status: node.completed ? 'completed' : i === currentPhaseIndex ? 'in-progress' : 'locked',
+        summary: {
+          completed:
+            i === currentPhaseIndex
+              ? (nodeDetails?.checklists || []).filter((item) => item.completed).length
+              : node.completed
+                ? node.checklists?.length || 0
+                : 0,
+          total: node.checklists?.length || 0,
+        },
       })),
     };
-  }, [roadmap, phases, currentPhaseIndex]);
+  }, [roadmap, phases, currentPhaseIndex, nodeDetails]);
 
   const currentNode = useMemo(() => {
     if (!currentPhase || !nodeDetails) return null;
@@ -239,13 +249,13 @@ export default function RoadmapLearningPage() {
       <MenteeHeader />
 
       {/* Breadcrumb */}
-      <div className="mx-auto flex w-full max-w-7xl items-center gap-1 px-4 pt-24 text-xs text-slate-500 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-[1560px] items-center gap-1 px-4 pt-24 text-xs text-slate-500 sm:px-6 lg:px-8">
         <Link to="/roadmaps" className="hover:text-indigo-600">Lộ trình của tôi</Link>
         <ChevronRight className="h-3.5 w-3.5" />
         <span className="font-medium text-slate-700">{roadmap.title}</span>
       </div>
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-[1560px] px-4 py-6 sm:px-6 lg:px-8">
         {/* Phase nav pills */}
         <div className="mb-6 flex flex-wrap items-center gap-2">
           {phases.map((phase, idx) => (
@@ -265,16 +275,14 @@ export default function RoadmapLearningPage() {
           ))}
         </div>
 
-        <div className="flex flex-col gap-6 lg:flex-row">
-          {/* Left: Sidebar */}
+        <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)_360px] 2xl:grid-cols-[340px_minmax(0,1fr)_380px]">
           <NodeSidebar
             roadmap={roadmapForSidebar}
-            currentNodeId={`phase-${currentPhaseIndex}`}
+            currentNodeId={currentPhase?.id}
             onNodeClick={handleNodeClick}
           />
 
-          {/* Center: Main content */}
-          <main className="min-w-0 flex-1">
+          <main className="min-w-0 xl:col-start-2">
             {error ? (
               <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                 {error}
@@ -288,43 +296,46 @@ export default function RoadmapLearningPage() {
               </div>
             ) : (
               <>
-                <NodeHeader node={currentNode} />
+                <NodeHeader
+                  node={currentNode}
+                  roadmapTitle={roadmap?.title}
+                  overallProgress={overallProgress}
+                />
 
-                <div className="flex flex-col gap-6 xl:flex-row">
-                  {/* Content column */}
-                  <div className="min-w-0 flex-1 space-y-6">
-                    <ChecklistSection items={checklist} onToggle={handleChecklistToggle} />
-                    <MaterialsSection materials={materials} />
-                    <QuizSection quiz={quiz} onStart={() => navigate(`/roadmaps/${slug}/learn/quiz?nodeId=${currentPhase?.id}`)} />
-                    <TipsSection tips={nodeDetails?.tips || []} nodeId={currentPhase?.id} onRefresh={handleTipsRefresh} />
-
-                    {/* Continue button */}
-                    <div className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-5">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-semibold text-indigo-700">Tiếp tục lộ trình</p>
-                          <p className="mt-0.5 text-xs text-slate-500">Hoàn thành module này để mở khóa module tiếp theo.</p>
-                        </div>
-                        <Button className="gap-2 shrink-0" onClick={handleContinue}>
-                          Học tiếp <ArrowRight className="h-4 w-4" />
-                        </Button>
+                <div className="space-y-6">
+                  <div className="rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-violet-50 p-5">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-indigo-700">Tiếp tục lộ trình</p>
+                        <p className="mt-1 text-sm text-slate-500">Hoàn thành module này để mở khóa module tiếp theo và cập nhật tiến độ của bạn.</p>
                       </div>
+                      <Button className="gap-2 shrink-0" onClick={handleContinue}>
+                        Học tiếp <ArrowRight className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
 
-                  {/* Right: Progress card */}
-                  <div className="w-full shrink-0 xl:w-64">
-                    <ProgressCard
-                      checklistProgress={checklistProgress}
-                      materialsRead={materials.length > 0 ? 100 : 0}
-                      quizzesDone={quiz?.latestAttempt?.status === 'PASS' ? '1/1' : quiz ? '0/1' : '0/0'}
-                      overallProgress={overallProgress}
-                    />
-                  </div>
+                  <ChecklistSection items={checklist} onToggle={handleChecklistToggle} />
+                  <TipsSection tips={nodeDetails?.tips || []} nodeId={currentPhase?.id} onRefresh={handleTipsRefresh} />
                 </div>
               </>
             )}
           </main>
+
+          <aside className="space-y-6 xl:col-start-3">
+            <ProgressCard
+              checklistProgress={checklistProgress}
+              materialsRead={materials.length > 0 ? 100 : 0}
+              quizzesDone={quiz?.latestAttempt?.status === 'PASS' ? '1/1' : quiz ? '0/1' : '0/0'}
+              overallProgress={overallProgress}
+            />
+            <MaterialsSection materials={materials} variant="compact" />
+            <QuizSection
+              quiz={quiz}
+              compact
+              onStart={() => navigate(`/roadmaps/${slug}/learn/quiz?nodeId=${currentPhase?.id}`)}
+            />
+          </aside>
         </div>
       </main>
 

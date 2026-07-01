@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import MenteeHeader from '../components/mentee/MenteeHeader';
 import ExploreFilters from './mentee/features/explore/components/ExploreFilters';
 import RoadmapCard from './mentee/features/explore/components/RoadmapCard';
-import { roadmaps } from './mentee/features/explore/data/roadmaps';
 import { exploreService } from '../services/exploreService';
 import { subjectCategoryService } from '../services/subjectCategoryService';
 
@@ -15,7 +14,8 @@ export default function ExplorePage() {
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedMentors, setSelectedMentors] = useState([]);
-  const [sortBy, setSortBy] = useState('popular');
+  const [mentorQuery, setMentorQuery] = useState('');
+  const [sortBy] = useState('popular');
 
   useEffect(() => {
     let isMounted = true;
@@ -42,8 +42,6 @@ export default function ExplorePage() {
   useEffect(() => {
     let isMounted = true;
 
-    const mockBySlug = Object.fromEntries(roadmaps.map((roadmap) => [roadmap.slug, roadmap]));
-
     const fetchLearningPaths = async () => {
       try {
         const data = await exploreService.getLearningPaths();
@@ -51,21 +49,17 @@ export default function ExplorePage() {
 
         setExploreRoadmaps(
           data.map((roadmap) => ({
-            ...mockBySlug[roadmap.slug],
             ...roadmap,
-            rating: mockBySlug[roadmap.slug]?.rating ?? 4.7,
-            duration: mockBySlug[roadmap.slug]?.duration ?? '8w',
-            mentorRole: mockBySlug[roadmap.slug]?.mentorRole,
-            mentorQuote: mockBySlug[roadmap.slug]?.mentorQuote,
-            skills: mockBySlug[roadmap.slug]?.skills || [roadmap.subject],
-            modulesCount: mockBySlug[roadmap.slug]?.modulesCount ?? 0,
-            phases: mockBySlug[roadmap.slug]?.phases || [],
+            cover:
+              roadmap.cover ||
+              'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1600&q=80',
+            duration: roadmap.duration || 'N/A',
           })),
         );
       } catch (error) {
         console.error('Failed to fetch learning paths:', error);
         if (!isMounted) return;
-        setExploreRoadmaps(roadmaps);
+        setExploreRoadmaps([]);
       }
     };
 
@@ -77,9 +71,19 @@ export default function ExplorePage() {
   }, []);
 
   const mentors = useMemo(
-    () => [...new Set(exploreRoadmaps.map((roadmap) => roadmap.mentor))],
+    () => [...new Set(exploreRoadmaps.map((roadmap) => roadmap.mentor).filter(Boolean))],
     [exploreRoadmaps],
   );
+
+  const filteredMentors = useMemo(() => {
+    const normalizedQuery = mentorQuery.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+      return mentors;
+    }
+
+    return mentors.filter((mentor) => mentor.toLowerCase().includes(normalizedQuery));
+  }, [mentorQuery, mentors]);
 
   const filteredRoadmaps = useMemo(() => {
     const filtered = exploreRoadmaps.filter((item) => {
@@ -89,7 +93,7 @@ export default function ExplorePage() {
     });
 
     if (sortBy === 'rating') {
-      return [...filtered].sort((a, b) => b.rating - a.rating);
+      return [...filtered].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
     }
 
     if (sortBy === 'duration') {
@@ -106,9 +110,11 @@ export default function ExplorePage() {
       <main className="mx-auto flex w-full max-w-420 px-4 sm:px-6 lg:px-8 xl:px-10 pt-20">
         <ExploreFilters
           categories={categories}
-          mentors={mentors}
+          mentors={filteredMentors}
           selectedCategories={selectedCategories}
           selectedMentors={selectedMentors}
+          mentorQuery={mentorQuery}
+          onMentorQueryChange={setMentorQuery}
           onToggleCategory={(category) => setSelectedCategories((prev) => toggleValue(prev, category))}
           onToggleMentor={(mentor) => setSelectedMentors((prev) => toggleValue(prev, mentor))}
         />

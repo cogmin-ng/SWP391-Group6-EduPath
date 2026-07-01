@@ -110,8 +110,6 @@ export default function AdminHeader() {
     { title: 'Quản lý danh mục', icon: Layers, path: '/admin/categories' },
     { title: 'Phê duyệt lộ trình', icon: CheckCircle, path: '/admin/roadmaps' },
     { title: 'Yêu cầu Mentor', icon: UserPlus, path: '/admin/mentors' },
-    { title: 'Báo cáo', icon: BarChart3, path: '/admin/reports' },
-    { title: 'Cài đặt', icon: Settings, path: '/admin/settings' },
   ];
 
   const displayName = user?.name || 'Quản trị viên';

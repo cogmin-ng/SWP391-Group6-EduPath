@@ -8,29 +8,7 @@ import { userService } from '../../services/userService';
 import { getMentorDashboardStats, getMentorRoadmaps } from '../../services/roadmapService';
 import { mentorApplicationService } from '../../services/mentorApplicationService';
 
-const PROFILE_STORAGE_KEY = "mentor_profile_overrides";
-
-const readStoredProfile = (fallback) => {
-  const stored = localStorage.getItem(PROFILE_STORAGE_KEY);
-  if (!stored) return fallback;
-
-  try {
-    const parsed = JSON.parse(stored);
-    return {
-      ...fallback,
-      name: parsed.name ?? fallback.name,
-      email: parsed.email ?? fallback.email,
-      major: parsed.major ?? fallback.major,
-      termStatus: parsed.termStatus ?? fallback.termStatus,
-      title: parsed.title ?? fallback.title,
-      bio: parsed.bio ?? fallback.bio,
-      location: parsed.location ?? fallback.location,
-      avatar: parsed.avatar ?? fallback.avatar,
-    };
-  } catch {
-    return fallback;
-  }
-};
+// Local storage overrides are now scoped per user ID to prevent account data mixing
 
 const getStatusBadge = (status) => {
   switch (status) {
@@ -108,18 +86,22 @@ export default function MentorProfilePage() {
     ],
   };
 
-  const [profileData, setProfileData] = useState(() =>
-    readStoredProfile({
-      name: baseProfile.name,
-      email: baseProfile.email,
-      major: baseProfile.major,
-      termStatus: baseProfile.termStatus,
-      title: baseProfile.title,
-      bio: baseProfile.bio,
-      location: baseProfile.location,
-      avatar: baseProfile.avatar,
-    }),
-  );
+  const [profileData, setProfileData] = useState({});
+
+  useEffect(() => {
+    if (authUser?.id) {
+      const stored = localStorage.getItem(`mentor_profile_overrides_${authUser.id}`);
+      if (stored) {
+        try {
+          setProfileData(JSON.parse(stored));
+        } catch (e) {
+          console.error('Failed to parse profile overrides:', e);
+        }
+      } else {
+        setProfileData({});
+      }
+    }
+  }, [authUser?.id]);
 
   const [editForm, setEditForm] = useState(() => ({
     name: baseProfile.name,
@@ -134,9 +116,10 @@ export default function MentorProfilePage() {
   // Map application details if available, falling back to base/local overrides
   const profile = {
     ...baseProfile,
-    ...profileData,
-    major: application?.specialization || profileData.major,
-    termStatus: application?.currentSemester || profileData.termStatus,
+    title: profileData.title || baseProfile.title,
+    location: profileData.location || baseProfile.location,
+    major: application?.specialization || profileData.major || baseProfile.major,
+    termStatus: application?.currentSemester || profileData.termStatus || baseProfile.termStatus,
     specialties: application?.mentorSubjects && application.mentorSubjects.length > 0 
       ? application.mentorSubjects.map(ms => ({ label: ms.subject.name, color: 'bg-indigo-50 text-indigo-700 border-indigo-200/50' }))
       : baseProfile.specialties,
@@ -254,35 +237,28 @@ export default function MentorProfilePage() {
       }
 
       const nextProfile = {
-        name: editForm.name.trim() || baseProfile.name,
-        email: editForm.email.trim() || baseProfile.email,
         title: editForm.title.trim() || baseProfile.title,
-        bio: editForm.bio.trim() || baseProfile.bio,
         location: editForm.location.trim() || baseProfile.location,
         major: editForm.major?.trim() || baseProfile.major,
         termStatus: editForm.termStatus?.trim() || baseProfile.termStatus,
-        avatar: nextAvatarUrl,
       };
 
       setProfileData(nextProfile);
-      localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(nextProfile));
-
       if (authUser?.id) {
+        localStorage.setItem(`mentor_profile_overrides_${authUser.id}`, JSON.stringify(nextProfile));
+
         await userService.updateUser(authUser.id, {
-          name: nextProfile.name.trim(),
-          bio: nextProfile.bio.trim(),
+          name: editForm.name.trim() || baseProfile.name,
+          bio: editForm.bio.trim() || baseProfile.bio,
         });
 
         updateUser({
           ...authUser,
-          name: nextProfile.name,
-          email: nextProfile.email,
+          name: editForm.name.trim() || baseProfile.name,
+          email: editForm.email.trim() || baseProfile.email,
           avatarUrl: nextAvatarUrl,
           avatar: nextAvatarUrl,
-          bio: nextProfile.bio,
-          location: nextProfile.location,
-          major: nextProfile.major,
-          termStatus: nextProfile.termStatus,
+          bio: editForm.bio.trim() || baseProfile.bio,
         });
       }
 

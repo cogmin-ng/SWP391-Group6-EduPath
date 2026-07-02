@@ -85,14 +85,73 @@ function MaterialCard({ material }) {
   );
 }
 
+function CompactMaterialCard({ material }) {
+  const { Icon, bgColor, iconColor, label } = getMaterialMeta(material.type);
+  const hasUrl = Boolean(material.url);
+
+  const content = (
+    <>
+      <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl ${bgColor}`}>
+        <Icon className={`h-5 w-5 ${iconColor}`} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">{label}</p>
+        <p className="line-clamp-2 text-sm font-semibold text-slate-900">{material.title}</p>
+      </div>
+      <div className="text-xs font-semibold text-indigo-600">{material.buttonLabel}</div>
+    </>
+  );
+
+  if (hasUrl) {
+    return (
+      <a
+        href={material.url}
+        target="_blank"
+        rel="noreferrer"
+        className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 transition-all duration-200 hover:border-indigo-100 hover:bg-slate-50"
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 opacity-70">
+      {content}
+    </div>
+  );
+}
+
 /**
  * Materials section — displays a grid of learning material cards.
  *
  * Props:
  * - materials: [{ id, title, type, buttonLabel, url }]
  */
-export default function MaterialsSection({ materials }) {
+export default function MaterialsSection({ materials, variant = 'grid' }) {
   if (!materials || materials.length === 0) return null;
+
+  if (variant === 'compact') {
+    return (
+      <section className="animate-fadeIn rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/60">
+        <div className="mb-4 flex items-center gap-2.5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50">
+            <BookOpen className="h-5 w-5 text-indigo-600" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-slate-900">Tài liệu học tập</h3>
+            <p className="text-xs text-slate-400">Mở nhanh các tài nguyên đi kèm của node hiện tại.</p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {materials.map((material) => (
+            <CompactMaterialCard key={material.id} material={material} />
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="animate-fadeIn">

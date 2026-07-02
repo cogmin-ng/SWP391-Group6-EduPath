@@ -14,10 +14,12 @@ export default function RoadmapCard({ roadmap }) {
         <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4">
           <span className="text-sm font-medium text-slate-800">{roadmap.mentor}</span>
           <div className="flex items-center gap-3 text-xs text-slate-500">
-            <span className="inline-flex items-center gap-1">
-              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-              {roadmap.rating}
-            </span>
+            {roadmap.rating != null && (
+              <span className="inline-flex items-center gap-1">
+                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                {roadmap.rating}
+              </span>
+            )}
             <span className="inline-flex items-center gap-1">
               <Clock3 className="w-3.5 h-3.5" />
               {roadmap.duration}

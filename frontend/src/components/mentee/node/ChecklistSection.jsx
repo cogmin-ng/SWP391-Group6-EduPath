@@ -1,4 +1,4 @@
-import { CheckSquare, Square, ClipboardList } from 'lucide-react';
+import { Check, ChevronDown, ClipboardList, Circle } from 'lucide-react';
 
 /**
  * Interactive checklist card.
@@ -14,70 +14,84 @@ export default function ChecklistSection({ items, onToggle }) {
   const percentage = total > 0 ? Math.round((completedCount / total) * 100) : 0;
 
   return (
-    <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-fadeIn">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+    <section className="animate-fadeIn rounded-[30px] border border-slate-200/80 bg-white p-6 shadow-sm shadow-slate-200/60">
+      <div className="mb-5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center">
-            <ClipboardList className="w-5 h-5 text-indigo-600" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50">
+            <ClipboardList className="h-5 w-5 text-indigo-600" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-900">
-              Checklist Học Tập
-            </h3>
-            <p className="text-xs text-slate-400">
-              Hoàn thành các mục tiêu cốt lõi.
-            </p>
+            <h3 className="text-[1.1rem] font-bold text-slate-900">Checklist Học Tập</h3>
+            <p className="text-sm text-slate-400">Theo dõi các mục tiêu cần hoàn thành trong node này.</p>
           </div>
         </div>
-        <span className="text-xl font-bold text-indigo-600">
+        <span className="text-3xl font-bold text-indigo-600">
           {completedCount}
           <span className="text-slate-300">/{total}</span>
         </span>
       </div>
 
-      {/* Progress bar */}
-      <div className="w-full bg-slate-100 rounded-full h-2 mb-5 overflow-hidden">
+      <div className="mb-6 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
         <div
-          className="h-full bg-indigo-600 rounded-full transition-all duration-500 ease-out"
+          className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600 transition-all duration-500 ease-out"
           style={{ width: `${percentage}%` }}
         />
       </div>
 
-      {/* Items */}
-      <ul className="space-y-2">
+      <ul className="space-y-3">
         {items.map((item) => (
           <li key={item.id}>
             <button
               onClick={() => onToggle(item.id)}
-              className={`
-                flex items-center gap-3 w-full text-left px-4 py-3 rounded-xl
-                transition-all duration-200 group cursor-pointer
-                ${
-                  item.completed
-                    ? 'bg-indigo-50/60 border border-indigo-100'
-                    : 'bg-slate-50 border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30'
-                }
-              `}
+              className={`group flex w-full items-center gap-4 rounded-2xl border px-4 py-4 text-left transition-all duration-200 ${
+                item.completed
+                  ? 'border-emerald-100 bg-emerald-50/70 hover:border-emerald-200'
+                  : 'border-slate-200 bg-white hover:border-indigo-200 hover:bg-indigo-50/30'
+              }`}
             >
-              {item.completed ? (
-                <CheckSquare className="w-5 h-5 text-indigo-600 flex-shrink-0" />
-              ) : (
-                <Square className="w-5 h-5 text-slate-300 group-hover:text-indigo-400 flex-shrink-0 transition-colors" />
-              )}
-              <span
-                className={`text-sm font-medium ${
+              <div
+                className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border ${
                   item.completed
-                    ? 'text-indigo-700'
-                    : 'text-slate-700'
+                    ? 'border-emerald-200 bg-emerald-500 text-white'
+                    : 'border-slate-200 bg-slate-50 text-slate-400 group-hover:border-indigo-200 group-hover:text-indigo-500'
                 }`}
               >
-                {item.title}
+                {item.completed ? <Check className="h-4 w-4" /> : <Circle className="h-4 w-4 fill-current" />}
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className={`text-sm font-semibold ${item.completed ? 'text-slate-700' : 'text-slate-900'}`}>
+                  {item.title}
+                </p>
+              </div>
+
+              <span
+                className={`hidden rounded-full px-3 py-1 text-xs font-semibold sm:inline-flex ${
+                  item.completed
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-indigo-100 text-indigo-700'
+                }`}
+              >
+                {item.completed ? 'Completed' : 'In Progress'}
               </span>
+
+              <ChevronDown className={`h-4 w-4 flex-shrink-0 ${item.completed ? 'text-emerald-400' : 'text-slate-300 group-hover:text-indigo-400'}`} />
             </button>
           </li>
         ))}
       </ul>
+
+      <div className="mt-6 flex items-center justify-between gap-4 border-t border-slate-100 pt-4">
+        <p className="text-sm text-slate-500">
+          {completedCount}/{total} mục đã hoàn thành
+        </p>
+        <div className="h-2 w-32 overflow-hidden rounded-full bg-slate-100">
+          <div
+            className="h-full rounded-full bg-indigo-500 transition-all duration-500"
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+      </div>
     </section>
   );
 }

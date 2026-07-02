@@ -14,42 +14,32 @@ export default function ProgressCard({
   quizzesDone = '0/1',
   overallProgress = 0,
 }) {
-  return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sticky top-6 animate-fadeIn">
-      <h3 className="text-base font-bold text-slate-900 mb-5">Trạng thái bài học</h3>
+  const stats = [
+    { label: 'Checklist', value: `${checklistProgress}%` },
+    { label: 'Tài liệu đã học', value: `${materialsRead}%` },
+    { label: 'Bài kiểm tra', value: quizzesDone },
+  ];
 
-      {/* Stats rows */}
-      <div className="space-y-3.5 mb-6">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-500">Checklist</span>
-          <span className="text-sm font-bold text-indigo-600">
-            {checklistProgress}%
-          </span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-500">Tài liệu đã học</span>
-          <span className="text-sm font-bold text-indigo-600">
-            {materialsRead}%
-          </span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-500">Bài kiểm tra</span>
-          <span className="text-sm font-bold text-indigo-600">
-            {quizzesDone}
-          </span>
-        </div>
+  return (
+    <div className="animate-fadeIn rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm shadow-slate-200/60">
+      <h3 className="mb-5 text-xl font-bold text-slate-900">Trạng thái bài học</h3>
+
+      <div className="space-y-4">
+        {stats.map((stat) => (
+          <div key={stat.label} className="flex items-center justify-between text-sm">
+            <span className="text-slate-500">{stat.label}</span>
+            <span className="font-bold text-indigo-600">{stat.value}</span>
+          </div>
+        ))}
       </div>
 
-      {/* Divider */}
-      <div className="h-px bg-slate-100 mb-5" />
+      <div className="my-6 h-px bg-slate-100" />
 
-      {/* Overall progress */}
       <div className="text-center">
-        <p className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase mb-2">
-            Tiến độ hiện tại
-          </p>
-        <div className="relative w-28 h-28 mx-auto mb-1">
-          {/* Background circle */}
+        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+          Tiến độ hiện tại
+        </p>
+        <div className="relative mx-auto mb-3 h-32 w-32">
           <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
             <circle
               cx="60"
@@ -72,13 +62,22 @@ export default function ProgressCard({
               className="transition-all duration-700 ease-out"
             />
           </svg>
-          {/* Center text */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-2xl font-extrabold text-slate-900 font-display">
-              {overallProgress}%
-            </span>
+            <div>
+              <div className="text-3xl font-extrabold text-slate-900 font-display">
+                {overallProgress}%
+              </div>
+              <div className="mt-1 text-xs font-medium text-slate-400">Hoàn thành</div>
+            </div>
           </div>
         </div>
+        <p className="text-sm text-slate-500">
+          {overallProgress >= 100
+            ? 'Bạn đã hoàn thành toàn bộ lộ trình này.'
+            : overallProgress >= 50
+              ? 'Bạn đang học rất tốt. Giữ đúng nhịp hiện tại.'
+              : 'Tiếp tục từng bước nhỏ để tăng tiến độ ổn định.'}
+        </p>
       </div>
     </div>
   );

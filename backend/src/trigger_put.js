@@ -1,9 +1,7 @@
-const { PrismaClient } = require('@prisma/client');
 const jwt = require('jsonwebtoken');
 const config = require('./config');
 require('dotenv').config({ path: '../.env' });
-
-const prisma = new PrismaClient();
+const prisma = require('./lib/prisma');
 
 async function main() {
   const roadmapId = 'cmqxy271c0001bjp5djeac4o1';

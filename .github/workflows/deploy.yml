@@ -140,6 +140,8 @@ jobs:
             CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}
             CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
             CLOUDINARY_UPLOAD_FOLDER=${{ secrets.CLOUDINARY_UPLOAD_FOLDER || 'edupath' }}
+            RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
+            RESEND_FROM_EMAIL=${{ secrets.RESEND_FROM_EMAIL }}
             EOF
             sed -i 's/^            //' .env
 

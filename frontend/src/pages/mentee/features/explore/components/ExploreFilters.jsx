@@ -5,6 +5,8 @@ export default function ExploreFilters({
   mentors,
   selectedCategories,
   selectedMentors,
+  mentorQuery,
+  onMentorQueryChange,
   onToggleCategory,
   onToggleMentor,
 }) {
@@ -35,8 +37,8 @@ export default function ExploreFilters({
             <Search className="w-4 h-4 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              value=""
-              readOnly
+              value={mentorQuery}
+              onChange={(event) => onMentorQueryChange(event.target.value)}
               placeholder="Tìm mentor..."
               className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-8 pr-3 py-2 text-sm"
             />

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { notificationService } from '../../services/notificationService';
+import { getNotificationTargetRoute } from '../../utils/notificationRoutes';
 
 const accountMenuItems = [
   { label: 'Trang chủ', icon: Home, to: '/mentee/homepage' },
@@ -94,6 +95,25 @@ export default function MenteeHeader() {
       await logout();
       return;
     }
+  };
+
+  const handleNotificationClick = async (notification) => {
+    const route = getNotificationTargetRoute(notification, 'MENTEE');
+
+    if (!notification.isRead) {
+      try {
+        await notificationService.markAsRead(notification.id);
+        setNotifications((prev) =>
+          prev.map((item) => (item.id === notification.id ? { ...item, isRead: true } : item))
+        );
+        setUnreadCount((prev) => Math.max(prev - 1, 0));
+      } catch (error) {
+        console.error('Failed to mark notification as read:', error);
+      }
+    }
+
+    setNotificationsOpen(false);
+    navigate(route);
   };
 
   const handleMarkAsRead = async (id, currentIsRead) => {
@@ -201,7 +221,7 @@ export default function MenteeHeader() {
                           <button
                             key={notif.id}
                             type="button"
-                            onClick={() => handleMarkAsRead(notif.id, notif.isRead)}
+                            onClick={() => handleNotificationClick(notif)}
                             className={`flex w-full flex-col gap-1 px-4 py-3 text-left transition-colors hover:bg-slate-50 ${!notif.isRead ? 'bg-indigo-50/20' : ''}`}
                           >
                             <div className="flex items-start justify-between gap-2">

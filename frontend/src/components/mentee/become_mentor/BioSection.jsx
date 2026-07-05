@@ -53,14 +53,23 @@ export default function BioSection({ register, errors }) {
         {/* Kinh nghiệm hỗ trợ học tập */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1.5">
-            Kinh nghiệm hỗ trợ học tập
+            Kinh nghiệm hỗ trợ học tập <span className="text-red-500">*</span>
           </label>
           <textarea
             rows={4}
             placeholder={"Hỗ trợ bạn bè học tập,\nReview assignment,\nHướng dẫn đồ án,\nChia sẻ kinh nghiệm học tập."}
-            {...register("supportExperience")}
-            className={textareaCls(false)}
+            {...register("supportExperience", {
+              required: "Vui lòng nhập kinh nghiệm hỗ trợ học tập.",
+              minLength: {
+                value: 30,
+                message: "Kinh nghiệm hỗ trợ học tập phải có ít nhất 30 ký tự.",
+              },
+            })}
+            className={textareaCls(errors.supportExperience)}
           />
+          {errors.supportExperience && (
+            <p className="mt-1.5 text-xs text-red-500">{errors.supportExperience.message}</p>
+          )}
         </div>
       </div>
     </section>

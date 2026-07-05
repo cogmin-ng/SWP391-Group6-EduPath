@@ -38,6 +38,8 @@ import CreateQuizPage from "../pages/mentor/CreateQuizPage";
 import MentorRoadmapLearningPage from "../pages/mentor/MentorRoadmapLearningPage";
 import MentorRoadmapDetailPage from "../pages/mentor/MentorRoadmapDetailPage";
 
+import CategoryManagementPage from "../pages/admin/CategoryManagementPage";
+
 // Placeholder component for pages that are not yet implemented
 // Force reload
 function PlaceholderPage({ title }) {
@@ -233,7 +235,7 @@ export default function AppRoutes() {
       <Route
         path="/profile/become-mentor"
         element={
-          <ProtectedRoute allowedRoles={["MENTEE"]}>
+          <ProtectedRoute allowedRoles={["MENTEE", "MENTOR"]}>
             <BecomeMentorPage />
           </ProtectedRoute>
         }
@@ -249,7 +251,7 @@ export default function AppRoutes() {
         />
         <Route
           path="categories"
-          element={<PlaceholderPage title="Category Management" />}
+          element={<CategoryManagementPage />}
         />
         <Route
           path="roadmaps"
@@ -259,8 +261,6 @@ export default function AppRoutes() {
           path="mentors"
           element={<MentorRequestPage />}
         />
-        <Route path="reports" element={<PlaceholderPage title="Reports" />} />
-        <Route path="settings" element={<PlaceholderPage title="Settings" />} />
       </Route>
 
       {/* Explore & Roadmap Routes */}

@@ -5,9 +5,8 @@ import MentorWelcomeBanner from '../../components/mentor/MentorWelcomeBanner';
 import MentorStatsCard from '../../components/mentor/MentorStatsCard';
 import PendingReviewsSection from '../../components/mentor/PendingReviewsSection';
 import PendingTipsSection from '../../components/mentor/PendingTipsSection';
-import { mentorStats } from '../../mock/mentorDashboardData';
 import { getPendingTips, getMentorRoadmaps, getMentorDashboardStats } from '../../services/roadmapService';
-import { Loader2 } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 
 const MentorDashboardPage = () => {
   const [roadmaps, setRoadmaps] = useState([]);
@@ -251,8 +250,11 @@ const MentorDashboardPage = () => {
               <h2 className="text-2xl font-bold text-slate-900">
                 Tips Cần Duyệt ({pendingTips.length})
               </h2>
-              <button className="text-indigo-600 font-semibold hover:text-indigo-700 transition-colors text-sm">
-                Xem tất cả →
+              <button
+                onClick={() => navigate('/mentor/reviews')}
+                className="inline-flex items-center gap-1 text-indigo-600 font-semibold hover:text-indigo-700 transition-colors text-sm"
+              >
+                Xem tất cả <ArrowRight className="w-4 h-4" />
               </button>
             </div>
             <PendingTipsSection

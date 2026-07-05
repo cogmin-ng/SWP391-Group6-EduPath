@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { Plus, X, Pencil, Trash2, Cloud, BookOpen } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -136,10 +137,10 @@ const EditRoadmapPage = () => {
       const updated = await updateRoadmap(roadmapId, payload);
       setNodes(updated.nodes || []);
       setFormData(prev => ({ ...prev, status: 'DRAFT' }));
-      alert('Cập nhật lộ trình thành công!');
+      toast.success('Cập nhật lộ trình thành công');
     } catch (err) {
       console.error(err);
-      alert('Lỗi cập nhật: ' + (err.response?.data?.message || err.message));
+      toast.error('Lỗi cập nhật: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -152,11 +153,11 @@ const EditRoadmapPage = () => {
       await updateRoadmap(roadmapId, payload);
       await submitRoadmap(roadmapId);
       
-      alert('Gửi phê duyệt thành công!');
-      navigate('/mentor/roadmaps');
+      toast.success('Đã gửi lộ trình để chờ duyệt');
+      navigate('/mentor/reviews');
     } catch (err) {
       console.error(err);
-      alert('Lỗi phê duyệt: ' + (err.response?.data?.message || err.message));
+      toast.error('Lỗi phê duyệt: ' + (err.response?.data?.message || err.message));
     }
   };
 

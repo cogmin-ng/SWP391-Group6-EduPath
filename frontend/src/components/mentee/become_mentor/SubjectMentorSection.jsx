@@ -1,26 +1,71 @@
-import { useState } from "react";
-import { BookOpen, X, ChevronDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { BookOpen, X, ChevronDown, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
+import { subjectCategoryService } from "../../../services/subjectCategoryService";
+import { subjectService } from "../../../services/subjectService";
 
 /**
  * Section 2 – Môn học muốn Mentor.
  *
- * Dropdown-based selection from subjects fetched from the API.
- * Users select a subject from the dropdown to add it as a tag.
+ * Cho phép chọn Category -> lấy danh sách Subject -> Thêm vào list.
  *
  * @param {{
  *   subjects: Array<{ id: string, name: string }>,
  *   setSubjects: Function,
  *   error: string | null,
- *   availableSubjects: Array<{ id: string, name: string }>,
  * }} props
  */
 export default function SubjectMentorSection({
   subjects,
   setSubjects,
   error,
-  availableSubjects = [],
 }) {
-  const [selectedId, setSelectedId] = useState("");
+  // Category state
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [loadingCategory, setLoadingCategory] = useState(true);
+
+  // Subject state
+  const [availableSubjects, setAvailableSubjects] = useState([]);
+  const [selectedSubject, setSelectedSubject] = useState("");
+  const [loadingSubject, setLoadingSubject] = useState(false);
+
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await subjectCategoryService.getSubjectCategories();
+        setCategories(data || []);
+      } catch (err) {
+        toast.error("Không thể tải danh sách chuyên mục.");
+      } finally {
+        setLoadingCategory(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Handle category change
+  const handleCategoryChange = async (e) => {
+    const catId = e.target.value;
+    setSelectedCategory(catId);
+
+    // Reset subject state
+    setSelectedSubject("");
+    setAvailableSubjects([]);
+
+    if (!catId) return;
+
+    setLoadingSubject(true);
+    try {
+      const data = await subjectService.getAllSubjects(catId);
+      setAvailableSubjects(data || []);
+    } catch (err) {
+      toast.error("Không thể tải danh sách môn học.");
+    } finally {
+      setLoadingSubject(false);
+    }
+  };
 
   // Filter out already-selected subjects
   const filteredOptions = availableSubjects.filter(
@@ -28,12 +73,18 @@ export default function SubjectMentorSection({
   );
 
   const addSubject = () => {
-    if (!selectedId) return;
-    const found = availableSubjects.find((s) => s.id === selectedId);
+    if (!selectedCategory || !selectedSubject) return;
+
+    const found = availableSubjects.find((s) => s.id === selectedSubject);
     if (!found) return;
-    if (subjects.some((s) => s.id === found.id)) return;
+
+    if (subjects.some((s) => s.id === found.id)) {
+      toast.error("Môn học này đã được thêm.");
+      return;
+    }
+
     setSubjects((prev) => [...prev, { id: found.id, name: found.name }]);
-    setSelectedId("");
+    setSelectedSubject("");
   };
 
   const removeSubject = (id) => {
@@ -74,30 +125,65 @@ export default function SubjectMentorSection({
       )}
 
       {/* Dropdown + Add button */}
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
+        {/* Category Dropdown */}
         <div className="relative flex-1">
           <select
-            value={selectedId}
-            onChange={(e) => setSelectedId(e.target.value)}
-            className={`w-full appearance-none rounded-xl border bg-white text-slate-800 text-sm px-4 py-3 pr-10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer ${
-              error
+            value={selectedCategory}
+            onChange={handleCategoryChange}
+            disabled={loadingCategory}
+            className={`w-full appearance-none rounded-xl border bg-white text-slate-800 text-sm px-4 py-3 pr-10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer ${loadingCategory ? "opacity-70 cursor-not-allowed bg-slate-50" : ""
+              } border-slate-200 hover:border-slate-300`}
+          >
+            <option value="">
+              {loadingCategory ? "Đang tải chuyên mục..." : "Chọn chuyên mục..."}
+            </option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          {loadingCategory ? (
+            <Loader2 className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 animate-spin" />
+          ) : (
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          )}
+        </div>
+
+        {/* Subject Dropdown */}
+        <div className="relative flex-1">
+          <select
+            value={selectedSubject}
+            onChange={(e) => setSelectedSubject(e.target.value)}
+            disabled={!selectedCategory || loadingSubject}
+            className={`w-full appearance-none rounded-xl border bg-white text-slate-800 text-sm px-4 py-3 pr-10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer ${!selectedCategory || loadingSubject ? "opacity-70 cursor-not-allowed bg-slate-50" : ""
+              } ${error
                 ? "border-red-300 focus:ring-red-500/20 focus:border-red-500"
                 : "border-slate-200 hover:border-slate-300"
-            }`}
+              }`}
           >
-            <option value="">Chọn môn học...</option>
+            <option value="">
+              {loadingSubject ? "Đang tải môn học..." : "Chọn môn học..."}
+            </option>
             {filteredOptions.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
               </option>
             ))}
           </select>
-          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          {loadingSubject ? (
+            <Loader2 className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 animate-spin" />
+          ) : (
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          )}
         </div>
+
+        {/* Add Button */}
         <button
           type="button"
           onClick={addSubject}
-          disabled={!selectedId}
+          disabled={!selectedCategory || !selectedSubject}
           className="px-5 py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
           Thêm

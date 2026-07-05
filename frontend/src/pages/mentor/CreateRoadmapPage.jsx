@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Plus, X, Pencil, Trash2, Cloud, BookOpen, Lightbulb } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { Plus, X, Pencil, Trash2, Cloud, BookOpen } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Textarea from '../../components/ui/Textarea';
@@ -35,12 +36,10 @@ const CreateRoadmapPage = () => {
   });
   const [categories, setCategories] = useState([]);
   const [subjects, setSubjects] = useState([]);
-  const [loadingInitial, setLoadingInitial] = useState(true);
 
 
   const loadInitialData = async () => {
     try {
-      setLoadingInitial(true);
       const [catData, subData] = await Promise.all([
         subjectCategoryService.getSubjectCategories(),
         subjectService.getAllSubjects(),
@@ -49,8 +48,6 @@ const CreateRoadmapPage = () => {
       setSubjects(subData || []);
     } catch (err) {
       console.error('Lỗi khi tải dữ liệu ban đầu:', err);
-    } finally {
-      setLoadingInitial(false);
     }
   };
 
@@ -124,11 +121,11 @@ const CreateRoadmapPage = () => {
 
       const payload = buildPayload();
       const created = await createRoadmap(payload);
-      alert('Lưu nháp Lộ trình thành công!');
+      toast.success('Đã lưu nháp lộ trình thành công');
       navigate(`/mentor/roadmaps/${created.id}/edit`);
     } catch (err) {
       console.error(err);
-      alert('Lỗi lưu nháp: ' + (err.response?.data?.message || err.message));
+      toast.error('Lỗi lưu nháp: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -142,11 +139,11 @@ const CreateRoadmapPage = () => {
       const created = await createRoadmap(payload);
       await submitRoadmap(created.id);
 
-      alert('Đã tạo và gửi phê duyệt thành công!');
-      navigate(`/mentor/roadmaps/${created.id}/edit`);
+      toast.success('Đã gửi lộ trình để chờ duyệt');
+      navigate('/mentor/reviews');
     } catch (err) {
       console.error(err);
-      alert('Lỗi gửi phê duyệt: ' + (err.response?.data?.message || err.message));
+      toast.error('Lỗi gửi phê duyệt: ' + (err.response?.data?.message || err.message));
     }
   };
 

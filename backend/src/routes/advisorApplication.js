@@ -65,7 +65,7 @@ const router = Router();
 router.post(
   '/',
   requireAuth,
-  requireRole(['MENTEE']),
+  requireRole(['MENTEE', 'MENTOR']),
   validateSchema(createAdvisorApplicationSchema),
   advisorApplicationController.createApplication
 );

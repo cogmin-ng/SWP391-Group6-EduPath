@@ -30,8 +30,14 @@ export default function MyRoadmapsPage() {
 
   const enrolledRoadmaps = enrollments;
 
-  const ongoing = enrolledRoadmaps.filter((r) => r.progressPercent > 0 && r.progressPercent < 100);
-  const completed = enrolledRoadmaps.filter((r) => r.progressPercent >= 100);
+  const ongoing = enrolledRoadmaps.filter((r) => {
+    const status = String(r.status || '').toUpperCase();
+    return status === 'ACTIVE' || (status !== 'COMPLETED' && r.progressPercent < 100);
+  });
+  const completed = enrolledRoadmaps.filter((r) => {
+    const status = String(r.status || '').toUpperCase();
+    return status === 'COMPLETED' || r.progressPercent >= 100;
+  });
   
   const favoriteSlugs = useMemo(() => getFavorites(), [favVersion]);
   const favorite = enrolledRoadmaps.filter((r) => favoriteSlugs.includes(r.slug));

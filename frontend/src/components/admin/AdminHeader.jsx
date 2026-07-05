@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { getNotificationTargetRoute } from '../../utils/notificationRoutes';
 import {
   LayoutDashboard,
   Users,
@@ -60,6 +61,21 @@ export default function AdminHeader() {
     return () => clearInterval(interval);
   }, []);
 
+  const handleNotificationClick = async (notification) => {
+    const route = getNotificationTargetRoute(notification, 'ADMIN');
+
+    if (!notification.isRead) {
+      try {
+        await notificationService.markAsRead(notification.id);
+        fetchNotifications();
+      } catch (error) {
+        console.error('Failed to mark notification as read:', error);
+      }
+    }
+
+    navigate(route);
+  };
+
   const handleMarkAsRead = async (id, currentIsRead) => {
     if (currentIsRead) return;
     try {
@@ -94,8 +110,6 @@ export default function AdminHeader() {
     { title: 'Quản lý danh mục', icon: Layers, path: '/admin/categories' },
     { title: 'Phê duyệt lộ trình', icon: CheckCircle, path: '/admin/roadmaps' },
     { title: 'Yêu cầu Mentor', icon: UserPlus, path: '/admin/mentors' },
-    { title: 'Báo cáo', icon: BarChart3, path: '/admin/reports' },
-    { title: 'Cài đặt', icon: Settings, path: '/admin/settings' },
   ];
 
   const displayName = user?.name || 'Quản trị viên';
@@ -173,7 +187,7 @@ export default function AdminHeader() {
                       {notifications.map((notif) => (
                         <div 
                           key={notif.id} 
-                          onClick={() => handleMarkAsRead(notif.id, notif.isRead)}
+                          onClick={() => handleNotificationClick(notif)}
                           className={`px-4 py-3 cursor-pointer transition-colors hover:bg-slate-50 flex flex-col gap-1 ${!notif.isRead ? 'bg-indigo-50/20' : ''}`}
                         >
                           <div className="flex items-start justify-between gap-2">

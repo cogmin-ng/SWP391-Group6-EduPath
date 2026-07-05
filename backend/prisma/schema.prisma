@@ -248,6 +248,7 @@ model Node {
 
   title       String
   description String?
+  duration    String?
 
   orderIndex Int
 

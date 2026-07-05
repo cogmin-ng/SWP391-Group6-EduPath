@@ -68,8 +68,10 @@ exports.countUnreadByUser = async (userId) => {
   });
 };
 
-exports.create = async (data, prismaClient = prisma) => {
-  return prismaClient.notification.create({
+exports.create = async (data, prismaClient = null) => {
+  const client = prismaClient || prisma;
+
+  return client.notification.create({
     data,
     include: {
       relatedTip: true,
@@ -77,10 +79,12 @@ exports.create = async (data, prismaClient = prisma) => {
   });
 };
 
-exports.createMany = async (data, prismaClient = prisma) => {
+exports.createMany = async (data, prismaClient = null) => {
   if (!Array.isArray(data) || data.length === 0) return [];
 
-  return prismaClient.notification.createManyAndReturn({
+  const client = prismaClient || prisma;
+
+  return client.notification.createManyAndReturn({
     data,
     include: {
       relatedTip: true,

@@ -1,7 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
-
-const prisma = new PrismaClient();
+require('dotenv').config({ path: '../.env' });
+const prisma = require('../src/lib/prisma');
 
 async function main() {
   const password = 'password123';

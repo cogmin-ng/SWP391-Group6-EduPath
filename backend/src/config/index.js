@@ -2,7 +2,12 @@ require('dotenv').config();
 const Joi = require('joi');
 
 const schema = Joi.object({
-  DATABASE_URL: Joi.string().required(),
+  DB_HOST: Joi.string().required(),
+  DB_PORT: Joi.number().default(5432),
+  DB_USER: Joi.string().required(),
+  DB_PASSWORD: Joi.string().required(),
+  DB_NAME: Joi.string().required(),
+  DATABASE_URL: Joi.string().optional(),
   PORT: Joi.number().default(4000),
   NODE_ENV: Joi.string()
     .valid('development', 'test', 'production')
@@ -35,8 +40,15 @@ const cloudinaryApiKey = value.CLOUDINARY_API_KEY || value.API_KEY || '';
 const cloudinaryApiSecret =
   value.CLOUDINARY_API_SECRET || value.API_SECRET || '';
 
+const dbUser = value.DB_USER;
+const dbPassword = encodeURIComponent(value.DB_PASSWORD);
+const dbHost = value.DB_HOST;
+const dbPort = value.DB_PORT;
+const dbName = value.DB_NAME;
+const constructedDbUrl = `postgresql://${dbUser}:${dbPassword}@${dbHost}:${dbPort}/${dbName}`;
+
 module.exports = {
-  databaseUrl: value.DATABASE_URL,
+  databaseUrl: value.DATABASE_URL || constructedDbUrl,
   port: value.PORT,
   nodeEnv: value.NODE_ENV,
   jwt: {

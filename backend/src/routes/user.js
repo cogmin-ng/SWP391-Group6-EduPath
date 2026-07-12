@@ -264,6 +264,11 @@ router.put(
  *       404:
  *         description: User not found
  */
-router.delete('/:id', requireAuth, requireRole(['ADMIN']), userController.deleteUser);
+router.delete(
+  '/:id',
+  requireAuth,
+  requireRole(['ADMIN']),
+  userController.deleteUser
+);
 
 module.exports = router;

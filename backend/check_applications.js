@@ -7,11 +7,14 @@ async function main() {
       where: { userId: 'cmr2uyvpz0000q4nist62tta2' },
       include: {
         mentorSubjects: {
-          include: { subject: true }
-        }
-      }
+          include: { subject: true },
+        },
+      },
     });
-    console.log('Applications for Nguyễn Huy Hiếu:', JSON.stringify(apps, null, 2));
+    console.log(
+      'Applications for Nguyễn Huy Hiếu:',
+      JSON.stringify(apps, null, 2)
+    );
   } catch (e) {
     console.error(e);
   } finally {

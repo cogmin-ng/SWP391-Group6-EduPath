@@ -125,6 +125,17 @@ export default function MentorProfilePage() {
       : baseProfile.specialties,
   };
 
+  const mentorCategories = application?.mentorSubjects
+    ? Array.from(new Set(application.mentorSubjects
+        .map(ms => ms.subject?.category?.name)
+        .filter(Boolean)
+      ))
+    : [];
+
+  const mentorSubjectsList = application?.mentorSubjects
+    ? application.mentorSubjects.map(ms => ms.subject?.name).filter(Boolean)
+    : [];
+
   // Fetch stats, roadmaps, and advisor application dynamically on load
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -388,80 +399,51 @@ export default function MentorProfilePage() {
             />
           </div>
 
-          {/* Main 2-Column Grid Area */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Centered 1-Column Layout */}
+          <div className="max-w-4xl mx-auto space-y-8">
             
-            {/* Left Column (2/3 width) */}
-            <div className="lg:col-span-2 space-y-8">
+            {/* Account Information Card */}
+            <div className="rounded-3xl bg-white border border-slate-100 shadow-sm p-6 md:p-8 space-y-6">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Thông tin tài khoản</h2>
+                <p className="text-slate-400 text-xs mt-1">Thông tin cá nhân và chi tiết tài khoản mentor.</p>
+              </div>
               
-              {/* Account Information Card */}
-              <div className="rounded-3xl bg-white border border-slate-100 shadow-sm p-6 md:p-8 space-y-6">
-                <div>
-                  <h2 className="text-xl font-bold text-slate-900">Thông tin tài khoản</h2>
-                  <p className="text-slate-400 text-xs mt-1">Thông tin cá nhân và chi tiết tài khoản mentor.</p>
-                </div>
-                
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <DetailItem icon={Mail} label="EMAIL" value={profile.email} />
-                  <DetailItem icon={GraduationCap} label="VAI TRÒ" value="Mentor" />
-                  <DetailItem icon={MapPin} label="VỊ TRÍ" value={profile.location} />
-                  <DetailItem icon={CalendarDays} label="NGÀY THAM GIA" value={profile.joinDate} />
-                  <DetailItem icon={BookOpen} label="CHUYÊN NGÀNH" value={profile.major} />
-                  <DetailItem icon={Info} label="KỲ HỌC HIỆN TẠI" value={profile.termStatus} />
-                </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <DetailItem icon={Mail} label="EMAIL" value={profile.email} />
+                <DetailItem icon={GraduationCap} label="VAI TRÒ" value="Mentor" />
+                <DetailItem icon={MapPin} label="VỊ TRÍ" value={profile.location} />
+                <DetailItem icon={CalendarDays} label="NGÀY THAM GIA" value={profile.joinDate} />
+                <DetailItem icon={BookOpen} label="CHUYÊN NGÀNH" value={profile.major} />
+                <DetailItem icon={Info} label="KỲ HỌC HIỆN TẠI" value={profile.termStatus} />
+                <DetailItem 
+                  icon={BookOpen} 
+                  label="DANH MỤC ĐĂNG KÝ" 
+                  value={mentorCategories.length > 0 ? mentorCategories.join(', ') : 'Chưa cập nhật'} 
+                />
+                <DetailItem 
+                  icon={BookOpen} 
+                  label="MÔN HỌC ĐĂNG KÝ" 
+                  value={mentorSubjectsList.length > 0 ? mentorSubjectsList.join(', ') : 'Chưa cập nhật'} 
+                />
               </div>
-
-              {/* Mentor Specialties Badges */}
-              <div className="rounded-3xl bg-white border border-slate-100 shadow-sm p-6 md:p-8 space-y-4">
-                <h2 className="text-xl font-bold text-slate-900">Chuyên môn & kỹ năng</h2>
-                <div className="flex flex-wrap gap-2.5 pt-1">
-                  {profile.specialties.map((specialty, idx) => (
-                    <span
-                      key={idx}
-                      className={`inline-flex items-center rounded-2xl border px-4 py-2 text-xs font-bold tracking-wide transition-colors ${specialty.color}`}
-                    >
-                      # {specialty.label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
             </div>
 
-            {/* Right Column (1/3 width) */}
-            <div className="lg:col-span-1 space-y-8">
-              
-              {/* Mentee Testimonials / Reviews */}
-              <div className="rounded-3xl bg-white border border-slate-100 shadow-sm p-6 md:p-8 space-y-5">
-                <h2 className="text-xl font-bold text-slate-900">Đánh giá gần đây</h2>
-                
-                <div className="space-y-4">
-                  {profile.reviews.map((review, idx) => (
-                    <div
-                      key={idx}
-                      className="p-4 border border-slate-100 rounded-2xl bg-slate-50/50 flex flex-col justify-between gap-3 shadow-sm hover:shadow transition-shadow"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-0.5 text-amber-500">
-                          {[...Array(review.stars)].map((_, i) => (
-                            <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                          ))}
-                        </div>
-                        <span className="text-[10px] text-slate-400 font-semibold">{review.date}</span>
-                      </div>
-                      
-                      <p className="text-xs text-slate-600 leading-relaxed italic">
-                        {review.text}
-                      </p>
-                      
-                      <p className="text-[11px] font-bold text-slate-800 text-right">
-                        — {review.author}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+            {/* Mentor Specialties Badges */}
+            <div className="rounded-3xl bg-white border border-slate-100 shadow-sm p-6 md:p-8 space-y-4">
+              <h2 className="text-xl font-bold text-slate-900">Chuyên môn & kỹ năng</h2>
+              <div className="flex flex-wrap gap-2.5 pt-1">
+                {profile.specialties.map((specialty, idx) => (
+                  <span
+                    key={idx}
+                    className={`inline-flex items-center rounded-2xl border px-4 py-2 text-xs font-bold tracking-wide transition-colors ${specialty.color}`}
+                  >
+                    # {specialty.label}
+                  </span>
+                ))}
               </div>
             </div>
+
           </div>
         </div>
       </main>
@@ -518,10 +500,10 @@ export default function MentorProfilePage() {
                   placeholder="Ví dụ: Hà Nội, Việt Nam"
                 />
                 <Input
-                  label="Chuyên ngành chính"
+                  label="Chuyên ngành"
                   value={editForm.major}
                   onChange={(e) => setEditForm((prev) => ({ ...prev, major: e.target.value }))}
-                  placeholder="Ví dụ: UI/UX Design"
+                  placeholder="Ví dụ: Công nghệ thông tin"
                 />
                 <Input
                   label="Học vị / Kỳ học hiện tại"

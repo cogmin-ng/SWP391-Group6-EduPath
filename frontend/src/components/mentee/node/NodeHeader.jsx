@@ -7,7 +7,7 @@ import { Clock, Users, CalendarDays, Sparkles } from 'lucide-react';
  * Props:
  * - node: { title, description, nodeNumber, totalNodes, estimatedHours, mentorGuided, updatedAt }
  */
-export default function NodeHeader({ node, roadmapTitle, overallProgress = 0 }) {
+export default function NodeHeader({ node, roadmapTitle, overallProgress = 0, hideProgress = false }) {
   if (!node) return null;
 
   const pills = [
@@ -20,15 +20,15 @@ export default function NodeHeader({ node, roadmapTitle, overallProgress = 0 }) 
 
   return (
     <header className="mb-6 overflow-hidden rounded-[30px] bg-gradient-to-br from-indigo-700 via-indigo-600 to-blue-500 px-6 py-6 text-white shadow-xl shadow-indigo-200/60 md:px-8 md:py-8">
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_180px] lg:items-center">
+      <div className={`grid gap-8 lg:items-center ${hideProgress ? 'grid-cols-1' : 'lg:grid-cols-[minmax(0,1fr)_120px]'}`}>
         <div>
-          <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1.5 font-semibold text-white/95 ring-1 ring-white/15 backdrop-blur-sm">
+          <div className="mb-4 flex flex-wrap items-center gap-3 text-xs">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-2.5 py-1 font-semibold text-white/95 ring-1 ring-white/15 backdrop-blur-sm">
               <Sparkles className="h-3.5 w-3.5 text-rose-200" />
               Node {node.nodeNumber} of {node.totalNodes}
             </span>
             {roadmapTitle ? (
-              <span className="text-sm text-indigo-100/90">{roadmapTitle}</span>
+              <span className="text-xs text-indigo-100/90">{roadmapTitle}</span>
             ) : null}
           </div>
 
@@ -53,31 +53,33 @@ export default function NodeHeader({ node, roadmapTitle, overallProgress = 0 }) 
           </div>
         </div>
 
-        <div className="mx-auto flex h-40 w-40 items-center justify-center rounded-full border border-white/20 bg-white/8 backdrop-blur-sm lg:mx-0 lg:ml-auto">
-          <div className="relative h-28 w-28">
-            <svg className="h-full w-full -rotate-90" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="10" />
-              <circle
-                cx="60"
-                cy="60"
-                r="52"
-                fill="none"
-                stroke="#ffffff"
-                strokeWidth="10"
-                strokeLinecap="round"
-                strokeDasharray={`${2 * Math.PI * 52}`}
-                strokeDashoffset={`${2 * Math.PI * 52 * (1 - overallProgress / 100)}`}
-                className="transition-all duration-700 ease-out"
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="text-3xl font-bold text-white">{overallProgress}%</span>
-              <span className="text-xs font-medium uppercase tracking-[0.18em] text-indigo-100">
-                hoàn thành
-              </span>
+        {!hideProgress && (
+          <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-full border border-white/20 bg-white/8 backdrop-blur-sm lg:mx-0 lg:ml-auto">
+            <div className="relative h-20 w-20">
+              <svg className="h-full w-full -rotate-90" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="10" />
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="52"
+                  fill="none"
+                  stroke="#ffffff"
+                  strokeWidth="10"
+                  strokeLinecap="round"
+                  strokeDasharray={`${2 * Math.PI * 52}`}
+                  strokeDashoffset={`${2 * Math.PI * 52 * (1 - overallProgress / 100)}`}
+                  className="transition-all duration-700 ease-out"
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span className="text-xl font-bold text-white">{overallProgress}%</span>
+                <span className="text-[8px] font-medium uppercase tracking-[0.1em] text-indigo-100 leading-none mt-0.5">
+                  hoàn thành
+                </span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </header>
   );

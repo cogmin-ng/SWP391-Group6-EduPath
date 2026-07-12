@@ -2,7 +2,11 @@ const Router = require('express').Router;
 const tipController = require('../controllers/tipController');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const validateSchema = require('../middleware/validateSchema');
-const { submitTipSchema, rejectTipSchema, paginationSchema } = require('../validators/tip.validator');
+const {
+  submitTipSchema,
+  rejectTipSchema,
+  paginationSchema,
+} = require('../validators/tip.validator');
 
 const router = Router();
 

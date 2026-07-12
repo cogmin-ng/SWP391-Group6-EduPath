@@ -2,7 +2,9 @@ const Router = require('express').Router;
 const advisorApplicationController = require('../controllers/advisorApplicationController');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const validateSchema = require('../middleware/validateSchema');
-const { createAdvisorApplicationSchema } = require('../validators/advisorApplication.validator');
+const {
+  createAdvisorApplicationSchema,
+} = require('../validators/advisorApplication.validator');
 
 const router = Router();
 
@@ -96,11 +98,7 @@ router.post(
  *       401:
  *         description: Unauthorized
  */
-router.get(
-  '/me',
-  requireAuth,
-  advisorApplicationController.getMyApplication
-);
+router.get('/me', requireAuth, advisorApplicationController.getMyApplication);
 
 /**
  * @swagger

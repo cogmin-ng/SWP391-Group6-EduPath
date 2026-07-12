@@ -6,7 +6,11 @@ exports.submitTip = asyncHandler(async (req, res) => {
   const { nodeId, title, content } = req.body;
   const contributorId = req.user.id;
 
-  const tip = await tipService.submitTip(nodeId, { title, content }, contributorId);
+  const tip = await tipService.submitTip(
+    nodeId,
+    { title, content },
+    contributorId
+  );
 
   return sendSuccess(res, {
     statusCode: 201,

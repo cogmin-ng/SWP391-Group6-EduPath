@@ -36,8 +36,23 @@ const router = Router();
  *                         type: string
  */
 router.get('/', subjectCategoryController.getAll);
-router.post('/', requireAuth, requireRole(['ADMIN']), subjectCategoryController.create);
-router.put('/:id', requireAuth, requireRole(['ADMIN']), subjectCategoryController.update);
-router.delete('/:id', requireAuth, requireRole(['ADMIN']), subjectCategoryController.delete);
+router.post(
+  '/',
+  requireAuth,
+  requireRole(['ADMIN']),
+  subjectCategoryController.create
+);
+router.put(
+  '/:id',
+  requireAuth,
+  requireRole(['ADMIN']),
+  subjectCategoryController.update
+);
+router.delete(
+  '/:id',
+  requireAuth,
+  requireRole(['ADMIN']),
+  subjectCategoryController.delete
+);
 
 module.exports = router;

@@ -45,7 +45,6 @@ async function main() {
     },
   });
 
-
   const subjects = [
     {
       name: 'MAS291',
@@ -105,12 +104,42 @@ async function main() {
   }
 
   const mentorProfiles = [
-    { name: 'Sarah J.', email: 'sarah.j@example.com', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop' },
-    { name: 'Marcus K.', email: 'marcus.k@example.com', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop' },
-    { name: 'Alex L.', email: 'alex.l@example.com', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop' },
-    { name: 'Ria D.', email: 'ria.d@example.com', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop' },
-    { name: 'Steve M.', email: 'steve.m@example.com', avatar: 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=200&h=200&fit=crop' },
-    { name: 'Elena C.', email: 'elena.c@example.com', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop' },
+    {
+      name: 'Sarah J.',
+      email: 'sarah.j@example.com',
+      avatar:
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop',
+    },
+    {
+      name: 'Marcus K.',
+      email: 'marcus.k@example.com',
+      avatar:
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop',
+    },
+    {
+      name: 'Alex L.',
+      email: 'alex.l@example.com',
+      avatar:
+        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop',
+    },
+    {
+      name: 'Ria D.',
+      email: 'ria.d@example.com',
+      avatar:
+        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop',
+    },
+    {
+      name: 'Steve M.',
+      email: 'steve.m@example.com',
+      avatar:
+        'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=200&h=200&fit=crop',
+    },
+    {
+      name: 'Elena C.',
+      email: 'elena.c@example.com',
+      avatar:
+        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop',
+    },
   ];
 
   const mentors = {};
@@ -143,7 +172,7 @@ async function main() {
 
   // Set up details for all mentors in the database
   const mentorDetails = {
-    'MENTOR': {
+    MENTOR: {
       specialization: 'UI/UX Design',
       currentSemester: 'Đã tốt nghiệp',
       bio: 'Chuyên gia về Chiến lược Sản phẩm và UI/UX với hơn 10 năm kinh nghiệm dẫn dắt các đội ngũ thiết kế tại các tập đoàn công nghệ hàng đầu toàn cầu.',
@@ -206,14 +235,15 @@ async function main() {
     await prisma.user.update({
       where: { id: genericMentorUser.id },
       data: {
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop',
+        avatar:
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop',
       },
     });
   }
 
   const allMentorsForApp = {
     ...mentors,
-    'MENTOR': genericMentorUser,
+    MENTOR: genericMentorUser,
   };
 
   for (const name of Object.keys(mentorDetails)) {
@@ -272,7 +302,6 @@ async function main() {
     }
   }
 
-
   const subjectRecords = await prisma.subject.findMany({
     select: {
       id: true,
@@ -280,13 +309,17 @@ async function main() {
     },
   });
 
-  const subjectByName = Object.fromEntries(subjectRecords.map((subject) => [subject.name, subject]));
+  const subjectByName = Object.fromEntries(
+    subjectRecords.map((subject) => [subject.name, subject])
+  );
 
   const learningPaths = [
     {
       title: 'Java Web Application Development Bootcamp',
-      description: 'Build production-ready Java web applications with MVC structure, persistence, and deployment fundamentals.',
-      thumbnail: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1600&q=80',
+      description:
+        'Build production-ready Java web applications with MVC structure, persistence, and deployment fundamentals.',
+      thumbnail:
+        'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1600&q=80',
       status: 'PUBLISHED',
       isPublic: true,
       xpReward: 320,
@@ -295,8 +328,10 @@ async function main() {
     },
     {
       title: 'REST API Design with Node and Express',
-      description: 'Learn to model resources, secure endpoints, and ship clean REST APIs for real product workflows.',
-      thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1600&q=80',
+      description:
+        'Learn to model resources, secure endpoints, and ship clean REST APIs for real product workflows.',
+      thumbnail:
+        'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1600&q=80',
       status: 'PUBLISHED',
       isPublic: true,
       xpReward: 260,
@@ -305,8 +340,10 @@ async function main() {
     },
     {
       title: 'Database Integration for Backend Systems',
-      description: 'Design practical schemas, write efficient queries, and integrate relational databases into backend services.',
-      thumbnail: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=1600&q=80',
+      description:
+        'Design practical schemas, write efficient queries, and integrate relational databases into backend services.',
+      thumbnail:
+        'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=1600&q=80',
       status: 'DRAFT',
       isPublic: false,
       xpReward: 280,
@@ -315,8 +352,10 @@ async function main() {
     },
     {
       title: 'Software Project Management Essentials',
-      description: 'Understand scope, planning, team coordination, and delivery practices for software project execution.',
-      thumbnail: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=80',
+      description:
+        'Understand scope, planning, team coordination, and delivery practices for software project execution.',
+      thumbnail:
+        'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=80',
       status: 'PUBLISHED',
       isPublic: true,
       xpReward: 180,
@@ -325,8 +364,10 @@ async function main() {
     },
     {
       title: 'Agile Delivery for Student Teams',
-      description: 'Run team-based software delivery with lightweight agile practices that fit academic project settings.',
-      thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=80',
+      description:
+        'Run team-based software delivery with lightweight agile practices that fit academic project settings.',
+      thumbnail:
+        'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=80',
       status: 'PUBLISHED',
       isPublic: true,
       xpReward: 220,
@@ -335,8 +376,10 @@ async function main() {
     },
     {
       title: 'Capstone Planning and Execution',
-      description: 'Prepare for capstone delivery with milestone planning, ownership boundaries, quality control, and presentation readiness.',
-      thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80',
+      description:
+        'Prepare for capstone delivery with milestone planning, ownership boundaries, quality control, and presentation readiness.',
+      thumbnail:
+        'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80',
       status: 'DRAFT',
       isPublic: false,
       xpReward: 300,
@@ -345,8 +388,10 @@ async function main() {
     },
     {
       title: 'Statistics and Probability Foundations',
-      description: 'Build confidence with distributions, inference, and core probability concepts used in engineering and analytics.',
-      thumbnail: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=1600&q=80',
+      description:
+        'Build confidence with distributions, inference, and core probability concepts used in engineering and analytics.',
+      thumbnail:
+        'https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=1600&q=80',
       status: 'PUBLISHED',
       isPublic: true,
       xpReward: 210,
@@ -355,8 +400,10 @@ async function main() {
     },
     {
       title: 'Applied Probability for Data Analysis',
-      description: 'Use practical probability and statistical reasoning to frame uncertainty in data-driven problem solving.',
-      thumbnail: 'https://images.unsplash.com/photo-1518186233392-c232efbf2373?auto=format&fit=crop&w=1600&q=80',
+      description:
+        'Use practical probability and statistical reasoning to frame uncertainty in data-driven problem solving.',
+      thumbnail:
+        'https://images.unsplash.com/photo-1518186233392-c232efbf2373?auto=format&fit=crop&w=1600&q=80',
       status: 'PUBLISHED',
       isPublic: true,
       xpReward: 240,
@@ -365,8 +412,10 @@ async function main() {
     },
     {
       title: 'Quantitative Thinking for Engineers',
-      description: 'Train the problem-solving habits engineers need when estimating, validating, and modeling technical decisions.',
-      thumbnail: 'https://images.unsplash.com/photo-1509869175650-a1d97972541a?auto=format&fit=crop&w=1600&q=80',
+      description:
+        'Train the problem-solving habits engineers need when estimating, validating, and modeling technical decisions.',
+      thumbnail:
+        'https://images.unsplash.com/photo-1509869175650-a1d97972541a?auto=format&fit=crop&w=1600&q=80',
       status: 'DRAFT',
       isPublic: false,
       xpReward: 170,

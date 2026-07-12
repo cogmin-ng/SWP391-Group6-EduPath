@@ -135,7 +135,10 @@ exports.getCertificateDetail = async (certificateId, userId) => {
   }
 
   if (certificate.userId !== userId) {
-    throw new ApiError(403, 'You do not have permission to view this certificate');
+    throw new ApiError(
+      403,
+      'You do not have permission to view this certificate'
+    );
   }
 
   return {
@@ -205,7 +208,10 @@ exports.downloadCertificate = async (certificateId, userId) => {
   }
 
   if (certificate.userId !== userId) {
-    throw new ApiError(403, 'You do not have permission to download this certificate');
+    throw new ApiError(
+      403,
+      'You do not have permission to download this certificate'
+    );
   }
 
   if (!certificate.certificateUrl) {

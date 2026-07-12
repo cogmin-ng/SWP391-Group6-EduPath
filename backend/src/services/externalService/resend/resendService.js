@@ -4,12 +4,16 @@ const config = require('../../../config');
 const DEFAULT_EXPIRE_MINUTES = 10;
 
 const buildOtpHtml = ({ otp, expiresInMinutes, purpose }) => {
-  const title = purpose === 'RESET_PASSWORD' ? 'Đặt lại mật khẩu EduPath' : 'Xác thực tài khoản EduPath';
+  const title =
+    purpose === 'RESET_PASSWORD'
+      ? 'Đặt lại mật khẩu EduPath'
+      : 'Xác thực tài khoản EduPath';
   const intro =
     purpose === 'RESET_PASSWORD'
       ? 'Sử dụng mã bên dưới để đặt lại mật khẩu của bạn. Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này.'
       : 'Sử dụng mã bên dưới để hoàn tất xác thực tài khoản của bạn.';
-  const buttonText = purpose === 'RESET_PASSWORD' ? 'Đặt lại mật khẩu' : 'Xác thực tài khoản';
+  const buttonText =
+    purpose === 'RESET_PASSWORD' ? 'Đặt lại mật khẩu' : 'Xác thực tài khoản';
 
   return `
     <div style="font-family:Inter, Arial, Helvetica, sans-serif; background:#f3f4f6; padding:24px;">
@@ -35,11 +39,17 @@ const buildOtpHtml = ({ otp, expiresInMinutes, purpose }) => {
 };
 
 const buildOtpText = ({ otp, expiresInMinutes, purpose }) => {
-  const action = purpose === 'RESET_PASSWORD' ? 'đặt lại mật khẩu' : 'xác thực tài khoản';
+  const action =
+    purpose === 'RESET_PASSWORD' ? 'đặt lại mật khẩu' : 'xác thực tài khoản';
   return `Mã EduPath của bạn là ${otp}. Sử dụng mã này để ${action}. Mã có hiệu lực trong ${expiresInMinutes} phút.`;
 };
 
-exports.sendOtpEmail = async ({ email, otp, expiresInMinutes = DEFAULT_EXPIRE_MINUTES, purpose = 'VERIFY_EMAIL' }) => {
+exports.sendOtpEmail = async ({
+  email,
+  otp,
+  expiresInMinutes = DEFAULT_EXPIRE_MINUTES,
+  purpose = 'VERIFY_EMAIL',
+}) => {
   const subject =
     purpose === 'RESET_PASSWORD'
       ? 'Mã đặt lại mật khẩu EduPath'

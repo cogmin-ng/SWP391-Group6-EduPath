@@ -39,10 +39,7 @@ exports.getExploreLearningPaths = async () => {
         select: { rating: true },
       },
     },
-    orderBy: [
-      { isPublic: 'desc' },
-      { createdAt: 'desc' },
-    ],
+    orderBy: [{ isPublic: 'desc' }, { createdAt: 'desc' }],
   });
 
   return learningPaths.map((learningPath) => {
@@ -51,7 +48,11 @@ exports.getExploreLearningPaths = async () => {
       .filter((rating) => Number.isFinite(rating));
 
     const rating = ratings.length
-      ? Number((ratings.reduce((sum, value) => sum + value, 0) / ratings.length).toFixed(1))
+      ? Number(
+          (
+            ratings.reduce((sum, value) => sum + value, 0) / ratings.length
+          ).toFixed(1)
+        )
       : null;
 
     const duration = summarizeDuration(

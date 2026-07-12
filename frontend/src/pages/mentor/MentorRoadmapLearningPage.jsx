@@ -220,6 +220,7 @@ export default function MentorRoadmapLearningPage() {
             roadmap={roadmapForSidebar}
             currentNodeId={currentPhase?.id}
             onNodeClick={handleNodeClick}
+            hideProgress={true}
           />
 
           {/* Center: Main content */}
@@ -242,6 +243,7 @@ export default function MentorRoadmapLearningPage() {
                     node={nodeData}
                     roadmapTitle={roadmap?.title}
                     overallProgress={0}
+                    hideProgress={true}
                   />
                 )}
 
@@ -267,12 +269,6 @@ export default function MentorRoadmapLearningPage() {
 
           {/* Right: Sidebar Aside */}
           <aside className="space-y-6 xl:col-start-3">
-            <ProgressCard
-              checklistProgress={0}
-              materialsRead={materials.length > 0 ? 100 : 0}
-              quizzesDone={quiz ? '0/1' : '0/0'}
-              overallProgress={0}
-            />
             <MaterialsSection materials={materials} variant="compact" />
             <QuizSection
               quiz={quiz}

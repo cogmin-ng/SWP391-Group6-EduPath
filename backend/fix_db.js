@@ -5,7 +5,7 @@ async function main() {
   try {
     const updated = await prisma.advisorApplication.updateMany({
       where: { userId: 'cmr2uyvpz0000q4nist62tta2', status: 'APPROVED' },
-      data: { isDeleted: false }
+      data: { isDeleted: false },
     });
     console.log('Updated application isDeleted to false:', updated);
   } catch (e) {

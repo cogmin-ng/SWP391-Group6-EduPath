@@ -287,7 +287,13 @@ const options = {
             content: { type: 'string' },
             type: {
               type: 'string',
-              enum: ['SYSTEM', 'QUIZ', 'ROADMAP', 'CONTRIBUTION', 'CERTIFICATE'],
+              enum: [
+                'SYSTEM',
+                'QUIZ',
+                'ROADMAP',
+                'CONTRIBUTION',
+                'CERTIFICATE',
+              ],
             },
             relatedTipId: { type: ['string', 'null'] },
             isRead: { type: 'boolean' },

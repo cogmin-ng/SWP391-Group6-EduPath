@@ -235,6 +235,7 @@ export default function RoadmapLearningPage() {
   const completedChecklist = checklist.filter((i) => i.completed).length;
   const checklistProgress = checklist.length > 0 ? Math.round((completedChecklist / checklist.length) * 100) : 0;
   const overallProgress = Math.round(roadmap?.enrollment?.progressPercent || 0);
+  const isCurrentPhaseCompleted = Boolean(currentPhase?.completed);
 
   if (loading) {
     return (
@@ -300,6 +301,7 @@ export default function RoadmapLearningPage() {
                   node={currentNode}
                   roadmapTitle={roadmap?.title}
                   overallProgress={overallProgress}
+                  isCompleted={isCurrentPhaseCompleted}
                 />
 
                 <div className="space-y-6">
@@ -309,8 +311,17 @@ export default function RoadmapLearningPage() {
                         <p className="text-sm font-semibold text-indigo-700">Tiếp tục lộ trình</p>
                         <p className="mt-1 text-sm text-slate-500">Hoàn thành module này để mở khóa module tiếp theo và cập nhật tiến độ của bạn.</p>
                       </div>
-                      <Button className="gap-2 shrink-0" onClick={handleContinue}>
-                        Học tiếp <ArrowRight className="h-4 w-4" />
+                      <Button
+                        className={`gap-2 shrink-0 ${
+                          isCurrentPhaseCompleted
+                            ? 'bg-emerald-100 text-emerald-700 shadow-none hover:bg-emerald-100 disabled:bg-emerald-100 disabled:text-emerald-700 disabled:opacity-100'
+                            : ''
+                        }`}
+                        onClick={handleContinue}
+                        disabled={isCurrentPhaseCompleted}
+                      >
+                        {isCurrentPhaseCompleted ? 'Hoàn thành' : 'Học tiếp'}
+                        {!isCurrentPhaseCompleted ? <ArrowRight className="h-4 w-4" /> : null}
                       </Button>
                     </div>
                   </div>

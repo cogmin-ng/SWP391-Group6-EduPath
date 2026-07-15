@@ -57,7 +57,7 @@ export default function BecomeMentorPage() {
   /* ---- submit ---- */
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState(null); // { type, message }
-  
+
   /* ---- tabs ---- */
   const [activeTab, setActiveTab] = useState("form");
 
@@ -71,7 +71,7 @@ export default function BecomeMentorPage() {
         ]);
         setAvailableSubjects(subjectList || []);
         setExistingApplication(myApp || null);
-        
+
         // Auto switch to status tab if application is pending or approved
         if (myApp && (myApp.status === "PENDING" || myApp.status === "APPROVED")) {
           setActiveTab("status");
@@ -257,11 +257,10 @@ export default function BecomeMentorPage() {
       {/* ---- Toast / Result banner ---- */}
       {submitResult && (
         <div
-          className={`fixed top-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold shadow-xl animate-slideDown ${
-            submitResult.type === "success"
-              ? "border-emerald-300 bg-emerald-600 text-white"
-              : "border-red-300 bg-red-600 text-white"
-          }`}
+          className={`fixed top-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold shadow-xl animate-slideDown ${submitResult.type === "success"
+            ? "border-emerald-300 bg-emerald-600 text-white"
+            : "border-red-300 bg-red-600 text-white"
+            }`}
         >
           <span>{submitResult.message}</span>
           <button
@@ -317,21 +316,19 @@ export default function BecomeMentorPage() {
         <div className="flex border-b border-slate-200 mb-8">
           <button
             onClick={() => setActiveTab("form")}
-            className={`pb-4 px-6 text-sm font-semibold border-b-2 transition-colors ${
-              activeTab === "form"
-                ? "border-indigo-600 text-indigo-600"
-                : "border-transparent text-slate-500 hover:text-slate-800"
-            }`}
+            className={`pb-4 px-6 text-sm font-semibold border-b-2 transition-colors ${activeTab === "form"
+              ? "border-indigo-600 text-indigo-600"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+              }`}
           >
             Đăng ký mentor
           </button>
           <button
             onClick={() => setActiveTab("status")}
-            className={`pb-4 px-6 text-sm font-semibold border-b-2 transition-colors ${
-              activeTab === "status"
-                ? "border-indigo-600 text-indigo-600"
-                : "border-transparent text-slate-500 hover:text-slate-800"
-            }`}
+            className={`pb-4 px-6 text-sm font-semibold border-b-2 transition-colors ${activeTab === "status"
+              ? "border-indigo-600 text-indigo-600"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+              }`}
           >
             Trạng thái đơn
           </button>

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { BookOpen, X, ChevronDown, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { subjectCategoryService } from "../../../services/subjectCategoryService";
-import { subjectService } from "../../../services/subjectService";
+import { mentorApplicationService } from "../../../services/mentorApplicationService";
 
 /**
  * Section 2 – Môn học muốn Mentor.
@@ -58,7 +58,7 @@ export default function SubjectMentorSection({
 
     setLoadingSubject(true);
     try {
-      const data = await subjectService.getAllSubjects(catId);
+      const data = await mentorApplicationService.getSubjects(catId);
       setAvailableSubjects(data || []);
     } catch (err) {
       toast.error("Không thể tải danh sách môn học.");
@@ -156,15 +156,19 @@ export default function SubjectMentorSection({
           <select
             value={selectedSubject}
             onChange={(e) => setSelectedSubject(e.target.value)}
-            disabled={!selectedCategory || loadingSubject}
-            className={`w-full appearance-none rounded-xl border bg-white text-slate-800 text-sm px-4 py-3 pr-10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer ${!selectedCategory || loadingSubject ? "opacity-70 cursor-not-allowed bg-slate-50" : ""
+            disabled={!selectedCategory || loadingSubject || (selectedCategory && filteredOptions.length === 0)}
+            className={`w-full appearance-none rounded-xl border bg-white text-slate-800 text-sm px-4 py-3 pr-10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer ${(!selectedCategory || loadingSubject || (selectedCategory && filteredOptions.length === 0)) ? "opacity-70 cursor-not-allowed bg-slate-50" : ""
               } ${error
                 ? "border-red-300 focus:ring-red-500/20 focus:border-red-500"
                 : "border-slate-200 hover:border-slate-300"
               }`}
           >
             <option value="">
-              {loadingSubject ? "Đang tải môn học..." : "Chọn môn học..."}
+              {loadingSubject
+                ? "Đang tải môn học..."
+                : (selectedCategory && filteredOptions.length === 0)
+                  ? "No available subjects"
+                  : "Chọn môn học..."}
             </option>
             {filteredOptions.map((s) => (
               <option key={s.id} value={s.id}>

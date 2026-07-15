@@ -204,9 +204,11 @@ export const rejectTip = async (tipId, rejectReason) => {
  * @param {number} take - Pagination limit (default 10)
  * @returns {Promise<Object>} { tips: Array, total: number }
  */
-export const getContributionHistory = async (skip = 0, take = 10) => {
+export const getContributionHistory = async (skip = 0, take = 10, status) => {
   try {
-    const res = await api.get(`/tips/my-contributions?skip=${skip}&take=${take}`);
+    const res = await api.get('/tips/my-contributions', {
+      params: { skip, take, ...(status ? { status } : {}) },
+    });
     return res.data.data;
   } catch (error) {
     throw new Error(
@@ -272,4 +274,3 @@ export const getMentorDashboardStats = async () => {
   const res = await api.get('/roadmaps/mentor/stats');
   return res.data.data;
 };
-

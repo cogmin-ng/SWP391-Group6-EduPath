@@ -5,8 +5,10 @@ export const mentorApplicationService = {
    * Get all active subjects from the database.
    * @returns {Promise<Array<{ id: string, name: string, description: string }>>}
    */
-  async getSubjects() {
-    const { data } = await api.get('/subjects');
+  async getSubjects(categoryId) {
+    const params = { availableForMentor: true };
+    if (categoryId) params.categoryId = categoryId;
+    const { data } = await api.get('/subjects', { params });
     return data.data;
   },
 

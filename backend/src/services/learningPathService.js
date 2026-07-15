@@ -38,6 +38,12 @@ exports.getExploreLearningPaths = async () => {
         where: { isDeleted: false },
         select: { rating: true },
       },
+      _count: {
+        select: {
+          enrollments: true,
+          nodes: true,
+        },
+      },
     },
     orderBy: [
       { isPublic: 'desc' },
@@ -75,6 +81,8 @@ exports.getExploreLearningPaths = async () => {
       xpReward: learningPath.xpReward,
       rating,
       duration: duration || 'N/A',
+      enrollmentCount: learningPath._count.enrollments,
+      nodeCount: learningPath._count.nodes,
     };
   });
 };

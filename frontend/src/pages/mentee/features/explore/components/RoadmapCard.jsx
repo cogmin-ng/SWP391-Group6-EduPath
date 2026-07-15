@@ -1,5 +1,10 @@
-import { Clock3, Star } from 'lucide-react';
+import { Clock3, Star, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+function formatStudents(count) {
+  if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
+  return String(count);
+}
 
 export default function RoadmapCard({ roadmap }) {
   return (
@@ -21,8 +26,8 @@ export default function RoadmapCard({ roadmap }) {
               </span>
             )}
             <span className="inline-flex items-center gap-1">
-              <Clock3 className="w-3.5 h-3.5" />
-              {roadmap.duration}
+              <Users className="w-3.5 h-3.5" />
+              {formatStudents(roadmap.enrollmentCount ?? 0)}
             </span>
           </div>
         </div>

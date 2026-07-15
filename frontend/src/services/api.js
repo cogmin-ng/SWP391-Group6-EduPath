@@ -11,7 +11,7 @@ const api = axios.create({
 // Request interceptor - attach access token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken');
+    const token = sessionStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -60,12 +60,12 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem('refreshToken');
+      const refreshToken = sessionStorage.getItem('refreshToken');
       if (!refreshToken) {
         isRefreshing = false;
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
+        sessionStorage.removeItem('accessToken');
+        sessionStorage.removeItem('refreshToken');
+        sessionStorage.removeItem('user');
         window.location.href = '/login';
         return Promise.reject(error);
       }
@@ -78,10 +78,10 @@ api.interceptors.response.use(
         const newAccessToken = data.data.accessToken;
         const newRefreshToken = data.data.refreshToken;
 
-        localStorage.setItem('accessToken', newAccessToken);
-        localStorage.setItem('refreshToken', newRefreshToken);
+        sessionStorage.setItem('accessToken', newAccessToken);
+        sessionStorage.setItem('refreshToken', newRefreshToken);
         if (data.data.user) {
-          localStorage.setItem('user', JSON.stringify(data.data.user));
+          sessionStorage.setItem('user', JSON.stringify(data.data.user));
         }
 
         api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
@@ -91,9 +91,9 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
+        sessionStorage.removeItem('accessToken');
+        sessionStorage.removeItem('refreshToken');
+        sessionStorage.removeItem('user');
         window.location.href = '/login';
         return Promise.reject(refreshError);
       } finally {

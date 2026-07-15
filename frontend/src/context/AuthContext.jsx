@@ -5,7 +5,7 @@ import AuthContext from "./AuthContextValue";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem("user");
+    const stored = sessionStorage.getItem("user");
     return stored ? JSON.parse(stored) : null;
   });
   const [loading, setLoading] = useState(true);
@@ -15,7 +15,7 @@ export function AuthProvider({ children }) {
   // Validate session on mount
   useEffect(() => {
     const validateSession = async () => {
-      const accessToken = localStorage.getItem("accessToken");
+      const accessToken = sessionStorage.getItem("accessToken");
       if (!accessToken) {
         setLoading(false);
         return;
@@ -27,12 +27,12 @@ export function AuthProvider({ children }) {
           userData.roles = normalizeRoles(userData.roles);
         }
         setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
+        sessionStorage.setItem("user", JSON.stringify(userData));
       } catch {
         // Token invalid, clear
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("user");
+        sessionStorage.removeItem("accessToken");
+        sessionStorage.removeItem("refreshToken");
+        sessionStorage.removeItem("user");
         setUser(null);
       } finally {
         setLoading(false);
@@ -44,12 +44,12 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (email, password) => {
     const res = await authService.login(email, password);
     const { accessToken, refreshToken, user: userData } = res.data;
-    localStorage.setItem("accessToken", accessToken);
-    localStorage.setItem("refreshToken", refreshToken);
+    sessionStorage.setItem("accessToken", accessToken);
+    sessionStorage.setItem("refreshToken", refreshToken);
     if (userData && Array.isArray(userData.roles)) {
       userData.roles = normalizeRoles(userData.roles);
     }
-    localStorage.setItem("user", JSON.stringify(userData));
+    sessionStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
     return userData;
   }, []);
@@ -80,7 +80,7 @@ export function AuthProvider({ children }) {
           initialUser.roles = normalizeRoles(initialUser.roles);
         }
 
-        localStorage.setItem("user", JSON.stringify(initialUser));
+        sessionStorage.setItem("user", JSON.stringify(initialUser));
         return initialUser;
       }
 
@@ -101,13 +101,13 @@ export function AuthProvider({ children }) {
         mergedUser.roles = normalizeRoles(mergedUser.roles);
       }
 
-      localStorage.setItem("user", JSON.stringify(mergedUser));
+      sessionStorage.setItem("user", JSON.stringify(mergedUser));
       return mergedUser;
     });
   }, []);
 
   const logout = useCallback(async () => {
-    const refreshToken = localStorage.getItem("refreshToken");
+    const refreshToken = sessionStorage.getItem("refreshToken");
     try {
       if (refreshToken) {
         await authService.logout(refreshToken);
@@ -115,15 +115,15 @@ export function AuthProvider({ children }) {
     } catch {
       // Ignore logout errors
     } finally {
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("user");
+      sessionStorage.removeItem("accessToken");
+      sessionStorage.removeItem("refreshToken");
+      sessionStorage.removeItem("user");
       setUser(null);
     }
   }, []);
 
   const refreshSession = useCallback(async () => {
-    const refreshToken = localStorage.getItem("refreshToken");
+    const refreshToken = sessionStorage.getItem("refreshToken");
     if (!refreshToken) return;
     const res = await authService.refresh(refreshToken);
     const {
@@ -131,12 +131,12 @@ export function AuthProvider({ children }) {
       refreshToken: newRefreshToken,
       user: userData,
     } = res.data;
-    localStorage.setItem("accessToken", accessToken);
-    localStorage.setItem("refreshToken", newRefreshToken);
+    sessionStorage.setItem("accessToken", accessToken);
+    sessionStorage.setItem("refreshToken", newRefreshToken);
     if (userData && Array.isArray(userData.roles)) {
       userData.roles = normalizeRoles(userData.roles);
     }
-    localStorage.setItem("user", JSON.stringify(userData));
+    sessionStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
   }, []);
 

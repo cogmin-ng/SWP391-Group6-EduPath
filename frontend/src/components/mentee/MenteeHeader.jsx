@@ -61,6 +61,7 @@ export default function MenteeHeader() {
   }, []);
 
   useEffect(() => {
+    if (!authUser) return;
     const fetchNotifications = async () => {
       try {
         const [notifData, unreadData] = await Promise.all([

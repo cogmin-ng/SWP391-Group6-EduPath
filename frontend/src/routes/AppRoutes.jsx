@@ -99,7 +99,7 @@ export default function AppRoutes() {
         }
       />
 
-      
+
 
       {/* Redirect from /admin to admin dashboard for now */}
       <Route

@@ -17,8 +17,8 @@ export default function UploadMaterialsModal({ isOpen, onClose, onAddMaterials }
   const getFileIcon = (type) => {
     switch (type) {
       case 'VIDEO': return <Video className="w-4 h-4 text-blue-600" />;
-      case 'DOCUMENT': return <FileText className="w-4 h-4 text-red-600" />;
-      case 'LINK': return <LinkIcon className="w-4 h-4 text-purple-600" />;
+      case 'DOCUMENTATION': return <FileText className="w-4 h-4 text-red-600" />;
+      case 'ARTICLE': return <LinkIcon className="w-4 h-4 text-purple-600" />;
       default: return <File className="w-4 h-4 text-slate-500" />;
     }
   };
@@ -59,7 +59,7 @@ export default function UploadMaterialsModal({ isOpen, onClose, onAddMaterials }
   const stageFiles = (files) => {
     const newItems = Array.from(files).map((file) => {
       const ext = file.name.split('.').pop().toLowerCase();
-      let type = 'DOCUMENT';
+      let type = 'DOCUMENTATION';
       if (['mp4', 'mkv', 'avi', 'mov', 'webm'].includes(ext)) {
         type = 'VIDEO';
       }
@@ -97,7 +97,7 @@ export default function UploadMaterialsModal({ isOpen, onClose, onAddMaterials }
     const newLink = {
       id: `staged-link-${crypto.randomUUID()}`,
       title: linkTitle.trim(),
-      type: 'LINK',
+      type: 'ARTICLE',
       url: linkUrl.trim(),
     };
 

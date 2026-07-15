@@ -5,15 +5,15 @@ const prisma = require('./lib/prisma');
 
 async function main() {
   const roadmapId = 'cmqxy271c0001bjp5djeac4o1';
-  
+
   console.log('Fetching roadmap and mentor from database...');
   const roadmap = await prisma.learningPath.findFirst({
     where: { id: roadmapId, isDeleted: false },
     include: {
       mentor: {
         include: {
-          role: true
-        }
+          role: true,
+        },
       },
       subject: true,
       nodes: {
@@ -28,17 +28,17 @@ async function main() {
               questions: {
                 where: { isDeleted: false },
                 include: {
-                  options: { where: { isDeleted: false } }
-                }
-              }
-            }
+                  options: { where: { isDeleted: false } },
+                },
+              },
+            },
           },
           tips: {
-            where: { isDeleted: false, contributorId: null }
-          }
-        }
-      }
-    }
+            where: { isDeleted: false, contributorId: null },
+          },
+        },
+      },
+    },
   });
 
   if (!roadmap) {
@@ -54,12 +54,12 @@ async function main() {
     { expiresIn: '15m' }
   );
 
-  const headers = { 
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
   };
 
-  // Construct payload exactly matching the frontend 
+  // Construct payload exactly matching the frontend
   const payload = {
     title: roadmap.title,
     description: 'Mô tả chi tiết lộ trình học tập...', // Added description
@@ -76,16 +76,19 @@ async function main() {
       orderIndex: i,
       checklists: n.checklists || [],
       materials: n.materials || [],
-      quizzes: n.quizzes || []
-    }))
+      quizzes: n.quizzes || [],
+    })),
   };
 
   console.log('Sending PUT request...');
-  const putRes = await fetch(`http://localhost:4000/api/roadmaps/${roadmapId}`, {
-    method: 'PUT',
-    headers,
-    body: JSON.stringify(payload)
-  });
+  const putRes = await fetch(
+    `http://localhost:4000/api/roadmaps/${roadmapId}`,
+    {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(payload),
+    }
+  );
 
   const putData = await putRes.json();
   if (putRes.status === 200) {
@@ -96,4 +99,6 @@ async function main() {
   }
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect());
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect());

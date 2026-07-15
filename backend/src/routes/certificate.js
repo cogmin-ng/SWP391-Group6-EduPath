@@ -91,10 +91,7 @@ router.get('/my', requireAuth, certificateController.getMyCertificates);
  *                   data:
  *                     valid: false
  */
-router.get(
-  '/verify/:verificationId',
-  certificateController.verifyCertificate
-);
+router.get('/verify/:verificationId', certificateController.verifyCertificate);
 
 /**
  * @swagger

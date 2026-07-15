@@ -174,6 +174,14 @@ exports.submitQuizAttempt = async (quizId, answers, userId, roles = []) => {
     },
   });
 
+  // Run automatic badge checks
+  try {
+    const badgeService = require('./badgeService');
+    await badgeService.runBadgeChecks(userId);
+  } catch (badgeError) {
+    console.error('Error running badge checks on quiz submission:', badgeError);
+  }
+
   return {
     attempt,
     review: {

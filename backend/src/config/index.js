@@ -1,4 +1,26 @@
 require('dotenv').config();
+
+if (
+  process.env.DATABASE_URL &&
+  (!process.env.DB_HOST ||
+    !process.env.DB_USER ||
+    !process.env.DB_PASSWORD ||
+    !process.env.DB_NAME)
+) {
+  try {
+    const parsedUrl = new URL(process.env.DATABASE_URL);
+    if (!process.env.DB_HOST) process.env.DB_HOST = parsedUrl.hostname;
+    if (!process.env.DB_PORT) process.env.DB_PORT = parsedUrl.port || '5432';
+    if (!process.env.DB_USER) process.env.DB_USER = parsedUrl.username;
+    if (!process.env.DB_PASSWORD)
+      process.env.DB_PASSWORD = decodeURIComponent(parsedUrl.password);
+    if (!process.env.DB_NAME)
+      process.env.DB_NAME = parsedUrl.pathname.replace(/^\//, '');
+  } catch (err) {
+    console.error('Error parsing DATABASE_URL in config:', err.message);
+  }
+}
+
 const Joi = require('joi');
 
 const schema = Joi.object({

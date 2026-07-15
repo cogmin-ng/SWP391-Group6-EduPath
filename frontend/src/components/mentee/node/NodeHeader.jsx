@@ -7,7 +7,7 @@ import { Clock, Users, CalendarDays, Sparkles } from 'lucide-react';
  * Props:
  * - node: { title, description, nodeNumber, totalNodes, estimatedHours, mentorGuided, updatedAt }
  */
-export default function NodeHeader({ node, roadmapTitle, overallProgress = 0, isCompleted = false }) {
+export default function NodeHeader({ node, roadmapTitle, overallProgress = 0, isCompleted = false, hideProgress = false }) {
   if (!node) return null;
 
   const pills = [
@@ -15,7 +15,7 @@ export default function NodeHeader({ node, roadmapTitle, overallProgress = 0, is
     ...(node.mentorGuided
       ? [{ icon: Users, label: 'Mentor Guided' }]
       : []),
-    { icon: CalendarDays, label: `Updated ${node.updatedAt}` },
+    { icon: CalendarDays, label: `Updated ${new Date(node.updatedAt).toLocaleDateString('vi')}` },
   ];
 
   return (
@@ -24,7 +24,7 @@ export default function NodeHeader({ node, roadmapTitle, overallProgress = 0, is
         ? 'bg-gradient-to-br from-emerald-600 via-emerald-500 to-green-400 shadow-emerald-200/60'
         : 'bg-gradient-to-br from-indigo-700 via-indigo-600 to-blue-500 shadow-indigo-200/60'
     }`}>
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_180px] lg:items-center">
+      <div className={`grid gap-8 lg:items-center ${hideProgress ? 'grid-cols-1' : 'lg:grid-cols-[minmax(0,1fr)_180px]'}`}>
         <div>
           <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1.5 font-semibold text-white/95 ring-1 ring-white/15 backdrop-blur-sm">
@@ -40,7 +40,7 @@ export default function NodeHeader({ node, roadmapTitle, overallProgress = 0, is
             {node.title}
           </h1>
 
-          <p className={`max-w-3xl text-base leading-8 ${isCompleted ? 'text-emerald-50/95' : 'text-indigo-50/92'}`}>
+          <p className={`max-w-3xl text-base leading-8 ${isCompleted ? 'text-emerald-50/95' : 'text-indigo-55'}`}>
             {node.description}
           </p>
 
@@ -57,31 +57,33 @@ export default function NodeHeader({ node, roadmapTitle, overallProgress = 0, is
           </div>
         </div>
 
-        <div className="mx-auto flex h-40 w-40 items-center justify-center rounded-full border border-white/20 bg-white/8 backdrop-blur-sm lg:mx-0 lg:ml-auto">
-          <div className="relative h-28 w-28">
-            <svg className="h-full w-full -rotate-90" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="10" />
-              <circle
-                cx="60"
-                cy="60"
-                r="52"
-                fill="none"
-                stroke="#ffffff"
-                strokeWidth="10"
-                strokeLinecap="round"
-                strokeDasharray={`${2 * Math.PI * 52}`}
-                strokeDashoffset={`${2 * Math.PI * 52 * (1 - overallProgress / 100)}`}
-                className="transition-all duration-700 ease-out"
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="text-3xl font-bold text-white">{overallProgress}%</span>
-               <span className={`text-xs font-medium uppercase tracking-[0.18em] ${isCompleted ? 'text-emerald-100' : 'text-indigo-100'}`}>
-                 hoàn thành
-               </span>
+        {!hideProgress && (
+          <div className="mx-auto flex h-40 w-40 items-center justify-center rounded-full border border-white/20 bg-white/8 backdrop-blur-sm lg:mx-0 lg:ml-auto">
+            <div className="relative h-28 w-28">
+              <svg className="h-full w-full -rotate-90" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="10" />
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="52"
+                  fill="none"
+                  stroke="#ffffff"
+                  strokeWidth="10"
+                  strokeLinecap="round"
+                  strokeDasharray={`${2 * Math.PI * 52}`}
+                  strokeDashoffset={`${2 * Math.PI * 52 * (1 - overallProgress / 100)}`}
+                  className="transition-all duration-700 ease-out"
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span className="text-3xl font-bold text-white">{overallProgress}%</span>
+                <span className={`text-xs font-medium uppercase tracking-[0.18em] ${isCompleted ? 'text-emerald-100' : 'text-indigo-100'}`}>
+                  hoàn thành
+                </span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </header>
   );

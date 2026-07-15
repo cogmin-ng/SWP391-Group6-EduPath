@@ -9,18 +9,18 @@ const MaterialsSection = ({ materials = [], onChange }) => {
 
   const getTypeIcon = (type) => {
     switch (type) {
-      case 'DOCUMENT': return FileText;
+      case 'DOCUMENTATION': return FileText;
       case 'VIDEO': return Video;
-      case 'LINK': return LinkIcon;
+      case 'ARTICLE': return LinkIcon;
       default: return BookOpen;
     }
   };
 
   const getBgClass = (type) => {
     switch (type) {
-      case 'DOCUMENT': return 'bg-red-50 text-red-600';
+      case 'DOCUMENTATION': return 'bg-red-50 text-red-600';
       case 'VIDEO': return 'bg-blue-50 text-blue-600';
-      case 'LINK': return 'bg-purple-50 text-purple-600';
+      case 'ARTICLE': return 'bg-purple-50 text-purple-600';
       default: return 'bg-indigo-50 text-indigo-600';
     }
   };
@@ -96,9 +96,9 @@ const MaterialsSection = ({ materials = [], onChange }) => {
                     onChange={(e) => setEditData((prev) => ({ ...prev, type: e.target.value }))}
                     className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900"
                   >
-                    <option value="DOCUMENT">Tài liệu (PDF, Word...)</option>
+                    <option value="DOCUMENTATION">Tài liệu (PDF, Word...)</option>
                     <option value="VIDEO">Video</option>
-                    <option value="LINK">Liên kết (Link)</option>
+                    <option value="ARTICLE">Bài viết (Link)</option>
                   </select>
                   <textarea
                     value={editData.description}

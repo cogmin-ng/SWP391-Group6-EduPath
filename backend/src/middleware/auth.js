@@ -8,10 +8,10 @@ exports.requireAuth = (req, res, next) => {
   const token = auth.slice(7);
   try {
     const payload = jwt.verify(token, config.jwt.accessSecret);
-    req.user = { 
-      id: payload.sub, 
+    req.user = {
+      id: payload.sub,
       email: payload.email,
-      roles: payload.roles || []
+      roles: payload.roles || [],
     };
     return next();
     // eslint-disable-next-line no-unused-vars, no-empty

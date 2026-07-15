@@ -41,11 +41,7 @@ const router = Router();
  *       401:
  *         description: Unauthorized
  */
-router.get(
-  '/',
-  requireAuth,
-  notificationController.getNotifications
-);
+router.get('/', requireAuth, notificationController.getNotifications);
 
 /**
  * @swagger
@@ -123,11 +119,7 @@ router.get(
  *       404:
  *         description: Notification not found
  */
-router.put(
-  '/:id/read',
-  requireAuth,
-  notificationController.markAsRead
-);
+router.put('/:id/read', requireAuth, notificationController.markAsRead);
 
 /**
  * @swagger
@@ -155,11 +147,7 @@ router.put(
  *       401:
  *         description: Unauthorized
  */
-router.put(
-  '/read-all',
-  requireAuth,
-  notificationController.markAllAsRead
-);
+router.put('/read-all', requireAuth, notificationController.markAllAsRead);
 
 /**
  * @swagger
@@ -198,10 +186,6 @@ router.put(
  *       404:
  *         description: Notification not found
  */
-router.delete(
-  '/:id',
-  requireAuth,
-  notificationController.deleteNotification
-);
+router.delete('/:id', requireAuth, notificationController.deleteNotification);
 
 module.exports = router;

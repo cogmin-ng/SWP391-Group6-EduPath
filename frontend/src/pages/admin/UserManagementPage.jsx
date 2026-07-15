@@ -30,6 +30,8 @@ const UserManagementPage = () => {
   // Edit/Delete State
   const [editingUserId, setEditingUserId] = useState(null);
   const [selectedRoleId, setSelectedRoleId] = useState("");
+  const [editingStatusUserId, setEditingStatusUserId] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState("");
   const [userToDelete, setUserToDelete] = useState(null);
 
   // Debounce search query
@@ -99,6 +101,22 @@ const UserManagementPage = () => {
     }
   };
 
+  const handleUpdateStatus = async (userId) => {
+    if (!selectedStatus) return;
+    setIsActionLoading(true);
+    try {
+      await adminService.updateUserStatus(userId, selectedStatus);
+      toast.success("Cập nhật trạng thái người dùng thành công");
+      setEditingStatusUserId(null);
+      fetchUsers();
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error(error.response?.data?.message || "Không thể cập nhật trạng thái");
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
   const handleDeleteUser = async () => {
     if (!userToDelete) return;
     setIsActionLoading(true);
@@ -116,8 +134,15 @@ const UserManagementPage = () => {
   };
 
   const startEditingRole = (user) => {
+    if (editingStatusUserId) setEditingStatusUserId(null);
     setEditingUserId(user.id);
     setSelectedRoleId(user.role?.id || "");
+  };
+
+  const startEditingStatus = (user) => {
+    if (editingUserId) setEditingUserId(null);
+    setEditingStatusUserId(user.id);
+    setSelectedStatus(user.status || "ACTIVE");
   };
 
   const handlePreviousPage = () => {
@@ -196,9 +221,6 @@ const UserManagementPage = () => {
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100">
                   Trạng thái
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100">
-                  XP
-                </th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100 text-right">
                   Thao tác
                 </th>
@@ -207,14 +229,14 @@ const UserManagementPage = () => {
             <tbody className="divide-y divide-slate-50">
               {isLoading ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-12 text-center">
+                  <td colSpan="4" className="px-6 py-12 text-center">
                     <Loader2 className="w-8 h-8 text-indigo-500 animate-spin mx-auto mb-4" />
                     <p className="text-slate-500 text-sm">Đang tải người dùng...</p>
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-12 text-center">
+                  <td colSpan="4" className="px-6 py-12 text-center">
                     <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
                       <User className="w-8 h-8 text-slate-400" />
                     </div>
@@ -267,7 +289,9 @@ const UserManagementPage = () => {
                             disabled={isActionLoading}
                           >
                             <option value="">Chọn Vai trò</option>
-                            {roles.map((role) => (
+                            {roles
+                              .filter(role => role.name?.toUpperCase() !== 'MENTOR')
+                              .map((role) => (
                               <option key={role.id} value={role.id}>
                                 {role.name}
                               </option>
@@ -295,35 +319,72 @@ const UserManagementPage = () => {
                           >
                             {user.role?.name || "Người dùng"}
                           </span>
-                          <button
-                            onClick={() => startEditingRole(user)}
-                            className="p-1 text-slate-400 hover:text-indigo-600 opacity-0 group-hover/role:opacity-100 transition-all"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
+                          {user.role?.name?.toUpperCase() !== 'MENTOR' && user.email !== 'admin@example.com' && (
+                            <button
+                              onClick={() => startEditingRole(user)}
+                              className="p-1 text-slate-400 hover:text-indigo-600 opacity-0 group-hover/role:opacity-100 transition-all"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <span
-                        className={`px-2.5 py-1 rounded-lg text-xs font-bold inline-flex items-center justify-center ${getStatusColor(user.status)}`}
-                      >
-                        {user.status === "ACTIVE" ? "HOẠT ĐỘNG" : user.status === "INACTIVE" ? "NGỪNG HOẠT ĐỘNG" : user.status === "BANNED" ? "BỊ KHÓA" : "CHỜ DUYỆT"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-semibold text-slate-700">
-                        {user.xp || 0}
-                      </span>
+                      {editingStatusUserId === user.id ? (
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={selectedStatus}
+                            onChange={(e) => setSelectedStatus(e.target.value)}
+                            className="text-sm bg-white border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            disabled={isActionLoading}
+                          >
+                            <option value="ACTIVE">HOẠT ĐỘNG</option>
+                            <option value="INACTIVE">KHÔNG HOẠT ĐỘNG</option>
+                          </select>
+                          <button
+                            onClick={() => handleUpdateStatus(user.id)}
+                            className="p-1 text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                            disabled={isActionLoading}
+                          >
+                            <Check className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => setEditingStatusUserId(null)}
+                            className="p-1 text-rose-600 hover:bg-rose-50 rounded-md transition-colors"
+                            disabled={isActionLoading}
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 group/status">
+                          <span
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold inline-flex items-center justify-center ${getStatusColor(user.status)}`}
+                          >
+                            {user.status === "ACTIVE" ? "HOẠT ĐỘNG" : user.status === "INACTIVE" ? "NGỪNG HOẠT ĐỘNG" : user.status === "BANNED" ? "BỊ KHÓA" : "CHỜ DUYỆT"}
+                          </span>
+                          {user.role?.name?.toUpperCase() !== 'ADMIN' && (
+                            <button
+                              onClick={() => startEditingStatus(user)}
+                              className="p-1 text-slate-400 hover:text-indigo-600 opacity-0 group-hover/status:opacity-100 transition-all"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => setUserToDelete(user)}
-                        className="p-2 text-rose-600 border-2 border-rose-400 hover:border-rose-600 hover:bg-rose-50 hover:shadow-lg hover:shadow-rose-200 rounded-xl transition-all cursor-pointer"
-                        title="Xóa Người dùng"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {user.email !== 'admin@example.com' && (
+                        <button
+                          onClick={() => setUserToDelete(user)}
+                          className="p-2 text-rose-600 border-2 border-rose-400 hover:border-rose-600 hover:bg-rose-50 hover:shadow-lg hover:shadow-rose-200 rounded-xl transition-all cursor-pointer"
+                          title="Xóa Người dùng"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))

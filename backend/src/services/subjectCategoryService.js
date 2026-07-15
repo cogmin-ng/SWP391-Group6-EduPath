@@ -2,12 +2,22 @@ const prisma = require('../lib/prisma');
 const ApiError = require('../utils/ApiError');
 
 exports.getAllCategories = async () => {
-  const categories = await prisma.$queryRawUnsafe(`
-    SELECT "id", "name", "description"
-    FROM "SubjectCategory"
-    WHERE "isDeleted" = false
-    ORDER BY "name" ASC
-  `);
+  const categories = await prisma.subjectCategory.findMany({
+    where: { isDeleted: false },
+    include: {
+      subjects: {
+        where: { isDeleted: false },
+        orderBy: { name: 'asc' },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          categoryId: true,
+        },
+      },
+    },
+    orderBy: { name: 'asc' },
+  });
 
   return categories;
 };

@@ -25,6 +25,11 @@ export const adminService = {
     return data.data;
   },
 
+  updateUserStatus: async (userId, status) => {
+    const { data } = await api.put(`/users/${userId}`, { status });
+    return data.data;
+  },
+
   deleteUser: async (userId) => {
     const { data } = await api.delete(`/users/${userId}`);
     return data.data;

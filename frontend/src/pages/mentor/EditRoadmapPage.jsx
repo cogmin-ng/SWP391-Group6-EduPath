@@ -10,6 +10,7 @@ import Badge from '../../components/ui/Badge';
 import { getRoadmapById, updateRoadmap, submitRoadmap } from '../../services/roadmapService';
 import { subjectCategoryService } from '../../services/subjectCategoryService';
 import { subjectService } from '../../services/subjectService';
+import { mentorApplicationService } from '../../services/mentorApplicationService';
 
 const EditRoadmapPage = () => {
   const navigate = useNavigate();
@@ -29,19 +30,22 @@ const EditRoadmapPage = () => {
   const [nodes, setNodes] = useState([]);
   const [categories, setCategories] = useState([]);
   const [subjects, setSubjects] = useState([]);
+  const [approvedSubjects, setApprovedSubjects] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [roadmapData, catData, subData] = await Promise.all([
+        const [roadmapData, catData, subData, myApprovedSubjects] = await Promise.all([
           getRoadmapById(roadmapId),
           subjectCategoryService.getSubjectCategories(),
           subjectService.getAllSubjects(),
+          mentorApplicationService.getMyApprovedSubjects(),
         ]);
 
         setCategories(catData || []);
         setSubjects(subData || []);
+        setApprovedSubjects(myApprovedSubjects || []);
 
         if (location.state?.formData) {
           setFormData(location.state.formData);
@@ -161,8 +165,11 @@ const EditRoadmapPage = () => {
     }
   };
 
-  const categoryOptions = categories.map(c => ({ value: c.id, label: c.name }));
-  const subjectOptions = subjects
+  const categoryOptions = categories
+    .filter(c => approvedSubjects.some(s => s.categoryId === c.id))
+    .map(c => ({ value: c.id, label: c.name }));
+
+  const subjectOptions = approvedSubjects
     .filter(s => !formData.category || s.categoryId === formData.category)
     .map(s => ({ value: s.id, label: s.name }));
 

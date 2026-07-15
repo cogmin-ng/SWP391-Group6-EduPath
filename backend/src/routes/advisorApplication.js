@@ -74,6 +74,28 @@ router.post(
 
 /**
  * @swagger
+ * /api/advisor-applications/me/approved-subjects:
+ *   get:
+ *     tags:
+ *       - AdvisorApplication
+ *     summary: Get all approved subjects for the current mentor
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of approved subjects
+ *       401:
+ *         description: Unauthorized
+ */
+router.get(
+  '/me/approved-subjects',
+  requireAuth,
+  requireRole(['MENTOR']),
+  advisorApplicationController.getMyApprovedSubjects
+);
+
+/**
+ * @swagger
  * /api/advisor-applications/me:
  *   get:
  *     tags:

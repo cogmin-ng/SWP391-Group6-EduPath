@@ -181,6 +181,37 @@ exports.getMyApplication = async (userId) => {
 };
 
 /**
+ * Get all approved subjects for a mentor across all their APPROVED applications.
+ *
+ * @param {string} userId
+ */
+exports.getMyApprovedSubjects = async (userId) => {
+  const applications = await prisma.advisorApplication.findMany({
+    where: {
+      userId,
+      status: 'APPROVED',
+      isDeleted: false,
+    },
+    include: {
+      mentorSubjects: {
+        include: { subject: { select: { id: true, name: true, categoryId: true } } },
+      },
+    },
+  });
+
+  const subjectMap = new Map();
+  applications.forEach(app => {
+    app.mentorSubjects.forEach(ms => {
+      if (ms.subject && !subjectMap.has(ms.subject.id)) {
+        subjectMap.set(ms.subject.id, ms.subject);
+      }
+    });
+  });
+
+  return Array.from(subjectMap.values());
+};
+
+/**
  * Get all advisor applications (Admin only).
  */
 exports.getAllApplications = async () => {

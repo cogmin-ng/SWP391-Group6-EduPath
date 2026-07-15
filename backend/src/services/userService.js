@@ -320,3 +320,65 @@ exports.deleteUser = async (id, currentUserId) => {
 
   await userRepository.hardDelete(id);
 };
+
+exports.getDashboardStats = async () => {
+  const prisma = require('../lib/prisma');
+  
+  const [totalUsers, totalMentors, totalMentees, totalRoadmaps] = await Promise.all([
+    prisma.user.count({ where: { isDeleted: false } }),
+    prisma.user.count({ where: { isDeleted: false, role: { name: 'MENTOR' } } }),
+    prisma.user.count({ where: { isDeleted: false, role: { name: 'MENTEE' } } }),
+    prisma.learningPath.count({ where: { isDeleted: false } })
+  ]);
+  
+  // Fetch latest activities for dashboard
+  const [latestUsers, latestApps, latestRoadmaps] = await Promise.all([
+    prisma.user.findMany({ take: 20, orderBy: { createdAt: 'desc' }, select: { id: true, name: true, createdAt: true, status: true } }),
+    prisma.advisorApplication.findMany({ take: 20, orderBy: { createdAt: 'desc' }, include: { user: { select: { name: true } } } }),
+    prisma.learningPath.findMany({ take: 20, orderBy: { createdAt: 'desc' }, include: { mentor: { select: { name: true } } } })
+  ]);
+
+  const activities = [];
+  
+  latestUsers.forEach(u => {
+    activities.push({
+      id: `u_${u.id}`,
+      user: u.name || 'Người dùng mới',
+      action: 'Đăng ký tài khoản',
+      date: u.createdAt.toISOString(),
+      status: u.status === 'ACTIVE' ? 'Thành công' : 'Đang chờ'
+    });
+  });
+  
+  latestApps.forEach(a => {
+    activities.push({
+      id: `a_${a.id}`,
+      user: a.user?.name || 'Vô danh',
+      action: 'Yêu cầu làm Người hướng dẫn',
+      date: a.createdAt.toISOString(),
+      status: a.status === 'APPROVED' ? 'Đã duyệt' : a.status === 'REJECTED' ? 'Từ chối' : 'Đang chờ'
+    });
+  });
+  
+  latestRoadmaps.forEach(r => {
+    activities.push({
+      id: `r_${r.id}`,
+      user: r.mentor?.name || 'Vô danh',
+      action: `Tạo lộ trình: ${r.title}`,
+      date: r.createdAt.toISOString(),
+      status: r.status === 'APPROVED' ? 'Đã duyệt' : r.status === 'PUBLISHED' ? 'Thành công' : r.status === 'REJECTED' ? 'Từ chối' : 'Đang chờ'
+    });
+  });
+  
+  // Sort activities and take top 20
+  activities.sort((a, b) => new Date(b.date) - new Date(a.date));
+  const recentActivities = activities.slice(0, 20);
+
+  return {
+    totalUsers,
+    totalMentors,
+    totalMentees,
+    totalRoadmaps,
+    recentActivities
+  };
+};

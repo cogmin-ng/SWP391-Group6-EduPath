@@ -4,6 +4,7 @@ const userRepo = require('../repositories/userRepository');
 const otpRepo = require('../repositories/otpRepository');
 const resendService = require('./externalService/resend/resendService');
 const ApiError = require('../utils/ApiError');
+const normalizeEmail = require('../utils/normalizeEmail');
 const { otp: otpMessages } = require('../constants/messages');
 
 const OTP_EXPIRE_MINUTES = 10;
@@ -32,7 +33,7 @@ const createOtp = async ({ userId, otpType }) => {
 };
 
 exports.sendOtp = async ({ email, otpType = OTP_TYPE_DEFAULT }) => {
-  const user = await userRepo.findByEmail(email);
+  const user = await userRepo.findByEmail(normalizeEmail(email));
   if (!user) {
     throw new ApiError(404, otpMessages.userNotFound);
   }
@@ -82,7 +83,7 @@ exports.resendOtp = async ({ email, otpType = OTP_TYPE_DEFAULT }) => {
 };
 
 exports.verifyOtp = async ({ email, otp, otpType = OTP_TYPE_DEFAULT }) => {
-  const user = await userRepo.findByEmail(email);
+  const user = await userRepo.findByEmail(normalizeEmail(email));
   if (!user) {
     throw new ApiError(404, otpMessages.userNotFound);
   }

@@ -261,15 +261,27 @@ exports.updateUserRole = async (id, { roleId }, currentUserId) => {
     throw new ApiError(403, userMessages.cannotUpdateOwnRole);
   }
 
-  const user = await userRepository.findByIdActive(id);
+  const user = await userRepository.findByIdWithRoles(id);
   if (!user) {
     throw new ApiError(404, userMessages.notFound);
+  }
+
+  if (user.role?.name === 'MENTOR') {
+    throw new ApiError(400, 'Cannot change role of a user who is currently a MENTOR');
+  }
+
+  if (user.email === 'admin@example.com') {
+    throw new ApiError(400, 'Tài khoản admin@example.com không thể bị thay đổi quyền');
   }
 
   if (roleId) {
     const role = await roleRepository.findById(roleId);
     if (!role) {
       throw new ApiError(400, 'Role not found');
+    }
+
+    if (role.name === 'MENTOR') {
+      throw new ApiError(400, 'Cannot directly update role to MENTOR from user management');
     }
 
     // If changing role to something other than MENTOR (e.g. MENTEE), reset mentor applications
@@ -316,6 +328,10 @@ exports.deleteUser = async (id, currentUserId) => {
   const user = await userRepository.findByIdActive(id);
   if (!user) {
     throw new ApiError(404, userMessages.notFound);
+  }
+
+  if (user.email === 'admin@example.com') {
+    throw new ApiError(400, 'Tài khoản admin@example.com không thể bị xóa');
   }
 
   await userRepository.hardDelete(id);

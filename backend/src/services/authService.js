@@ -114,6 +114,11 @@ exports.login = async ({ email, password }) => {
   if (!ok) throw new ApiError(401, authMessages.invalidCredentials);
 
   const roles = await getUserRoles(user.id);
+
+  if (user.status === 'INACTIVE' && !roles.includes('ADMIN')) {
+    throw new ApiError(403, 'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.');
+  }
+
   const accessToken = createAccessToken(user, roles);
   const tokenId = randomUUID();
   const refreshToken = createRefreshToken(user, tokenId);

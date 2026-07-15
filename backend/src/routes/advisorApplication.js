@@ -2,7 +2,9 @@ const Router = require('express').Router;
 const advisorApplicationController = require('../controllers/advisorApplicationController');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const validateSchema = require('../middleware/validateSchema');
-const { createAdvisorApplicationSchema } = require('../validators/advisorApplication.validator');
+const {
+  createAdvisorApplicationSchema,
+} = require('../validators/advisorApplication.validator');
 
 const router = Router();
 
@@ -72,6 +74,28 @@ router.post(
 
 /**
  * @swagger
+ * /api/advisor-applications/me/approved-subjects:
+ *   get:
+ *     tags:
+ *       - AdvisorApplication
+ *     summary: Get all approved subjects for the current mentor
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of approved subjects
+ *       401:
+ *         description: Unauthorized
+ */
+router.get(
+  '/me/approved-subjects',
+  requireAuth,
+  requireRole(['MENTOR']),
+  advisorApplicationController.getMyApprovedSubjects
+);
+
+/**
+ * @swagger
  * /api/advisor-applications/me:
  *   get:
  *     tags:
@@ -96,11 +120,7 @@ router.post(
  *       401:
  *         description: Unauthorized
  */
-router.get(
-  '/me',
-  requireAuth,
-  advisorApplicationController.getMyApplication
-);
+router.get('/me', requireAuth, advisorApplicationController.getMyApplication);
 
 /**
  * @swagger

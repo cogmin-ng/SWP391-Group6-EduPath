@@ -61,7 +61,11 @@ router.post('/send-otp', validateSchema(sendOtpSchema), otpController.sendOtp);
  *       404:
  *         description: User not found
  */
-router.post('/resend-otp', validateSchema(resendOtpSchema), otpController.resendOtp);
+router.post(
+  '/resend-otp',
+  validateSchema(resendOtpSchema),
+  otpController.resendOtp
+);
 
 /**
  * @swagger
@@ -90,6 +94,10 @@ router.post('/resend-otp', validateSchema(resendOtpSchema), otpController.resend
  *       404:
  *         description: User not found
  */
-router.post('/verify-otp', validateSchema(verifyOtpSchema), otpController.verifyOtp);
+router.post(
+  '/verify-otp',
+  validateSchema(verifyOtpSchema),
+  otpController.verifyOtp
+);
 
 module.exports = router;

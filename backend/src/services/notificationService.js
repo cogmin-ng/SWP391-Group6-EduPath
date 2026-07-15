@@ -6,7 +6,12 @@ const notificationMessages = {
   invalidId: 'Invalid notification id',
 };
 
-const normalizeNotificationPayload = ({ type, title, content, relatedTipId = null }) => ({
+const normalizeNotificationPayload = ({
+  type,
+  title,
+  content,
+  relatedTipId = null,
+}) => ({
   type,
   title,
   content,
@@ -53,7 +58,9 @@ exports.getNotificationsByUser = async (userId, { skip = 0, take = 10 }) => {
 };
 
 exports.getUnreadNotifications = async (userId) => {
-  const unreadNotifications = await notificationRepository.findUnreadByUser(userId);
+  const unreadNotifications = await notificationRepository.findUnreadByUser(
+    userId
+  );
   const unreadCount = await notificationRepository.countUnreadByUser(userId);
 
   return { unreadNotifications, unreadCount };
@@ -64,14 +71,19 @@ exports.markNotificationAsRead = async (notificationId, userId) => {
     throw new ApiError(400, notificationMessages.invalidId);
   }
 
-  const notification = await notificationRepository.findByIdActive(notificationId);
+  const notification = await notificationRepository.findByIdActive(
+    notificationId
+  );
   if (!notification) {
     throw new ApiError(404, notificationMessages.notFound);
   }
 
   // Verify ownership
   if (notification.userId !== userId) {
-    throw new ApiError(403, 'You do not have permission to access this notification');
+    throw new ApiError(
+      403,
+      'You do not have permission to access this notification'
+    );
   }
 
   const updated = await notificationRepository.markAsRead(notificationId);
@@ -88,14 +100,19 @@ exports.deleteNotification = async (notificationId, userId) => {
     throw new ApiError(400, notificationMessages.invalidId);
   }
 
-  const notification = await notificationRepository.findByIdActive(notificationId);
+  const notification = await notificationRepository.findByIdActive(
+    notificationId
+  );
   if (!notification) {
     throw new ApiError(404, notificationMessages.notFound);
   }
 
   // Verify ownership
   if (notification.userId !== userId) {
-    throw new ApiError(403, 'You do not have permission to access this notification');
+    throw new ApiError(
+      403,
+      'You do not have permission to access this notification'
+    );
   }
 
   await notificationRepository.softDelete(notificationId);

@@ -5,7 +5,7 @@ const prisma = require('./lib/prisma');
 
 async function main() {
   const roadmapId = 'cmqxy271c0001bjp5djeac4o1';
-  
+
   const roadmap = await prisma.learningPath.findFirst({
     where: { id: roadmapId, isDeleted: false },
     include: {
@@ -22,17 +22,17 @@ async function main() {
               questions: {
                 where: { isDeleted: false },
                 include: {
-                  options: { where: { isDeleted: false } }
-                }
-              }
-            }
+                  options: { where: { isDeleted: false } },
+                },
+              },
+            },
           },
           tips: {
-            where: { isDeleted: false, contributorId: null }
-          }
-        }
-      }
-    }
+            where: { isDeleted: false, contributorId: null },
+          },
+        },
+      },
+    },
   });
 
   if (!roadmap) {
@@ -45,7 +45,7 @@ async function main() {
   // Construct the payload matching the frontend's buildPayload()
   const payload = {
     title: roadmap.title,
-    description: "Mô tả chi tiết lộ trình học tập...", // They edited description
+    description: 'Mô tả chi tiết lộ trình học tập...', // They edited description
     studyTips: roadmap.studyTips,
     subjectId: roadmap.subjectId,
     thumbnail: roadmap.thumbnail,
@@ -59,14 +59,14 @@ async function main() {
       orderIndex: i,
       checklists: n.checklists,
       materials: n.materials,
-      quizzes: n.quizzes
-    }))
+      quizzes: n.quizzes,
+    })),
   };
 
   console.log('Running Joi validation...');
   const { value, error } = updateRoadmapSchema.validate(payload, {
     abortEarly: false,
-    stripUnknown: true
+    stripUnknown: true,
   });
 
   if (error) {

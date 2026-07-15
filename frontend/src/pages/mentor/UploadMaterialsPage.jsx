@@ -67,7 +67,7 @@ const initialMaterials = [
   {
     id: 'mat-1',
     title: 'DB_Architecture.pdf',
-    type: 'DOCUMENT',
+    type: 'DOCUMENTATION',
     url: '#',
     size: '12.4 MB'
   },
@@ -81,7 +81,7 @@ const initialMaterials = [
   {
     id: 'mat-3',
     title: 'Mastering NoSQL Databases',
-    type: 'LINK',
+    type: 'ARTICLE',
     url: 'https://example.com/nosql'
   }
 ];
@@ -174,7 +174,7 @@ export default function UploadMaterialsPage() {
     const newItems = Array.from(files).map((file, index) => {
       // Determine type based on extension
       const ext = file.name.split('.').pop().toLowerCase();
-      let type = 'DOCUMENT';
+      let type = 'DOCUMENTATION';
       if (['mp4', 'mkv', 'avi', 'mov', 'webm'].includes(ext)) {
         type = 'VIDEO';
       }
@@ -212,7 +212,7 @@ export default function UploadMaterialsPage() {
     const newLink = {
       id: `link-${Date.now()}`,
       title: linkTitle.trim(),
-      type: 'LINK',
+      type: 'ARTICLE',
       url: linkUrl.trim()
     };
 
@@ -281,7 +281,7 @@ export default function UploadMaterialsPage() {
   // Helper to get type icon
   const getTypeIcon = (type) => {
     switch (type) {
-      case 'DOCUMENT':
+      case 'DOCUMENTATION':
         return {
           icon: <FileText className="w-5 h-5 text-red-600" />,
           bgClass: 'bg-red-50 border border-red-100'
@@ -291,7 +291,7 @@ export default function UploadMaterialsPage() {
           icon: <Video className="w-5 h-5 text-blue-600" />,
           bgClass: 'bg-blue-50 border border-blue-100'
         };
-      case 'LINK':
+      case 'ARTICLE':
       default:
         return {
           icon: <LinkIcon className="w-5 h-5 text-purple-600" />,

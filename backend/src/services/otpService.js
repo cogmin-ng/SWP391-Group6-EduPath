@@ -43,17 +43,27 @@ exports.sendOtp = async ({ email, otpType = OTP_TYPE_DEFAULT }) => {
   }
 
   const since = new Date(Date.now() - RESEND_WINDOW_MS);
-  const sentCount = await otpRepo.countCreatedSince({ userId: user.id, otpType, since });
+  const sentCount = await otpRepo.countCreatedSince({
+    userId: user.id,
+    otpType,
+    since,
+  });
   if (sentCount >= RESEND_MAX_PER_WINDOW) {
     throw new ApiError(429, 'Gửi mã quá nhiều lần. Vui lòng thử lại sau.');
   }
 
-  const last = await otpRepo.findLatestByUserAndType({ userId: user.id, otpType });
+  const last = await otpRepo.findLatestByUserAndType({
+    userId: user.id,
+    otpType,
+  });
   if (last && last.createdAt) {
     const delta = Date.now() - new Date(last.createdAt).getTime();
     if (delta < RESEND_MIN_SECONDS * 1000) {
       const wait = Math.ceil((RESEND_MIN_SECONDS * 1000 - delta) / 1000);
-      throw new ApiError(429, `Vui lòng đợi ${wait} giây trước khi yêu cầu lại mã.`);
+      throw new ApiError(
+        429,
+        `Vui lòng đợi ${wait} giây trước khi yêu cầu lại mã.`
+      );
     }
   }
 

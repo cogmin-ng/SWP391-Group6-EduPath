@@ -109,11 +109,8 @@ const MentorLayout = () => {
     { title: 'Trang chủ', icon: Home, path: '/mentor/dashboard' },
     { title: 'Lộ trình của tôi', icon: Layers, path: '/mentor/roadmaps' },
     { title: 'Đánh giá chờ', icon: ClipboardList, path: '/mentor/reviews' },
-    { title: 'Thống kê', icon: BarChart3, path: '/mentor/analytics' },
     { title: 'Tạo lộ trình', icon: Plus, path: '/mentor/create-roadmap' },
     { title: 'Hồ sơ cá nhân', icon: User, path: '/mentor/profile' },
-    { title: 'Thành tích', icon: Award, path: '/mentor/achievements' },
-    { title: 'Đăng ký Mentor', icon: GraduationCap, path: '/profile/become-mentor' },
   ];
 
   return (
@@ -124,21 +121,12 @@ const MentorLayout = () => {
           {/* Left Side: Logo & Search */}
           <div className="flex items-center gap-4 flex-1">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 mr-8">
+            <Link to="/" className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center flex-shrink-0">
                 <span className="font-bold text-lg text-white">E</span>
               </div>
               <span className="font-bold text-xl text-slate-900 hidden sm:inline">EduPath</span>
             </Link>
-
-            <div className="hidden md:flex items-center relative max-w-md w-full">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3" />
-              <input
-                type="text"
-                placeholder="Search roadmaps..."
-                className="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
-              />
-            </div>
           </div>
 
           {/* Right Side: Icons & Profile */}

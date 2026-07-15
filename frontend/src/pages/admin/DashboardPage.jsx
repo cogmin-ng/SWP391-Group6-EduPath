@@ -217,7 +217,7 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-8">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
       {toast ? (
         <div
           className={`fixed top-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-2xl border px-4 py-3 text-xs font-semibold shadow-xl ${toast.type === "success"
@@ -230,114 +230,149 @@ const DashboardPage = () => {
         </div>
       ) : null}
 
-      {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Tổng quan Bảng điều khiển</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Xin chào, hôm nay là ngày {new Date().getDate()} tháng {new Date().getMonth() + 1} năm {new Date().getFullYear()}
-        </p>
-      </div>
+      {/* Admin Profile Section / Welcome Banner */}
+      <div className="relative overflow-hidden bg-[#635BFF] rounded-3xl text-white p-5 sm:p-6 md:p-8 shadow-xl mb-8">
+        <div className="absolute -right-10 -top-10 w-64 h-64 rounded-full bg-indigo-500/10 blur-3xl" />
+        <div className="absolute left-[30%] bottom-[-20%] w-56 h-56 rounded-full bg-violet-400/20 blur-2xl" />
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {dashboardStats.map((stat) => (
-          <StatsCard key={stat.id} {...stat} />
-        ))}
-      </div>
-
-      {/* Admin Profile Section */}
-      <div className="grid gap-6 lg:grid-cols-3 items-start">
-        {/* Profile Card Summary */}
-        <section className="lg:col-span-2 relative overflow-hidden rounded-[2rem] bg-[#635BFF] p-6 text-white shadow-xl flex flex-col justify-between">
-          <div className="absolute -right-20 -top-20 h-48 w-48 rounded-full bg-indigo-500/20 blur-3xl" />
-          <div className="absolute bottom-[-12%] left-1/4 h-48 w-48 rounded-full bg-violet-400/20 blur-2xl" />
-
-          <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-start">
-            <div className="relative h-20 w-20 shrink-0 mx-auto sm:mx-0 overflow-hidden rounded-full border-[3px] border-white/20 bg-slate-900 shadow-2xl">
-              {displayedAvatarUrl ? (
-                <img
-                  src={displayedAvatarUrl}
-                  alt={profile.name}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-white/10 text-xl font-bold uppercase">
-                  {profile.name
-                    ?.split(" ")
-                    .map((part) => part[0])
-                    .slice(0, 2)
-                    .join("")}
-                </div>
-              )}
+        <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 lg:gap-8 items-center">
+          <div className="lg:col-span-7 space-y-4">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide">
+              <Sparkles className="w-3.5 h-3.5 text-yellow-300 animate-pulse" />
+              <span>EduPath Admin Portal • Bảng điều khiển</span>
             </div>
-            <div className="space-y-2.5 text-center sm:text-left flex-1">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <h2 className="text-xl font-extrabold tracking-tight sm:text-2xl">
-                  {profile.name}
-                </h2>
-                <span className="mx-auto rounded-full border border-white/20 bg-white/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-100 sm:mx-0 flex items-center gap-1">
-                  <Shield className="h-3 w-3" />
-                  {profile.role}
-                </span>
-              </div>
-              <p className="flex items-center justify-center gap-1.5 text-sm font-medium text-indigo-100 sm:justify-start">
-                <Mail className="h-4 w-4" />
-                {profile.email}
+
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold font-display tracking-tight md:text-4xl">
+                Xin Chào, {profile.name} 👋
+              </h1>
+              <p className="text-blue-100 text-sm md:text-base leading-relaxed">
+                Hôm nay là ngày {new Date().getDate()} tháng {new Date().getMonth() + 1} năm {new Date().getFullYear()}
               </p>
-              <p className="text-sm leading-relaxed text-white/90">
-                {profile.bio}
-              </p>
-              <div className="flex flex-wrap items-center justify-center gap-3 pt-0.5 text-xs font-medium text-white/85 sm:justify-start">
-                <span className="flex items-center gap-1.5">
-                  <MapPin className="h-3.5 w-3.5" />
-                  {profile.location}
-                </span>
-              </div>
             </div>
-          </div>
 
-          <div className="relative z-10 flex justify-end mt-5 sm:mt-3">
-            <button
-              onClick={handleEditClick}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-100 shadow-sm cursor-pointer border-0"
-            >
-              <Edit3 className="h-3.5 w-3.5" />
-              Chỉnh sửa hồ sơ
-            </button>
-          </div>
-        </section>
-
-        {/* Recent Activities */}
-        <section className="rounded-[2rem] bg-white border border-slate-200/80 shadow-sm p-6 flex flex-col">
-          <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-lg font-bold text-slate-900">Hoạt động gần đây</h3>
-          </div>
-          <div className="flex-1 space-y-4 max-h-[340px] overflow-y-auto pr-2 custom-scrollbar">
-            {activities.length > 0 ? activities.map((activity) => (
-              <div key={activity.id} className="flex gap-4">
-                <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-indigo-500" />
-                <div>
-                  <p className="text-sm font-medium text-slate-900">{activity.action}</p>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
-                    <span className="font-medium text-slate-700">{activity.user}</span>
-                    <span>•</span>
-                    <span>{new Date(activity.date).toLocaleDateString('vi-VN')}</span>
+            <div className="bg-white/10 backdrop-blur-lg border border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row items-center sm:items-start gap-4">
+              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border-[3px] border-white/20 bg-slate-900 shadow-xl">
+                {displayedAvatarUrl ? (
+                  <img
+                    src={displayedAvatarUrl}
+                    alt={profile.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-white/10 text-xl font-bold uppercase text-white">
+                    {profile.name?.split(" ").map((part) => part[0]).slice(0, 2).join("")}
                   </div>
-                  <span className={`inline-block mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${activity.status === 'Thành công' || activity.status === 'Đã duyệt'
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : activity.status === 'Đang chờ' || activity.status === 'Đang xem xét'
-                      ? 'bg-amber-100 text-amber-700'
-                      : 'bg-slate-100 text-slate-700'
-                    }`}>
-                    {activity.status}
+                )}
+              </div>
+              <div className="text-center sm:text-left flex-1">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center justify-center sm:justify-start">
+                  <span className="font-bold flex items-center justify-center sm:justify-start gap-1">
+                    <Shield className="h-4 w-4" /> {profile.role}
+                  </span>
+                  <span className="text-xs bg-white/20 px-2.5 py-1 rounded-full flex items-center justify-center sm:justify-start gap-1">
+                    <MapPin className="h-3 w-3" /> {profile.location}
                   </span>
                 </div>
+                <p className="text-sm text-blue-50/90 mt-2 flex items-center justify-center sm:justify-start gap-1.5 w-full">
+                  <Mail className="h-4 w-4" /> {profile.email}
+                </p>
+                <p className="text-sm italic text-blue-50/90 mt-1">{profile.bio}</p>
               </div>
-            )) : (
-              <p className="text-sm text-slate-500 italic">Không có hoạt động nào gần đây.</p>
-            )}
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 pt-2">
+              <button
+                onClick={handleEditClick}
+                className="w-full sm:w-auto bg-white hover:bg-blue-50 text-indigo-700 font-semibold py-2.5 px-5 rounded-xl text-sm transition duration-200 flex items-center justify-center gap-1.5 shadow-md cursor-pointer border-0"
+              >
+                <Edit3 className="w-4 h-4" />
+                Chỉnh sửa hồ sơ
+              </button>
+            </div>
           </div>
-        </section>
+
+          <div className="hidden lg:flex lg:col-span-5 justify-center items-center">
+            <div className="relative w-full max-w-md h-60 bg-slate-900/30 rounded-2xl flex items-center justify-center border border-white/10">
+              <div className="absolute w-48 h-32 bg-indigo-950/70 border border-indigo-400/30 rounded-lg shadow-2xl flex items-center justify-center overflow-hidden">
+                <div className="absolute top-2 left-3 flex gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-red-400" />
+                  <div className="w-2 h-2 rounded-full bg-yellow-400" />
+                  <div className="w-2 h-2 rounded-full bg-green-400" />
+                </div>
+                <div className="text-left font-mono text-[10px] text-indigo-300 space-y-1.5 p-3 mt-4">
+                  <p className="text-yellow-400">const role = "ADMIN";</p>
+                  <p className="text-sky-300">
+                    import {"{ Dashboard }"} from "edupath";
+                  </p>
+                  <p className="text-emerald-400">
+                    console.log("Manage the platform!");
+                  </p>
+                </div>
+              </div>
+              <div className="absolute w-56 h-12 border-[3px] border-violet-400/50 rounded-full rotate-[-15deg] animate-pulse" />
+              <div className="absolute right-4 bottom-4 w-12 h-12 rounded-lg bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-300">
+                <Shield className="w-6 h-6" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-8">
+        <div className="flex-1">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {dashboardStats.map((stat) => (
+              <StatsCard key={stat.id} {...stat} />
+            ))}
+          </div>
+
+          {/* Recent Activities */}
+          <div className="mb-8">
+            <h3 className="text-xl font-bold text-slate-900 mb-6">Hoạt động gần đây</h3>
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div className="divide-y divide-slate-100 max-h-[400px] overflow-y-auto custom-scrollbar">
+                {activities.length > 0 ? (
+                  activities.map((activity) => (
+                    <div key={activity.id} className="p-5 hover:bg-slate-50/50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex items-start sm:items-center gap-4">
+                        <div className="flex-shrink-0 w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
+                          <div className="h-2 w-2 rounded-full bg-indigo-500" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-900 text-sm">{activity.action}</p>
+                          <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                            <span className="font-semibold text-slate-700">{activity.user}</span>
+                            <span>•</span>
+                            <span>{new Date(activity.date).toLocaleDateString('vi-VN')}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <span
+                          className={`inline-block px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap ${
+                            activity.status === 'Thành công' || activity.status === 'Đã duyệt'
+                              ? 'bg-emerald-50 text-emerald-600'
+                              : activity.status === 'Đang chờ' || activity.status === 'Đang xem xét'
+                              ? 'bg-amber-50 text-amber-600'
+                              : 'bg-slate-50 text-slate-600'
+                          }`}
+                        >
+                          {activity.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-8 text-center text-slate-500 italic">
+                    Không có hoạt động nào gần đây.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Edit Profile Modal */}

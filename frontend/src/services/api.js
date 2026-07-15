@@ -12,7 +12,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = sessionStorage.getItem('accessToken');
-    if (token) {
+    if (token && !config.skipAuth) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -42,6 +42,7 @@ api.interceptors.response.use(
 
     if (
       error.response?.status === 401 &&
+      !originalRequest.skipAuth &&
       !originalRequest._retry &&
       !originalRequest.url?.includes('/auth/refresh') &&
       !originalRequest.url?.includes('/auth/login')

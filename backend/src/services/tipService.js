@@ -67,7 +67,10 @@ exports.getTipsByNode = async (nodeId) => {
   return tips;
 };
 
-exports.getPendingTipsByMentorRoadmap = async (mentorId, { skip = 0, take = 10 }) => {
+exports.getPendingTipsByMentorRoadmap = async (
+  mentorId,
+  { skip = 0, take = 10 }
+) => {
   const [tips, total] = await Promise.all([
     tipRepository.findPendingByMentorRoadmap(mentorId, { skip, take }),
     tipRepository.countPendingByMentorRoadmap(mentorId),
@@ -76,13 +79,26 @@ exports.getPendingTipsByMentorRoadmap = async (mentorId, { skip = 0, take = 10 }
   return { tips, total };
 };
 
-exports.getTipContributionHistory = async (contributorId, { skip = 0, take = 10 }) => {
-  const [tips, total] = await Promise.all([
-    tipRepository.findByContributor(contributorId, { skip, take }),
-    tipRepository.countByContributor(contributorId),
+exports.getTipContributionHistory = async (
+  contributorId,
+  { skip = 0, take = 10, status }
+) => {
+  const [tips, total, groupedCounts] = await Promise.all([
+    tipRepository.findByContributor(contributorId, { skip, take, status }),
+    tipRepository.countByContributor(contributorId, status),
+    tipRepository.countByContributorStatus(contributorId),
   ]);
 
-  return { tips, total };
+  const stats = groupedCounts.reduce(
+    (result, item) => ({
+      ...result,
+      [item.status.toLowerCase()]: item._count._all,
+      total: result.total + item._count._all,
+    }),
+    { total: 0, pending: 0, approved: 0, rejected: 0 }
+  );
+
+  return { tips, total, stats };
 };
 
 exports.approveTip = async (tipId, mentorId) => {
@@ -122,7 +138,9 @@ exports.approveTip = async (tipId, mentorId) => {
     await notificationService.createNotification(updatedTip.contributorId, {
       type: 'CONTRIBUTION',
       title: 'Tip của bạn đã được duyệt',
-      content: `Tip của bạn cho node "${updatedTip.node?.title || 'một node'}" đã được mentor phê duyệt và công bố thành công.`,
+      content: `Tip của bạn cho node "${
+        updatedTip.node?.title || 'một node'
+      }" đã được mentor phê duyệt và công bố thành công.`,
       relatedTipId: updatedTip.id,
     });
   }
@@ -166,7 +184,9 @@ exports.rejectTip = async (tipId, mentorId, rejectReason) => {
     await notificationService.createNotification(updatedTip.contributorId, {
       type: 'CONTRIBUTION',
       title: 'Tip của bạn đã bị từ chối',
-      content: `Tip của bạn cho node "${updatedTip.node?.title || 'một node'}" đã bị mentor từ chối.${rejectReason ? ` Lý do: ${rejectReason}` : ''}`,
+      content: `Tip của bạn cho node "${
+        updatedTip.node?.title || 'một node'
+      }" đã bị mentor từ chối.${rejectReason ? ` Lý do: ${rejectReason}` : ''}`,
       relatedTipId: updatedTip.id,
     });
   }

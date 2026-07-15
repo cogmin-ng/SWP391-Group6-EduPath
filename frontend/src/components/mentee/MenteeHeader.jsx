@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   Award,
   BarChart3,
@@ -15,7 +15,6 @@ import {
   Map,
   Menu,
   Settings,
-  Sparkles,
   User,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
@@ -37,15 +36,16 @@ const accountMenuItems = [
 ];
 
 const headerNavItems = [
-  { label: 'Khám phá' },
-  { label: 'Lộ trình' },
-  { label: 'Mentor' },
-  { label: 'Bảng giá' },
-  { label: 'Cộng đồng' },
+  { label: 'Trang chủ', to: '/mentee/homepage' },
+  { label: 'Khám phá', to: '/explore' },
+  { label: 'Lộ trình của tôi', to: '/roadmaps' },
+  { label: 'Đóng góp', to: '/mentee/contributions' },
+  { label: 'Chứng chỉ', to: '/my-certificates' },
 ];
 
 export default function MenteeHeader() {
   const { user: authUser, logout } = useAuth();
+  const userId = authUser?.id;
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -61,6 +61,7 @@ export default function MenteeHeader() {
   }, []);
 
   useEffect(() => {
+    if (!userId) return;
     const fetchNotifications = async () => {
       try {
         const [notifData, unreadData] = await Promise.all([
@@ -76,8 +77,12 @@ export default function MenteeHeader() {
 
     fetchNotifications();
     const interval = window.setInterval(fetchNotifications, 60000);
-    return () => window.clearInterval(interval);
-  }, []);
+    window.addEventListener('edupath:notifications-changed', fetchNotifications);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('edupath:notifications-changed', fetchNotifications);
+    };
+  }, [userId]);
 
   const displayName = authUser?.name || 'Học viên';
   const displayAvatar = authUser?.avatarUrl || authUser?.avatar || '';
@@ -114,20 +119,6 @@ export default function MenteeHeader() {
 
     setNotificationsOpen(false);
     navigate(route);
-  };
-
-  const handleMarkAsRead = async (id, currentIsRead) => {
-    if (currentIsRead) return;
-
-    try {
-      await notificationService.markAsRead(id);
-      setNotifications((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, isRead: true } : item))
-      );
-      setUnreadCount((prev) => Math.max(prev - 1, 0));
-    } catch (error) {
-      console.error('Failed to mark notification as read:', error);
-    }
   };
 
   const handleMarkAllAsRead = async () => {
@@ -170,13 +161,19 @@ export default function MenteeHeader() {
 
           <nav className="hidden items-center gap-1 lg:flex">
             {headerNavItems.map((item) => (
-              <button
+              <NavLink
                 key={item.label}
-                type="button"
-                className="rounded-lg px-3.5 py-2 text-sm font-medium text-slate-600 transition-all duration-200 hover:text-indigo-600 hover:bg-indigo-50/60"
+                to={item.to}
+                className={({ isActive }) =>
+                  `rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? 'bg-indigo-50 text-indigo-700'
+                      : 'text-slate-600 hover:bg-indigo-50/60 hover:text-indigo-600'
+                  }`
+                }
               >
                 {item.label}
-              </button>
+              </NavLink>
             ))}
           </nav>
 
@@ -295,13 +292,20 @@ export default function MenteeHeader() {
           <div className="space-y-2 border-t border-slate-100 pb-4 pt-3 lg:hidden">
             <div className="grid grid-cols-2 gap-2">
               {headerNavItems.map((item) => (
-                <button
+                <NavLink
                   key={item.label}
-                  type="button"
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600"
+                  to={item.to}
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    `rounded-xl border px-3 py-2 text-center text-sm font-medium ${
+                      isActive
+                        ? 'border-indigo-200 bg-indigo-50 text-indigo-700'
+                        : 'border-slate-200 bg-white text-slate-600'
+                    }`
+                  }
                 >
                   {item.label}
-                </button>
+                </NavLink>
               ))}
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white p-2">

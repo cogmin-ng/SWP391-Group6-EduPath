@@ -504,6 +504,9 @@ model Review {
   rating  Int
   comment String?
 
+  mentorReply   String?   @db.Text
+  mentorReplyAt DateTime?
+
   updatedAt DateTime @updatedAt
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())

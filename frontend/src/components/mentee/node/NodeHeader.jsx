@@ -7,7 +7,7 @@ import { Clock, Users, CalendarDays, Sparkles } from 'lucide-react';
  * Props:
  * - node: { title, description, nodeNumber, totalNodes, estimatedHours, mentorGuided, updatedAt }
  */
-export default function NodeHeader({ node, roadmapTitle, overallProgress = 0 }) {
+export default function NodeHeader({ node, roadmapTitle, overallProgress = 0, isCompleted = false }) {
   if (!node) return null;
 
   const pills = [
@@ -19,16 +19,20 @@ export default function NodeHeader({ node, roadmapTitle, overallProgress = 0 }) 
   ];
 
   return (
-    <header className="mb-6 overflow-hidden rounded-[30px] bg-gradient-to-br from-indigo-700 via-indigo-600 to-blue-500 px-6 py-6 text-white shadow-xl shadow-indigo-200/60 md:px-8 md:py-8">
+    <header className={`mb-6 overflow-hidden rounded-[30px] px-6 py-6 text-white shadow-xl md:px-8 md:py-8 ${
+      isCompleted
+        ? 'bg-gradient-to-br from-emerald-600 via-emerald-500 to-green-400 shadow-emerald-200/60'
+        : 'bg-gradient-to-br from-indigo-700 via-indigo-600 to-blue-500 shadow-indigo-200/60'
+    }`}>
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_180px] lg:items-center">
         <div>
           <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1.5 font-semibold text-white/95 ring-1 ring-white/15 backdrop-blur-sm">
-              <Sparkles className="h-3.5 w-3.5 text-rose-200" />
+              <Sparkles className={`h-3.5 w-3.5 ${isCompleted ? 'text-emerald-100' : 'text-rose-200'}`} />
               Node {node.nodeNumber} of {node.totalNodes}
             </span>
             {roadmapTitle ? (
-              <span className="text-sm text-indigo-100/90">{roadmapTitle}</span>
+              <span className={`text-sm ${isCompleted ? 'text-emerald-50/90' : 'text-indigo-100/90'}`}>{roadmapTitle}</span>
             ) : null}
           </div>
 
@@ -36,7 +40,7 @@ export default function NodeHeader({ node, roadmapTitle, overallProgress = 0 }) 
             {node.title}
           </h1>
 
-          <p className="max-w-3xl text-base leading-8 text-indigo-50/92">
+          <p className={`max-w-3xl text-base leading-8 ${isCompleted ? 'text-emerald-50/95' : 'text-indigo-50/92'}`}>
             {node.description}
           </p>
 
@@ -46,7 +50,7 @@ export default function NodeHeader({ node, roadmapTitle, overallProgress = 0 }) 
                 key={idx}
                 className="inline-flex items-center gap-1.5 rounded-full bg-white/12 px-3.5 py-2 text-xs font-medium text-white ring-1 ring-white/15 backdrop-blur-sm"
               >
-                <pill.icon className="h-3.5 w-3.5 text-indigo-100" />
+                <pill.icon className={`h-3.5 w-3.5 ${isCompleted ? 'text-emerald-100' : 'text-indigo-100'}`} />
                 {pill.label}
               </span>
             ))}
@@ -72,9 +76,9 @@ export default function NodeHeader({ node, roadmapTitle, overallProgress = 0 }) 
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
               <span className="text-3xl font-bold text-white">{overallProgress}%</span>
-              <span className="text-xs font-medium uppercase tracking-[0.18em] text-indigo-100">
-                hoàn thành
-              </span>
+               <span className={`text-xs font-medium uppercase tracking-[0.18em] ${isCompleted ? 'text-emerald-100' : 'text-indigo-100'}`}>
+                 hoàn thành
+               </span>
             </div>
           </div>
         </div>

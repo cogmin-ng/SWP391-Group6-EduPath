@@ -10,6 +10,13 @@ const {
 
 const router = Router();
 
+router.get(
+  '/me/profile',
+  requireAuth,
+  requireRole(['MENTEE']),
+  userController.getMyMenteeProfile
+);
+
 /**
  * @swagger
  * /api/users:
@@ -264,6 +271,11 @@ router.put(
  *       404:
  *         description: User not found
  */
-router.delete('/:id', requireAuth, requireRole(['ADMIN']), userController.deleteUser);
+router.delete(
+  '/:id',
+  requireAuth,
+  requireRole(['ADMIN']),
+  userController.deleteUser
+);
 
 module.exports = router;

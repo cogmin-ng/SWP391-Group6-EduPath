@@ -208,28 +208,33 @@ exports.getRoadmapBySlug = async (slug, userId, roles = []) => {
   const roadmap = await roadmapRepository.findById(roadmapId);
   if (!roadmap) throw new ApiError(404, MSG.notFound);
 
-  const enrollment = await prisma.enrollment.findFirst({
-    where: {
-      userId,
-      learningPathId: roadmap.id,
-      isDeleted: false,
-    },
-  });
+  let enrollment = null;
+  let nodeProgresses = [];
 
-  const nodeProgresses = await prisma.nodeProgress.findMany({
-    where: {
-      userId,
-      node: {
+  if (userId) {
+    enrollment = await prisma.enrollment.findFirst({
+      where: {
+        userId,
         learningPathId: roadmap.id,
+        isDeleted: false,
       },
-      isDeleted: false,
-    },
-    select: {
-      nodeId: true,
-      completed: true,
-      completedAt: true,
-    },
-  });
+    });
+
+    nodeProgresses = await prisma.nodeProgress.findMany({
+      where: {
+        userId,
+        node: {
+          learningPathId: roadmap.id,
+        },
+        isDeleted: false,
+      },
+      select: {
+        nodeId: true,
+        completed: true,
+        completedAt: true,
+      },
+    });
+  }
 
   const isOwner = roadmap.mentorId === userId;
   const isAdmin = roles.includes('ADMIN');

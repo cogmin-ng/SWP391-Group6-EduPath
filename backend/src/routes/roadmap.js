@@ -1,6 +1,6 @@
 const Router = require('express').Router;
 const roadmapController = require('../controllers/roadmapController');
-const { requireAuth, requireRole } = require('../middleware/auth');
+const { requireAuth, requireRole, optionalAuth } = require('../middleware/auth');
 const validateSchema = require('../middleware/validateSchema');
 const {
   createRoadmapSchema,
@@ -167,7 +167,7 @@ router.get(
 
 // --- Parametric Routes ---
 
-router.get('/slug/:slug', requireAuth, roadmapController.getRoadmapBySlug);
+router.get('/slug/:slug', optionalAuth, roadmapController.getRoadmapBySlug);
 
 /**
  * @swagger

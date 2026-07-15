@@ -4,13 +4,6 @@ import { GraduationCap, Menu, X, LogOut, User } from 'lucide-react';
 import Button from '../ui/Button';
 import { useAuth } from '../../hooks/useAuth';
 
-const navLinks = [
-  { label: 'Khám phá', to: '/explore' },
-  { label: 'Lộ trình', to: '/roadmaps' },
-  { label: 'Mentors', href: '#' },
-  { label: 'Bảng giá', href: '#' },
-  { label: 'Cộng đồng', href: '#' },
-];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -52,32 +45,6 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-1">
-            {navLinks.map((link) => (
-              link.to ? (
-                <Link
-                  key={link.label}
-                  to={link.to}
-                  className={`px-3.5 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                    isLinkActive(link.to)
-                      ? 'text-indigo-600 bg-indigo-50'
-                      : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ) : (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 rounded-lg hover:bg-indigo-50/50 transition-all duration-200"
-                >
-                  {link.label}
-                </a>
-              )
-            ))}
-          </div>
 
           {/* Desktop Auth Section */}
           <div className="hidden lg:flex items-center gap-4">
@@ -155,32 +122,7 @@ export default function Navbar() {
         }`}
       >
         <div className="px-4 py-4 space-y-1">
-          {navLinks.map((link) => (
-            link.to ? (
-              <Link
-                key={link.label}
-                to={link.to}
-                className={`block px-4 py-2.5 text-sm font-medium rounded-xl transition-colors ${
-                  isLinkActive(link.to)
-                    ? 'text-indigo-600 bg-indigo-50'
-                    : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'
-                }`}
-                onClick={() => setMobileOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ) : (
-              <a
-                key={link.label}
-                href={link.href}
-                className="block px-4 py-2.5 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors"
-                onClick={() => setMobileOpen(false)}
-              >
-                {link.label}
-              </a>
-            )
-          ))}
-          <div className="pt-3 space-y-2 border-t border-slate-100 mt-2">
+          <div className="pt-3 space-y-2 mt-2">
             {isAuthenticated ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 rounded-xl">

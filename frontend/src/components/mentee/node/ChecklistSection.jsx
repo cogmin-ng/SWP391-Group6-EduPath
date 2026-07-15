@@ -1,4 +1,4 @@
-import { Check, ChevronDown, ClipboardList, Circle } from 'lucide-react';
+import { Check, ClipboardList, Circle } from 'lucide-react';
 
 /**
  * Interactive checklist card.
@@ -74,8 +74,6 @@ export default function ChecklistSection({ items, onToggle }) {
               >
                 {item.completed ? 'Completed' : 'In Progress'}
               </span>
-
-              <ChevronDown className={`h-4 w-4 flex-shrink-0 ${item.completed ? 'text-emerald-400' : 'text-slate-300 group-hover:text-indigo-400'}`} />
             </button>
           </li>
         ))}

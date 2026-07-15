@@ -56,8 +56,8 @@ exports.getRoadmapById = asyncHandler(async (req, res) => {
 exports.getRoadmapBySlug = asyncHandler(async (req, res) => {
   const roadmap = await roadmapService.getRoadmapBySlug(
     req.params.slug,
-    req.user.id,
-    req.user.roles
+    req.user?.id,
+    req.user?.roles || []
   );
 
   return sendSuccess(res, {

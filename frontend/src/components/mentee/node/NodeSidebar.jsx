@@ -1,4 +1,4 @@
-import { Play, Check, Circle, Lock, ChevronDown } from 'lucide-react';
+import { Play, Check, Circle, ChevronDown } from 'lucide-react';
 
 /**
  * Left sidebar showing the roadmap name, overall progress,
@@ -29,7 +29,7 @@ export default function NodeSidebar({ roadmap, currentNodeId, onNodeClick }) {
     }
     return (
       <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
-        {node.status === 'locked' ? <Lock className="h-4 w-4" /> : <Circle className="h-4 w-4" />}
+        <Circle className="h-4 w-4" />
       </div>
     );
   };

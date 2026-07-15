@@ -4,7 +4,7 @@ import Button from '../ui/Button';
 
 export default function Hero() {
   return (
-    <section className="relative pt-28 pb-16 lg:pt-36 lg:pb-24 overflow-hidden">
+    <section className="relative pt-28 pb-10 lg:pt-36 lg:pb-16 overflow-hidden">
       {/* Background decoration */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-indigo-100/40 via-violet-100/20 to-transparent rounded-full blur-3xl -z-10" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-blue-100/30 to-transparent rounded-full blur-3xl -z-10" />

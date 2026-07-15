@@ -303,8 +303,18 @@ exports.updateNodeProgress = async (nodeId, completed, userId, roles = []) => {
     }),
   ]);
 
-  // Auto-create certificate if eligible (idempotent)
-  await certificateService.createCertificateIfEligible(userId, node.learningPathId);
+  const certificateResult =
+    await certificateService.createCertificateIfEligible(
+      userId,
+      node.learningPathId
+    );
 
-  return { nodeProgress, enrollment };
+  return {
+    nodeProgress,
+    enrollment,
+    roadmapCompleted: enrollment?.status === 'COMPLETED',
+    certificate: certificateResult.certificate,
+    certificateIssued: certificateResult.created,
+    notification: certificateResult.notification,
+  };
 };

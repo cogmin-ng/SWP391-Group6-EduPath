@@ -48,9 +48,23 @@ exports.getUserById = asyncHandler(async (req, res) => {
   });
 });
 
+exports.getMyMenteeProfile = asyncHandler(async (req, res) => {
+  const profile = await userService.getMenteeProfile(req.user.id);
+
+  return sendSuccess(res, {
+    message: 'Mentee profile retrieved successfully',
+    data: profile,
+  });
+});
+
 exports.updateUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const user = await userService.updateUser(id, req.body, req.user?.id);
+  const user = await userService.updateUser(
+    id,
+    req.body,
+    req.user?.id,
+    req.user?.roles
+  );
 
   return sendSuccess(res, {
     message: 'User updated successfully',

@@ -1,319 +1,155 @@
-import { Sparkles } from "lucide-react";
-import { useMemo, useState } from "react";
+import { AlertCircle, RefreshCw } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import MenteeHeader from "../../components/mentee/MenteeHeader";
-
 import HomeView from "../../components/mentee/HomeView";
-
+import MenteeHeader from "../../components/mentee/MenteeHeader";
+import { enrollInRoadmapBySlug } from "../../services/enrollmentService";
 import {
-  INITIAL_ACTIVITIES,
-  INITIAL_BADGES,
-  INITIAL_CERTIFICATES,
-  INITIAL_COURSES,
-  INITIAL_USER,
-  SUGGESTED_COURSES,
-} from "../../mock/menteeData";
-import { useAuth } from "../../hooks/useAuth";
+  getCachedMenteeDashboard,
+  getMenteeDashboard,
+} from "../../services/menteeDashboardService";
 
-const saveState = (key, data) => {
-  localStorage.setItem(key, JSON.stringify(data));
-};
-
-const readStoredState = (key, fallback) => {
-  const stored = localStorage.getItem(key);
-  return stored ? JSON.parse(stored) : fallback;
-};
+function DashboardSkeleton() {
+  return (
+    <div className="animate-pulse space-y-8" aria-label="Đang tải dashboard">
+      <div className="h-72 rounded-3xl bg-indigo-200" />
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }, (_, index) => (
+          <div key={index} className="h-36 rounded-2xl bg-white" />
+        ))}
+      </div>
+      <div className="h-72 rounded-3xl bg-white" />
+    </div>
+  );
+}
 
 export default function MenteeHomePage() {
-  const { user: authUser } = useAuth();
   const navigate = useNavigate();
+  const [dashboard, setDashboard] = useState(() => getCachedMenteeDashboard());
+  const [loading, setLoading] = useState(() => !getCachedMenteeDashboard());
+  const [error, setError] = useState("");
+  const [enrollingSlug, setEnrollingSlug] = useState(null);
 
-  const [user, setUser] = useState(() =>
-    readStoredState("edupath_user", INITIAL_USER),
-  );
-  const [courses, setCourses] = useState(() =>
-    readStoredState("edupath_courses", INITIAL_COURSES),
-  );
-  const [suggestedCourses, setSuggestedCourses] = useState(() =>
-    readStoredState("edupath_suggested", SUGGESTED_COURSES),
-  );
-  const [badges] = useState(() =>
-    readStoredState("edupath_badges", INITIAL_BADGES),
-  );
-  const [activities, setActivities] = useState(() =>
-    readStoredState("edupath_activities", INITIAL_ACTIVITIES),
-  );
-  const [, setCertificates] = useState(() =>
-    readStoredState("edupath_certificates", INITIAL_CERTIFICATES),
-  );
+  const loadDashboard = useCallback(async ({ showLoading = true } = {}) => {
+    if (showLoading) setLoading(true);
+    setError("");
 
-  const [toast, setToast] = useState(null);
-
-  const displayUser = useMemo(
-    () => ({
-      ...user,
-      name: authUser?.name || "Học viên",
-      avatarUrl: authUser?.avatarUrl || authUser?.avatar || user.avatarUrl,
-    }),
-    [authUser, user],
-  );
-
-  const triggerToast = (message, type = "success") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
-
-  const firstCourse = useMemo(
-    () => courses.find((course) => course.isEnrolled),
-    [courses],
-  );
-
-  const handleGoToRoadmaps = () => navigate("/roadmaps");
-  const handleGoToProfile = () => navigate("/mentee/profile");
-  const handleGoToCourse = (course) => {
-    if (course?.id) {
-      navigate(`/roadmaps/${course.id}/learn`);
-    } else {
-      handleGoToRoadmaps();
+    try {
+      const data = await getMenteeDashboard();
+      setDashboard(data);
+    } catch (requestError) {
+      console.error("Failed to load mentee dashboard:", requestError);
+      setError(
+        requestError.response?.data?.message ||
+          "Không thể tải dữ liệu dashboard. Vui lòng thử lại.",
+      );
+    } finally {
+      if (showLoading) setLoading(false);
     }
-  };
-  const handleGoToQuiz = () => {
-    if (firstCourse?.id) {
-      navigate(`/roadmaps/${firstCourse.id}/learn/quiz`);
-    } else {
-      handleGoToRoadmaps();
-    }
-  };
-  const handleGoToNodeView = () => {
-    if (firstCourse?.id) {
-      navigate(`/roadmaps/${firstCourse.id}/learn`);
-    } else {
-      handleGoToRoadmaps();
-    }
-  };
-  const handleGoToTipContribution = () => {
-    const firstNodeId = firstCourse?.nodes?.[0]?.id;
-    if (firstCourse?.id && firstNodeId) {
-      navigate(`/mentee/roadmaps/${firstCourse.id}/nodes/${firstNodeId}`);
-    } else {
-      handleGoToRoadmaps();
-    }
-  };
-  const handleViewSuggestedCourses = () => navigate("/roadmaps");
-  const handleViewAllActivities = () => navigate("/roadmaps");
-  const handleViewAllAchievements = () => navigate("/mentee/profile");
+  }, []);
 
-  const handleUpdateXp = (xpGained, message) => {
-    if (xpGained <= 0) return;
+  useEffect(() => {
+    let active = true;
 
-    setUser((prev) => {
-      let nextXp = prev.currentXp + xpGained;
-      let nextLevel = prev.level;
-      let maxXp = prev.maxXp;
-      let leveledUp = false;
+    getMenteeDashboard()
+      .then((data) => {
+        if (active) setDashboard(data);
+      })
+      .catch((requestError) => {
+        console.error("Failed to load mentee dashboard:", requestError);
+        if (active) {
+          setError(
+            requestError.response?.data?.message ||
+              "Không thể tải dữ liệu dashboard. Vui lòng thử lại.",
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
-      while (nextXp >= maxXp) {
-        nextXp -= maxXp;
-        nextLevel += 1;
-        maxXp = Math.round(maxXp * 1.22);
-        leveledUp = true;
-      }
+    return () => {
+      active = false;
+    };
+  }, []);
 
-      const updated = {
-        ...prev,
-        level: nextLevel,
-        currentXp: nextXp,
-        maxXp: maxXp,
-      };
-
-      saveState("edupath_user", updated);
-
-      if (leveledUp) {
-        setTimeout(
-          () =>
-            triggerToast(
-              `🎉 Chúc mừng! Bạn đã tích luỹ đủ kiến thức và tăng lên Cấp độ ${nextLevel}!`,
-              "level",
-            ),
-          500,
-        );
-      } else {
-        triggerToast(`+${xpGained} XP: ${message}`, "xp");
-      }
-
-      return updated;
-    });
+  const goToCourse = (course) => {
+    if (course?.slug) navigate(`/roadmaps/${course.slug}/learn`);
+    else navigate("/roadmaps");
   };
 
-  const handleEnrollCourse = (courseId) => {
-    let target = suggestedCourses.find((c) => c.id === courseId);
-    let inBaseline = courses.find((c) => c.id === courseId);
+  const goToCurrentNode = () => {
+    const course = dashboard?.continueLearning;
+    goToCourse(course);
+  };
 
-    if (inBaseline && inBaseline.isEnrolled) {
-      triggerToast("Bạn đã tham gia lộ trình học này rồi!", "success");
+  const goToCurrentQuiz = () => {
+    const course = dashboard?.continueLearning;
+    if (course?.slug && course.currentNode?.id && course.currentNode.hasQuiz) {
+      navigate(
+        `/roadmaps/${course.slug}/learn/quiz?nodeId=${course.currentNode.id}`,
+      );
       return;
     }
+    goToCourse(course);
+  };
 
-    let updatedCourses = [...courses];
+  const handleEnroll = async (course) => {
+    if (!course?.slug || enrollingSlug) return;
 
-    if (target) {
-      const activeEnrollObj = {
-        ...target,
-        isEnrolled: true,
-        nodes: [
-          {
-            id: `node-${courseId}-1`,
-            label: "Nhập môn căn bản",
-            description: `Chào mừng bạn tới khóa học ${target.title}. Làm quen các thuật ngữ cơ sở và cú pháp then chốt.`,
-            completed: false,
-            checklist: [
-              {
-                id: `c-${courseId}-1`,
-                label: "Xem video bài giảng hướng dẫn nhập môn",
-                completed: false,
-                xpValue: 10,
-              },
-              {
-                id: `c-${courseId}-2`,
-                label: "Tải bộ tài liệu cheatsheet kỹ thuật về máy",
-                completed: false,
-                xpValue: 15,
-              },
-              {
-                id: `c-${courseId}-3`,
-                label: "Hoàn tất bài thực tập viết đoạn mã khai mạc",
-                completed: false,
-                xpValue: 20,
-              },
-            ],
-          },
-          {
-            id: `node-${courseId}-2`,
-            label: "Thực hành module nâng cao",
-            description:
-              "Giải bài tập tình huống thực chiến, kết nối các nguồn thư viện bên thứ 3.",
-            completed: false,
-            checklist: [
-              {
-                id: `c-${courseId}-4`,
-                label: "Đọc bài viết thủ thuật đính kèm",
-                completed: false,
-                xpValue: 20,
-              },
-              {
-                id: `c-${courseId}-5`,
-                label: "Làm bài trắc nghiệm thu hoạch kiến thuật",
-                completed: false,
-                xpValue: 25,
-              },
-            ],
-          },
-        ],
-      };
-
-      updatedCourses.push(activeEnrollObj);
-      setCourses(updatedCourses);
-
-      const leftover = suggestedCourses.filter((c) => c.id !== courseId);
-      setSuggestedCourses(leftover);
-      saveState("edupath_suggested", leftover);
-    } else if (inBaseline) {
-      updatedCourses = courses.map((c) =>
-        c.id === courseId ? { ...c, isEnrolled: true } : c,
+    setEnrollingSlug(course.slug);
+    try {
+      await enrollInRoadmapBySlug(course.slug);
+      toast.success(`Đã đăng ký lộ trình “${course.title}”`);
+      await loadDashboard({ showLoading: false });
+    } catch (requestError) {
+      console.error("Failed to enroll in roadmap:", requestError);
+      toast.error(
+        requestError.response?.data?.message || "Không thể đăng ký lộ trình",
       );
-      setCourses(updatedCourses);
+    } finally {
+      setEnrollingSlug(null);
     }
-
-    saveState("edupath_courses", updatedCourses);
-    triggerToast(
-      `🎉 Đăng ký thành công lộ trình "${target?.title || inBaseline?.title}"!`,
-      "success",
-    );
-    handleUpdateXp(30, "Đăng ký ghi danh lộ trình mới");
-
-    setActivities((prevActs) => {
-      const added = [
-        {
-          id: `act-${Date.now()}`,
-          title: "Đăng ký thành công khóa học mới",
-          description: `Ghi danh học tập: ${target?.title || inBaseline?.title}`,
-          timeAgo: "Vừa xong",
-          xpGained: 30,
-          iconType: "join",
-        },
-        ...prevActs,
-      ];
-      saveState("edupath_activities", added);
-      return added;
-    });
-
-    setCertificates((prev) => {
-      const added = [
-        ...prev,
-        {
-          id: `cert-${courseId}-${Date.now()}`,
-          courseTitle: target?.title || inBaseline?.title || "",
-          issueDate: "",
-          credentialId: "EDP-PENDING",
-          isUnlocked: false,
-          tutor: target?.tutor || inBaseline?.tutor || "",
-        },
-      ];
-      saveState("edupath_certificates", added);
-      return added;
-    });
   };
 
   return (
-    <div
-      id="edupath_application_root"
-      className="min-h-screen bg-[#F6F8FC] text-slate-800 font-sans selection:bg-indigo-600/10 antialiased"
-    >
-      {toast && (
-        <div
-          id="toast_alert_banner"
-          className={`fixed top-4 left-1/2 -translate-x-1/2 p-4 rounded-2xl shadow-xl z-50 flex items-center gap-2 border text-xs font-semibold animate-slideDown ${
-            toast.type === "level"
-              ? "bg-linear-to-r from-amber-500 to-yellow-500 text-slate-900 border-amber-300"
-              : toast.type === "xp"
-                ? "bg-emerald-600 text-white border-emerald-500"
-                : "bg-indigo-600 text-white border-indigo-500"
-          }`}
-        >
-          <Sparkles className="w-4 h-4 text-white animate-spin" />
-          <span>{toast.message}</span>
-        </div>
-      )}
-
+    <div className="min-h-screen bg-[#F6F8FC] text-slate-800 antialiased">
       <MenteeHeader />
-
-      <main
-        id="main_layout_workspace"
-        className="max-w-400 mx-auto w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-6 sm:py-8 lg:py-10"
-      >
-        <HomeView
-          user={displayUser}
-          courses={courses}
-          activities={activities}
-          badges={badges}
-          suggestedCourses={suggestedCourses}
-          onEnrollGame={handleEnrollCourse}
-          onUpdateXp={handleUpdateXp}
-          onContinueStudy={handleGoToRoadmaps}
-          onViewMyPath={handleGoToRoadmaps}
-          onViewAllLearning={handleGoToRoadmaps}
-          onContinueCourse={handleGoToCourse}
-          onViewRoadmap={handleGoToCourse}
-          onViewAllActivities={handleViewAllActivities}
-          onViewAllAchievements={handleViewAllAchievements}
-          onQuickPath={handleGoToRoadmaps}
-          onQuickNode={handleGoToNodeView}
-          onQuickQuiz={handleGoToQuiz}
-          onQuickTip={handleGoToTipContribution}
-          onViewXP={handleGoToProfile}
-          onViewCertificates={handleGoToProfile}
-          onViewSuggestedCourses={handleViewSuggestedCourses}
-        />
+      <main className="mx-auto w-full max-w-400 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 xl:px-10">
+        {loading ? (
+          <DashboardSkeleton />
+        ) : error ? (
+          <div className="mx-auto mt-20 max-w-lg rounded-3xl border border-rose-100 bg-white p-8 text-center shadow-sm">
+            <AlertCircle className="mx-auto h-10 w-10 text-rose-500" />
+            <h1 className="mt-4 text-lg font-bold text-slate-900">
+              Không thể tải dashboard
+            </h1>
+            <p className="mt-2 text-sm text-slate-500">{error}</p>
+            <button
+              type="button"
+              onClick={() => loadDashboard()}
+              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Thử lại
+            </button>
+          </div>
+        ) : (
+          <HomeView
+            dashboard={dashboard}
+            enrollingSlug={enrollingSlug}
+            onContinueCourse={goToCourse}
+            onExplore={() => navigate("/explore")}
+            onViewRoadmaps={() => navigate("/roadmaps")}
+            onViewProfile={() => navigate("/mentee/profile")}
+            onViewCertificates={() => navigate("/my-certificates")}
+            onViewContributions={() => navigate("/mentee/contributions")}
+            onViewCurrentNode={goToCurrentNode}
+            onViewCurrentQuiz={goToCurrentQuiz}
+            onEnroll={handleEnroll}
+          />
+        )}
       </main>
     </div>
   );

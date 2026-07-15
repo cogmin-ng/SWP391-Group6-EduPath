@@ -3,30 +3,13 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { ArrowRight, Star, StarHalf, User, Loader2 } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import { getRoadmapById } from '../../services/roadmapService';
-
-const initialReviews = [
-  {
-    id: 1,
-    name: 'Alex M.',
-    avatar: '',
-    rating: 5,
-    text: '"Amazing course! The practical projects really solidified my understanding of React and Node.js."',
-  },
-  {
-    id: 2,
-    name: 'Jamie L.',
-    avatar: '',
-    rating: 4.5,
-    text: '"Dr. Jenkins is a fantastic mentor. Highly recommend this roadmap for aspiring fullstack devs."',
-  },
-];
+import ReviewSection from '../../components/ui/ReviewSection';
 
 export default function MentorRoadmapDetailPage() {
   const { roadmapId } = useParams();
   const [roadmap, setRoadmap] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [reviews] = useState(initialReviews);
 
   useEffect(() => {
     const fetchRoadmap = async () => {
@@ -66,8 +49,8 @@ export default function MentorRoadmapDetailPage() {
       <main className="mx-auto w-full max-w-7xl px-4 pb-12 pt-24 sm:px-6 lg:px-8">
         <section className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 lg:col-span-8 lg:p-10">
-            <div className="absolute inset-0 opacity-15" style={{ backgroundImage: `url(${roadmap.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/90 to-white/70" />
+            <div className="absolute inset-0" style={{ backgroundImage: `url(${roadmap.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center right' }} />
+            <div className="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-white/10" />
 
             <div className="relative z-10 max-w-2xl">
               <div className="mb-3 flex flex-wrap items-center gap-3">
@@ -92,24 +75,24 @@ export default function MentorRoadmapDetailPage() {
             </div>
           </div>
 
-          <aside className="rounded-2xl border border-slate-200 bg-white p-6 lg:col-span-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Thông tin lộ trình</p>
-            <h3 className="mt-2 text-xl font-semibold text-slate-900">{roadmap.title}</h3>
-            <p className="text-sm text-slate-600">Tạo bởi {mentorName}</p>
+          <aside className="rounded-2xl border border-indigo-500 bg-indigo-600 p-6 lg:col-span-4 shadow-xl shadow-indigo-600/20">
+            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-200">Thông tin lộ trình</p>
+            <h3 className="mt-2 text-xl font-semibold text-white">{roadmap.title}</h3>
+            <p className="text-sm text-indigo-100">Tạo bởi {mentorName}</p>
 
             <div className="mt-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">Nodes:</span>
-                <span className="text-sm font-semibold text-slate-900">{nodes.length}</span>
+              <div className="flex items-center justify-between border-b border-indigo-500 pb-3">
+                <span className="text-sm text-indigo-200">Nodes:</span>
+                <span className="text-sm font-semibold text-white">{nodes.length}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">Trạng thái:</span>
-                <span className={`text-sm font-semibold ${
+                <span className="text-sm text-indigo-200">Trạng thái:</span>
+                <span className={`text-sm font-semibold px-2 py-1 rounded-md ${
                   roadmap.status === 'PUBLISHED' || roadmap.status === 'APPROVED'
-                    ? 'text-emerald-600'
+                    ? 'bg-emerald-500/20 text-emerald-100'
                     : roadmap.status === 'PENDING'
-                    ? 'text-amber-600'
-                    : 'text-slate-600'
+                    ? 'bg-amber-500/20 text-amber-100'
+                    : 'bg-indigo-500 text-indigo-100'
                 }`}>
                   {roadmap.status === 'PUBLISHED' || roadmap.status === 'APPROVED'
                     ? 'Đã Phê Duyệt'
@@ -148,52 +131,18 @@ export default function MentorRoadmapDetailPage() {
                 </div>
               </div>
             ))}
-        </div>
-      </section>
-
-      {/* Feedback & Community */}
-      {(roadmap.status === 'APPROVED' || roadmap.status === 'PUBLISHED') && (
-        <section className="mx-auto mt-16 w-full max-w-4xl">
-          <div className="mb-6 border-b border-slate-200 pb-3">
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900">Feedback &amp; Cộng đồng</h2>
-            <p className="mt-1 text-sm text-slate-500">Đánh giá từ người học</p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {/* Reviews List */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-slate-900">Đánh giá</h3>
-              {reviews.map((review) => (
-                <div key={review.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="mb-2 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
-                      <User className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-slate-900">{review.name}</p>
-                      <div className="flex items-center text-amber-400">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <span key={star}>
-                            {star <= Math.floor(review.rating) ? (
-                              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                            ) : star - 0.5 === review.rating ? (
-                              <StarHalf className="h-4 w-4 fill-amber-400 text-amber-400" />
-                            ) : (
-                              <Star className="h-4 w-4 text-slate-300" />
-                            )}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-sm leading-relaxed text-slate-600">{review.text}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </section>
-      )}
-    </main>
+
+        {/* Feedback & Community */}
+        {(roadmap.status === 'APPROVED' || roadmap.status === 'PUBLISHED') && (
+          <ReviewSection
+            learningPathId={roadmap.id}
+            mentorId={roadmap.mentorId}
+            isEnrolled={false}
+          />
+        )}
+      </main>
     </div >
   );
 }

@@ -9,6 +9,7 @@ import {
   QuizSection,
   TipsSection,
   ProgressCard,
+  DiscussionSection,
 } from '../../components/mentee/node';
 
 import {
@@ -158,6 +159,7 @@ export default function MenteeNodeDetailsPage() {
                 <MaterialsSection materials={materials} />
                 <QuizSection quiz={quiz} roadmapId={roadmapId} nodeId={nodeId} />
                 <TipsSection tips={tips} onSubmitTip={handleSubmitTip} />
+                <DiscussionSection nodeId={nodeId} />
               </div>
 
               {/* ── Right: Progress card ── */}

@@ -16,6 +16,7 @@ const enrollmentRoutes = require('./enrollment');
 const certificateRoutes = require('./certificate');
 const otpRoutes = require('./otp');
 const reviewRoutes = require('./review');
+const nodeCommentRoutes = require('./nodeComment');
 const menteeDashboardRoutes = require('./menteeDashboard');
 const badgeRoutes = require('./badge');
 const quizController = require('../controllers/quizController');
@@ -40,6 +41,7 @@ router.use('/enrollments', enrollmentRoutes);
 router.use('/certificates', certificateRoutes);
 router.use('/otp', otpRoutes);
 router.use('/reviews', reviewRoutes);
+router.use('/node-comments', nodeCommentRoutes);
 router.use('/mentee-dashboard', menteeDashboardRoutes);
 router.use('/badges', badgeRoutes);
 

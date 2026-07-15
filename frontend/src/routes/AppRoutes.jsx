@@ -17,6 +17,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import MentorRequestPage from "../pages/admin/MentorRequestPage";
 import MenteeLayout from "../layouts/MenteeLayout";
 import MenteeProfilePage from "../pages/mentee/MenteeProfilePage";
+import MenteeBadgesPage from "../pages/mentee/MenteeBadgesPage";
 import MentorLayout from "../layouts/MentorLayout";
 import MentorDashboardPage from "../pages/mentor/MentorDashboardPage";
 import MentorRoadmapsPage from "../pages/mentor/MentorRoadmapsPage";
@@ -131,6 +132,15 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["MENTEE"]}>
             <MenteeProfilePage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/mentee/badges"
+        element={
+          <ProtectedRoute allowedRoles={["MENTEE"]}>
+            <MenteeBadgesPage />
           </ProtectedRoute>
         }
       />

@@ -7,6 +7,7 @@ const refreshTokenRepo = require('../repositories/refreshTokenRepository');
 const otpService = require('./otpService');
 const config = require('../config');
 const ApiError = require('../utils/ApiError');
+const normalizeEmail = require('../utils/normalizeEmail');
 const { auth: authMessages } = require('../constants/messages');
 const prisma = require('../lib/prisma');
 const ROLES = require('../constants/roles');
@@ -53,21 +54,30 @@ const buildAuthUser = (user, roles) => ({
 });
 
 exports.register = async ({ email, password, name }) => {
-  const existing = await userRepo.findByEmail(email);
-  if (existing) throw new ApiError(400, authMessages.emailAlreadyInUse);
+  const normalizedEmail = normalizeEmail(email);
+  const existing = await userRepo.findByEmail(normalizedEmail);
+  if (existing?.isVerified) {
+    throw new ApiError(400, authMessages.emailAlreadyInUse);
+  }
 
-  const hash = await bcrypt.hash(password, 10);
-  const defaultRole = await getDefaultRole();
+  const passwordHash = await bcrypt.hash(password, 10);
+  let user;
 
-  const user = await userRepo.create({
-    email,
-    passwordHash: hash,
-    name,
-    roleId: defaultRole.id,
-  });
+  if (existing) {
+    // Restart the pending registration instead of permanently reserving an
+    // email address whose owner has not completed verification yet.
+    user = await userRepo.update(existing.id, { passwordHash, name });
+  } else {
+    const defaultRole = await getDefaultRole();
+    user = await userRepo.create({
+      email: normalizedEmail,
+      passwordHash,
+      name,
+      roleId: defaultRole.id,
+    });
+  }
 
   try {
-    const otpService = require('./otpService');
     await otpService.sendOtp({ email: user.email, otpType: 'VERIFY_EMAIL' });
   } catch (err) {
     console.error('Failed to send verification email', err.message || err);
@@ -77,10 +87,11 @@ exports.register = async ({ email, password, name }) => {
 };
 
 exports.forgotPassword = async ({ email }) => {
-  const user = await userRepo.findByEmail(email);
+  const normalizedEmail = normalizeEmail(email);
+  const user = await userRepo.findByEmail(normalizedEmail);
   if (!user) {
     // Avoid leaking whether the email exists.
-    return { email };
+    return { email: normalizedEmail };
   }
 
   try {
@@ -94,12 +105,17 @@ exports.forgotPassword = async ({ email }) => {
 };
 
 exports.resetPassword = async ({ email, otp, newPassword }) => {
-  const user = await userRepo.findByEmail(email);
+  const normalizedEmail = normalizeEmail(email);
+  const user = await userRepo.findByEmail(normalizedEmail);
   if (!user) {
     throw new ApiError(400, 'Invalid password reset request');
   }
 
-  await otpService.verifyOtp({ email, otp, otpType: 'RESET_PASSWORD' });
+  await otpService.verifyOtp({
+    email: normalizedEmail,
+    otp,
+    otpType: 'RESET_PASSWORD',
+  });
   const passwordHash = await bcrypt.hash(newPassword, 10);
   await userRepo.update(user.id, { passwordHash });
   await refreshTokenRepo.revokeAllForUser(user.id);
@@ -107,9 +123,14 @@ exports.resetPassword = async ({ email, otp, newPassword }) => {
 };
 
 exports.login = async ({ email, password }) => {
-  const user = await userRepo.findByEmail(email);
+  const user = await userRepo.findByEmail(normalizeEmail(email));
   if (!user) throw new ApiError(401, authMessages.invalidCredentials);
-  if (!user.isVerified) throw new ApiError(403, 'Email not verified. Please verify your email to continue.');
+  if (!user.isVerified) {
+    throw new ApiError(
+      403,
+      'Email not verified. Please verify your email to continue.'
+    );
+  }
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) throw new ApiError(401, authMessages.invalidCredentials);
 

@@ -12,6 +12,7 @@ import {
   QuizSection,
   TipsSection,
   ProgressCard,
+  DiscussionSection,
 } from '../../components/mentee/node';
 import { getRoadmapBySlug } from '../../services/roadmapService';
 import { getNodeDetails, toggleChecklistProgress, updateNodeProgress } from '../../services/nodeService';
@@ -363,6 +364,7 @@ export default function RoadmapLearningPage() {
 
                   <ChecklistSection items={checklist} onToggle={handleChecklistToggle} />
                   <TipsSection tips={nodeDetails?.tips || []} nodeId={currentPhase?.id} onRefresh={handleTipsRefresh} />
+                  <DiscussionSection nodeId={currentPhase?.id} />
                 </div>
               </>
             )}

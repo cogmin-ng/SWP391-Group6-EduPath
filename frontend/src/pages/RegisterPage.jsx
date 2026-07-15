@@ -160,7 +160,11 @@ export default function RegisterPage() {
                 <Input name="otp" label="Mã xác thực (6 chữ số)" placeholder="123456" />
               </div>
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => navigate('/login')}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate('/login')}
+                >
                   Quay lại đăng nhập
                 </Button>
                 <Button type="submit" variant="primary" isLoading={isLoading}>

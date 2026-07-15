@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Award, Calendar, Download, Map, User } from 'lucide-react';
 import MenteeHeader from '../../components/mentee/MenteeHeader';
-import { getCertificateById, downloadCertificate } from '../../services/certificateService';
+import { getCertificateById } from '../../services/certificateService';
+import { toPng } from 'html-to-image';
+import { jsPDF } from 'jspdf';
 import toast from 'react-hot-toast';
 
 export default function CertificateDetailPage() {
@@ -11,6 +13,7 @@ export default function CertificateDetailPage() {
   const [certificate, setCertificate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
+  const certificateRef = useRef(null);
 
   useEffect(() => {
     const fetchCertificate = async () => {
@@ -38,20 +41,35 @@ export default function CertificateDetailPage() {
   };
 
   const handleDownload = async () => {
+    if (!certificateRef.current) return;
+    
     try {
       setDownloading(true);
-      const blob = await downloadCertificate(id);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `certificate-${id}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
+      
+      // Allow a brief moment for layout/fonts to stabilize
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const dataUrl = await toPng(certificateRef.current, {
+        quality: 1,
+        pixelRatio: 2, // Higher quality
+        backgroundColor: '#ffffff'
+      });
+      
+      const width = certificateRef.current.offsetWidth * 2;
+      const height = certificateRef.current.offsetHeight * 2;
+      
+      const pdf = new jsPDF({
+        orientation: width > height ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [width, height]
+      });
+      
+      pdf.addImage(dataUrl, 'PNG', 0, 0, width, height);
+      pdf.save(`certificate-${id}.pdf`);
       toast.success('Tải chứng chỉ thành công!');
     } catch (err) {
-      toast.error(err.message || 'Không thể tải chứng chỉ');
+      console.error('Lỗi khi tạo PDF chứng chỉ:', err);
+      toast.error(`Lỗi: ${err.message || 'Không thể tải chứng chỉ'}`);
     } finally {
       setDownloading(false);
     }
@@ -110,7 +128,10 @@ export default function CertificateDetailPage() {
 
         {/* Certificate Preview */}
         <div className="mb-10 overflow-hidden rounded-3xl border-4 border-white bg-white shadow-2xl shadow-indigo-200/50 ring-1 ring-slate-200">
-          <div className="relative bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-slate-50 via-white to-slate-100 p-8 sm:p-14 overflow-hidden">
+          <div 
+            ref={certificateRef}
+            className="relative bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-slate-50 via-white to-slate-100 p-8 sm:p-14 overflow-hidden"
+          >
             {/* Elegant outer border */}
             <div className="absolute inset-4 rounded-2xl border-[3px] border-double border-indigo-100 pointer-events-none"></div>
             

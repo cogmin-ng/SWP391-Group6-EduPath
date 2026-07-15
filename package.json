@@ -15,7 +15,8 @@
       "@prisma/client",
       "@prisma/engines",
       "@scarf/scarf",
-      "prisma"
+      "prisma",
+      "core-js"
     ]
   }
 }

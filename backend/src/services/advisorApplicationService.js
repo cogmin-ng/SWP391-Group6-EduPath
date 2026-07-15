@@ -177,7 +177,47 @@ exports.getMyApplication = async (userId) => {
     },
   });
 
-  return application;
+  if (!application) {
+    return null;
+  }
+
+  // Fetch all unique approved subjects from all APPROVED applications of this user
+  const approvedApps = await prisma.advisorApplication.findMany({
+    where: {
+      userId,
+      status: 'APPROVED',
+      isDeleted: false,
+    },
+    include: {
+      mentorSubjects: {
+        include: {
+          subject: {
+            select: {
+              id: true,
+              name: true,
+              category: { select: { id: true, name: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const approvedSubjectsMap = new Map();
+  approvedApps.forEach((app) => {
+    app.mentorSubjects.forEach((ms) => {
+      if (ms.subject) {
+        approvedSubjectsMap.set(ms.subject.id, ms.subject);
+      }
+    });
+  });
+
+  const approvedSubjects = Array.from(approvedSubjectsMap.values());
+
+  return {
+    ...application,
+    approvedSubjects,
+  };
 };
 
 /**

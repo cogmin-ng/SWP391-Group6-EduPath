@@ -1,4 +1,4 @@
-import { Award, BarChart3, BookOpen, CalendarDays, CheckCircle2, ChevronRight, Camera, Edit3, Flame, Lightbulb, MapPin, Settings, Sparkles, Star, Target, TrendingUp, X, User } from "lucide-react";
+import { Award, BarChart3, BookOpen, CalendarDays, CheckCircle2, ChevronRight, Camera, Edit3, Flame, Lightbulb, MapPin, Settings, Sparkles, Star, Target, TrendingUp, X, User, Zap, Shield, Lock } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -7,6 +7,7 @@ import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import { useAuth } from "../../hooks/useAuth";
 import { userService } from "../../services/userService";
+import { badgeService } from "../../services/badgeService";
 
 const getRoleLabel = (roles = []) => {
   if (!Array.isArray(roles) || roles.length === 0) return "Mentee";
@@ -46,6 +47,43 @@ export default function MenteeProfilePage() {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [toast, setToast] = useState(null);
 
+  const [badges, setBadges] = useState([]);
+  const [isLoadingBadges, setIsLoadingBadges] = useState(true);
+
+  useEffect(() => {
+    const fetchBadges = async () => {
+      try {
+        const res = await badgeService.getMyBadges();
+        if (res && res.data) {
+          setBadges(res.data.badges || []);
+          if (res.data.xp !== undefined && authUser && authUser.xp !== res.data.xp) {
+            updateUser({ xp: res.data.xp });
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching badges:", err);
+      } finally {
+        setIsLoadingBadges(false);
+      }
+    };
+    if (authUser?.id) {
+      fetchBadges();
+    }
+  }, [authUser?.id]);
+
+  const levelInfo = useMemo(() => {
+    const xp = authUser?.xp ?? 0;
+    let level = 1;
+    let currentXp = xp;
+    let maxXp = 500;
+    while (currentXp >= maxXp) {
+      currentXp -= maxXp;
+      level += 1;
+      maxXp = Math.round(maxXp * 1.2);
+    }
+    return { level, currentXp, maxXp };
+  }, [authUser]);
+
   useEffect(() => {
     if (!toast) return undefined;
 
@@ -59,6 +97,22 @@ export default function MenteeProfilePage() {
     return () => window.URL.revokeObjectURL(avatarPreview);
   }, [avatarPreview]);
 
+  useEffect(() => {
+    const handleHashScroll = () => {
+      if (window.location.hash === "#badges-section") {
+        const element = document.getElementById("badges-section");
+        if (element) {
+          setTimeout(() => {
+            element.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 150);
+        }
+      }
+    };
+    handleHashScroll();
+    window.addEventListener("hashchange", handleHashScroll);
+    return () => window.removeEventListener("hashchange", handleHashScroll);
+  }, []);
+
   const baseProfile = useMemo(
     () => ({
       name: authUser?.name || "Nguyễn Minh",
@@ -70,9 +124,9 @@ export default function MenteeProfilePage() {
         "Đam mê công nghệ và không ngừng học hỏi. Mục tiêu trở thành Fullstack Developer.",
       location: authUser?.location || "Hà Nội, Việt Nam",
       joinDate: authUser?.joinDate || "15/03/2024",
-      level: 12,
-      xp: 12450,
-      xpTarget: 15000,
+      level: levelInfo.level,
+      xp: authUser?.xp ?? 0,
+      xpTarget: levelInfo.maxXp,
       streak: 7,
       todayMinutes: 90,
       dailyGoalMinutes: 120,
@@ -80,8 +134,9 @@ export default function MenteeProfilePage() {
       contributions: 32,
       quizzes: 54,
       roadmapCount: 8,
+      badgesCount: badges.filter((b) => b.isUnlocked).length,
     }),
-    [authUser],
+    [authUser, levelInfo, badges],
   );
 
   const [profileData, setProfileData] = useState(() =>
@@ -349,190 +404,112 @@ export default function MenteeProfilePage() {
                 <MetricPill
                   icon={<span className="text-lg">🏆</span>}
                   label="Huy hiệu nổi bật"
-                  value="3 huy hiệu"
+                  value={`${profile.badgesCount} huy hiệu`}
                 />
               </div>
             </section>
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <InfoCard
-                icon={TrendingUp}
-                iconClassName="text-violet-600 bg-violet-50"
-                label="Tổng XP đạt"
-                value={profile.xp.toLocaleString()}
-                meta="Cải thiện 18%"
-              />
-              <InfoCard
-                icon={BarChart3}
-                iconClassName="text-emerald-600 bg-emerald-50"
-                label="Lộ trình hoàn thành"
-                value={profile.roadmapCount}
-                meta="Cải thiện 25%"
-              />
-              <InfoCard
-                icon={CheckCircle2}
-                iconClassName="text-rose-600 bg-rose-50"
-                label="Quiz đã hoàn thành"
-                value={profile.quizzes}
-                meta="Cải thiện 12%"
-              />
-              <InfoCard
-                icon={Lightbulb}
-                iconClassName="text-amber-600 bg-amber-50"
-                label="Đóng góp được duyệt"
-                value={profile.contributions}
-                meta="Cải thiện 28%"
-              />
-            </div>
-
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-              <section className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
-                <div className="flex items-center justify-between gap-3">
+              {/* Premium Badges Gallery */}
+              <section id="badges-section" className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6">
                   <div>
-                    <h2 className="text-lg font-bold tracking-tight text-slate-900">
-                      Thông tin tài khoản
+                    <h2 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                      <span className="text-2xl">🏆</span> Bộ sưu tập Huy hiệu
                     </h2>
                     <p className="mt-1 text-sm text-slate-500">
-                      Bản tóm tắt cô đọng, không lặp lại bảng điều khiển học
-                      tập.
+                      Mở khoá các cột mốc ý nghĩa trên con đường học tập cùng EduPath.
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-indigo-600 hover:bg-indigo-50"
-                    onClick={() => handleProfileAction("Xem toàn bộ hồ sơ")}
-                  >
-                    Xem chi tiết
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                  <FieldCard label="Email" value={profile.email} />
-                  <FieldCard label="Vai trò" value={profile.role} />
-                  <FieldCard label="Vị trí" value={profile.location} />
-                  <FieldCard label="Ngày tham gia" value={profile.joinDate} />
-                </div>
-
-                <div className="mt-5 rounded-2xl bg-slate-50 p-4">
-                  <div className="flex items-center justify-between gap-3 text-sm">
-                    <span className="font-semibold text-slate-700">
-                      Mức độ hoàn thiện hồ sơ
-                    </span>
-                    <span className="font-bold text-indigo-600">
-                      {xpCompletion}%
-                    </span>
-                  </div>
-                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
-                    <div
-                      className="h-full rounded-full bg-indigo-600 transition-all"
-                      style={{ width: `${xpCompletion}%` }}
-                    />
-                  </div>
-                  <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-                    <span>{profile.xp.toLocaleString()} XP</span>
-                    <span>{profile.xpTarget.toLocaleString()} XP</span>
+                  <div className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full self-start md:self-auto">
+                    Đã mở khoá: {profile.badgesCount}/{badges.length}
                   </div>
                 </div>
-              </section>
 
-              <section className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <h2 className="text-lg font-bold tracking-tight text-slate-900">
-                      Mục tiêu hôm nay
-                    </h2>
-                    <p className="mt-1 text-sm text-slate-500">
-                      Theo dõi mục tiêu cá nhân, không phải mục tiêu dashboard
-                      chung.
-                    </p>
+                {isLoadingBadges ? (
+                  <div className="flex justify-center items-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
                   </div>
-                  <Target className="h-5 w-5 text-indigo-600" />
-                </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    {badges.map((badge) => {
+                      const isUnlocked = badge.isUnlocked;
+                      return (
+                        <div
+                          key={badge.id}
+                          className={`relative rounded-2xl border p-5 flex flex-col items-center text-center transition-all duration-300 group hover:shadow-md ${
+                            isUnlocked
+                              ? "bg-linear-to-br from-indigo-50/50 to-violet-50/50 border-indigo-100 hover:scale-105"
+                              : "bg-slate-50/50 border-slate-100 opacity-60"
+                          }`}
+                        >
+                          {/* Glow effect on hover */}
+                          {isUnlocked && (
+                            <div className="absolute inset-0 -z-10 bg-linear-to-r from-indigo-500/10 to-violet-500/10 rounded-2xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300" />
+                          )}
 
-                <div className="mt-5 rounded-3xl border border-indigo-100/50 bg-linear-to-br from-indigo-50 to-violet-50 p-5">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                        Hoàn thành hôm nay
-                      </p>
-                      <h3 className="mt-1 text-3xl font-extrabold tracking-tight text-slate-900">
-                        {profileCompletion}%
-                      </h3>
-                    </div>
-
-                    <div className="relative h-24 w-24 rounded-full border-8 border-white bg-white shadow-inner">
-                      <div
-                        className="absolute inset-0 rounded-full border-8 border-indigo-600/90"
-                        style={{
-                          clipPath: `polygon(50% 50%, 50% 0%, 100% 0%, 100% ${100 - profileCompletion}%, 50% 50%)`,
-                        }}
-                      />
-                      <div className="absolute inset-3 flex items-center justify-center rounded-full bg-white text-center">
-                        <div>
-                          <div className="text-lg font-bold text-slate-900">
-                            {profile.todayMinutes}
+                          {/* Badge Icon Wrapper */}
+                          <div
+                            className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 shadow-inner ${
+                              isUnlocked
+                                ? badge.iconName === "zap"
+                                  ? "bg-amber-100 text-amber-600"
+                                  : badge.iconName === "award"
+                                    ? "bg-emerald-100 text-emerald-600"
+                                    : badge.iconName === "star"
+                                      ? "bg-purple-100 text-purple-600"
+                                      : "bg-indigo-100 text-indigo-600"
+                                : "bg-slate-200 text-slate-400"
+                            }`}
+                          >
+                            {badge.iconName === "zap" ? (
+                              <Zap className="w-8 h-8 animate-pulse" />
+                            ) : badge.iconName === "award" ? (
+                              <Award className="w-8 h-8" />
+                            ) : badge.iconName === "star" ? (
+                              <Star className="w-8 h-8" />
+                            ) : badge.iconName === "shield" ? (
+                              <Shield className="w-8 h-8" />
+                            ) : (
+                              <Award className="w-8 h-8" />
+                            )}
                           </div>
-                          <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                            phút
+
+                          {/* Badge Status Indicator */}
+                          {!isUnlocked && (
+                            <div className="absolute top-3 right-3 text-slate-400 bg-white rounded-full p-1 border border-slate-100 shadow-xs">
+                              <Lock className="w-3.5 h-3.5" />
+                            </div>
+                          )}
+
+                          <h3 className={`font-bold text-sm leading-tight ${isUnlocked ? "text-slate-800" : "text-slate-500"}`}>
+                            {badge.title}
+                          </h3>
+                          
+                          <p className="text-xs text-slate-400 mt-2 leading-relaxed flex-1">
+                            {badge.description}
+                          </p>
+
+                          <div className="mt-4 pt-3 border-t border-slate-100/60 w-full flex items-center justify-between text-[11px] font-semibold">
+                            <span className={`${isUnlocked ? "text-emerald-600" : "text-slate-400"}`}>
+                              +{badge.xpReward} XP
+                            </span>
+                            {isUnlocked ? (
+                              <span className="text-indigo-600 font-medium bg-white px-2 py-0.5 rounded-md shadow-xs">
+                                Đã nhận ✨
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 font-normal">Chưa đạt</span>
+                            )}
                           </div>
                         </div>
-                      </div>
-                    </div>
+                      );
+                    })}
                   </div>
-
-                  <div className="mt-4 rounded-2xl bg-white/70 p-4 backdrop-blur-sm">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-semibold text-slate-700">
-                        Mục tiêu ngày
-                      </span>
-                      <span className="text-slate-500">
-                        {profile.todayMinutes}/{profile.dailyGoalMinutes} phút
-                      </span>
-                    </div>
-                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
-                      <div
-                        className="h-full rounded-full bg-indigo-600 transition-all"
-                        style={{ width: `${profileCompletion}%` }}
-                      />
-                    </div>
-                    <p className="mt-3 text-xs text-slate-500">
-                      Mức độ hoàn thành theo mốc tối thiểu để giữ chuỗi học tập
-                      ổn định.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  <ActionPill
-                    icon={BookOpen}
-                    label="Tài liệu cá nhân"
-                    onClick={() => handleProfileAction("Tài liệu cá nhân")}
-                  />
-                  <ActionPill
-                    icon={Award}
-                    label="Chứng chỉ"
-                    onClick={() => handleProfileAction("Chứng chỉ")}
-                  />
-                  <ActionPill
-                    icon={Settings}
-                    label="Cài đặt tài khoản"
-                    onClick={() => handleProfileAction("Cài đặt tài khoản")}
-                  />
-                  <ActionPill
-                    icon={Target}
-                    label="Mục tiêu cá nhân"
-                    onClick={() => handleProfileAction("Mục tiêu cá nhân")}
-                  />
-                </div>
+                )}
               </section>
             </div>
           </div>
-
-          {/* Right sidebar removed to center profile content */}
-        </div>
-      </main>
+        </main>
 
       {isEditModalOpen ? (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/45 px-4 py-4 backdrop-blur-sm sm:items-center sm:py-6">

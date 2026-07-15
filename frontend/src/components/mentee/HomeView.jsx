@@ -235,11 +235,11 @@ export default function HomeView({
           <div className="mt-4 space-y-1">
             <p className="text-xs text-slate-500 font-medium">Tổng XP</p>
             <h3 className="text-2xl font-bold font-display text-slate-800">
-              2,450
+              {(user.xp ?? 0).toLocaleString()}
             </h3>
           </div>
           <div className="mt-3 pt-2 border-t border-slate-100 flex items-center text-[11px] text-slate-500 group-hover:text-amber-600 transition">
-            <span>Xem thành tích</span>
+            <span>Xem huy hiệu</span>
             <ChevronRight className="w-3.5 h-3.5 ml-1 transition duration-200 group-hover:translate-x-1" />
           </div>
         </div>
@@ -588,7 +588,7 @@ export default function HomeView({
         <div className="xl:col-span-5 space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-base font-bold font-display text-slate-800">
-              Thành tích của bạn
+              Huy hiệu của bạn
             </h3>
             <button
               onClick={handleViewAllAchievements}

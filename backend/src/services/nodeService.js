@@ -254,6 +254,14 @@ exports.toggleChecklistProgress = async (
     },
   });
 
+  // Run automatic badge checks
+  try {
+    const badgeService = require('./badgeService');
+    await badgeService.runBadgeChecks(userId);
+  } catch (badgeError) {
+    console.error('Error running badge checks on checklist toggle:', badgeError);
+  }
+
   return exports.getNodeDetails(nodeId, userId, roles);
 };
 
@@ -308,6 +316,14 @@ exports.updateNodeProgress = async (nodeId, completed, userId, roles = []) => {
     userId,
     node.learningPathId
   );
+
+  // Run automatic badge checks
+  try {
+    const badgeService = require('./badgeService');
+    await badgeService.runBadgeChecks(userId);
+  } catch (badgeError) {
+    console.error('Error running badge checks on node progress update:', badgeError);
+  }
 
   return { nodeProgress, enrollment };
 };

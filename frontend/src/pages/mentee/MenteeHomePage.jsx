@@ -1,9 +1,10 @@
 import { Sparkles } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MenteeHeader from "../../components/mentee/MenteeHeader";
 
 import HomeView from "../../components/mentee/HomeView";
+import { badgeService } from "../../services/badgeService";
 
 import {
   INITIAL_ACTIVITIES,
@@ -25,7 +26,7 @@ const readStoredState = (key, fallback) => {
 };
 
 export default function MenteeHomePage() {
-  const { user: authUser } = useAuth();
+  const { user: authUser, updateUser } = useAuth();
   const navigate = useNavigate();
 
   const [user, setUser] = useState(() =>
@@ -37,9 +38,43 @@ export default function MenteeHomePage() {
   const [suggestedCourses, setSuggestedCourses] = useState(() =>
     readStoredState("edupath_suggested", SUGGESTED_COURSES),
   );
-  const [badges] = useState(() =>
-    readStoredState("edupath_badges", INITIAL_BADGES),
-  );
+  const [badges, setBadges] = useState([]);
+  const [isLoadingBadges, setIsLoadingBadges] = useState(true);
+
+  useEffect(() => {
+    const fetchBadges = async () => {
+      try {
+        const res = await badgeService.getMyBadges();
+        if (res && res.data) {
+          setBadges(res.data.badges || []);
+          if (res.data.xp !== undefined && authUser && authUser.xp !== res.data.xp) {
+            updateUser({ xp: res.data.xp });
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching badges:", err);
+      } finally {
+        setIsLoadingBadges(false);
+      }
+    };
+    if (authUser?.id) {
+      fetchBadges();
+    }
+  }, [authUser?.id]);
+
+  const levelInfo = useMemo(() => {
+    const xp = authUser?.xp ?? 0;
+    let level = 1;
+    let currentXp = xp;
+    let maxXp = 500;
+    while (currentXp >= maxXp) {
+      currentXp -= maxXp;
+      level += 1;
+      maxXp = Math.round(maxXp * 1.2);
+    }
+    return { level, currentXp, maxXp };
+  }, [authUser]);
+
   const [activities, setActivities] = useState(() =>
     readStoredState("edupath_activities", INITIAL_ACTIVITIES),
   );
@@ -54,8 +89,12 @@ export default function MenteeHomePage() {
       ...user,
       name: authUser?.name || "Học viên",
       avatarUrl: authUser?.avatarUrl || authUser?.avatar || user.avatarUrl,
+      level: levelInfo.level,
+      currentXp: levelInfo.currentXp,
+      maxXp: levelInfo.maxXp,
+      xp: authUser?.xp ?? 0,
     }),
-    [authUser, user],
+    [authUser, user, levelInfo],
   );
 
   const triggerToast = (message, type = "success") => {
@@ -101,7 +140,7 @@ export default function MenteeHomePage() {
   };
   const handleViewSuggestedCourses = () => navigate("/roadmaps");
   const handleViewAllActivities = () => navigate("/roadmaps");
-  const handleViewAllAchievements = () => navigate("/mentee/profile");
+  const handleViewAllAchievements = () => navigate("/mentee/profile#badges-section");
 
   const handleUpdateXp = (xpGained, message) => {
     if (xpGained <= 0) return;

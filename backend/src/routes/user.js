@@ -9,6 +9,24 @@ const {
 } = require('../validators/user.validator');
 
 const router = Router();
+/**
+ * @swagger
+ * /api/users/dashboard-stats:
+ *   get:
+ *     tags:
+ *       - User
+ *     summary: Get admin dashboard statistics
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dashboard stats
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
+router.get('/dashboard-stats', requireAuth, requireRole(['ADMIN']), userController.getAdminDashboardStats);
 
 /**
  * @swagger

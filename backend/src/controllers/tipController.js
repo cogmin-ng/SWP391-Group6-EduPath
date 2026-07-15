@@ -6,7 +6,11 @@ exports.submitTip = asyncHandler(async (req, res) => {
   const { nodeId, title, content } = req.body;
   const contributorId = req.user.id;
 
-  const tip = await tipService.submitTip(nodeId, { title, content }, contributorId);
+  const tip = await tipService.submitTip(
+    nodeId,
+    { title, content },
+    contributorId
+  );
 
   return sendSuccess(res, {
     statusCode: 201,
@@ -45,20 +49,21 @@ exports.getPendingTips = asyncHandler(async (req, res) => {
 });
 
 exports.getContributionHistory = asyncHandler(async (req, res) => {
-  const { skip, take } = req.query;
+  const { skip, take, status } = req.query;
   const contributorId = req.user.id;
 
-  const { tips, total } = await tipService.getTipContributionHistory(
+  const { tips, total, stats } = await tipService.getTipContributionHistory(
     contributorId,
     {
       skip: Number(skip) || 0,
       take: Number(take) || 10,
+      status,
     }
   );
 
   return sendSuccess(res, {
     message: 'Contribution history retrieved successfully',
-    data: { tips, total },
+    data: { tips, total, stats },
   });
 });
 

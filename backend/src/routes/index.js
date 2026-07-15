@@ -16,6 +16,7 @@ const enrollmentRoutes = require('./enrollment');
 const certificateRoutes = require('./certificate');
 const otpRoutes = require('./otp');
 const reviewRoutes = require('./review');
+const menteeDashboardRoutes = require('./menteeDashboard');
 const quizController = require('../controllers/quizController');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
@@ -38,6 +39,7 @@ router.use('/enrollments', enrollmentRoutes);
 router.use('/certificates', certificateRoutes);
 router.use('/otp', otpRoutes);
 router.use('/reviews', reviewRoutes);
+router.use('/mentee-dashboard', menteeDashboardRoutes);
 
 // Node-scoped quiz endpoint
 router.get(

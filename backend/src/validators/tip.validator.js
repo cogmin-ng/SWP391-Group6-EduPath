@@ -19,9 +19,14 @@ const paginationSchema = Joi.object({
   take: Joi.number().integer().min(1).max(100).optional().default(10),
 });
 
+const contributionHistorySchema = paginationSchema.keys({
+  status: Joi.string().valid('PENDING', 'APPROVED', 'REJECTED').optional(),
+});
+
 module.exports = {
   submitTipSchema,
   approveTipSchema,
   rejectTipSchema,
   paginationSchema,
+  contributionHistorySchema,
 };

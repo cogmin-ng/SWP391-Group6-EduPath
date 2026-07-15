@@ -4,721 +4,280 @@ import {
   BookOpen,
   CheckCircle2,
   ChevronRight,
+  ClipboardCheck,
   FileText,
   HelpCircle,
   Lightbulb,
-  Lock,
+  LoaderCircle,
+  Medal,
+  Sparkles,
   Star,
   TrendingUp,
   Zap,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
-export default function HomeView({
-  user,
-  courses,
-  activities,
-  badges,
-  suggestedCourses,
-  onEnrollGame,
-  onContinueStudy,
-  onViewMyPath,
-  onViewAllLearning,
-  onContinueCourse,
-  onViewRoadmap,
-  onViewAllActivities,
-  onViewAllAchievements,
-  onQuickPath,
-  onQuickNode,
-  onQuickQuiz,
-  onQuickTip,
-  onViewXP,
-  onViewCertificates,
-  onViewSuggestedCourses,
-  onUpdateXp,
-}) {
-  const noOp = () => {};
-  const handleContinueStudy = onContinueStudy ?? noOp;
-  const handleViewMyPath = onViewMyPath ?? noOp;
-  const handleViewAllLearning = onViewAllLearning ?? noOp;
-  const handleContinueCourse = onContinueCourse ?? noOp;
-  const handleViewRoadmap = onViewRoadmap ?? noOp;
-  const handleViewAllActivities = onViewAllActivities ?? noOp;
-  const handleViewAllAchievements = onViewAllAchievements ?? noOp;
-  const handleQuickPath = onQuickPath ?? noOp;
-  const handleQuickNode = onQuickNode ?? noOp;
-  const handleQuickQuiz = onQuickQuiz ?? noOp;
-  const handleQuickTip = onQuickTip ?? noOp;
-  const handleViewXP = onViewXP ?? noOp;
-  const handleViewCertificates = onViewCertificates ?? noOp;
-  const handleViewSuggestedCourses = onViewSuggestedCourses ?? noOp;
-  const [welcomeTip, setWelcomeTip] = useState(
-    '"Mỗi dòng code bạn viết hôm nay là một bước đệm vững chắc cho sự nghiệp tương lai!"',
-  );
+const ENCOURAGEMENTS = [
+  "Sự nhất quán quan trọng hơn tốc độ. Một bước nhỏ mỗi ngày vẫn tạo nên hành trình lớn.",
+  "Đừng chỉ đọc code. Hãy tự viết và thử nghiệm để hiểu thật sâu.",
+  "Mỗi lỗi gặp phải là thêm một kinh nghiệm giúp bạn giải quyết vấn đề nhanh hơn.",
+  "Hoàn thành một nội dung nhỏ hôm nay tốt hơn trì hoãn một kế hoạch hoàn hảo.",
+];
 
-  const tipsArray = [
-    '"Mỗi dòng code viết ra hôm nay đều giúp bạn trở nên lão luyện hơn ngày hôm qua!"',
-    '"Sự nhất quán quan trọng hơn tốc độ. Học 30 phút mỗi ngày tốt hơn học 5 tiếng vào ngày cuối tuần! 🚀"',
-    '"Đừng chỉ đọc code. Hãy trực tiếp viết code và thử bẻ gãy nó để hiểu thực chất luồng vận hành! 💡"',
-    '"Mỗi lỗi cú pháp là một bài học đắt giá giúp bạn debug nhanh hơn ở các dự án phức tạp! ✨"',
-    '"Docker giúp cô lập tài nguyên sạch sẽ. Đừng ngại thử nghiệm các container mới nhé! 🛡️"',
-    '"UI/UX tốt là sự giao thoa hoàn hảo giữa cảm xúc khách hàng và thẩm mỹ tối giản! 🎨"',
+const ACTIVITY_ICONS = {
+  ENROLLMENT: BookOpen,
+  NODE_COMPLETED: CheckCircle2,
+  QUIZ_ATTEMPT: HelpCircle,
+  TIP_CONTRIBUTION: Lightbulb,
+  CERTIFICATE: Award,
+};
+
+function formatRelativeTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const seconds = Math.round((date.getTime() - Date.now()) / 1000);
+  const formatter = new Intl.RelativeTimeFormat("vi", { numeric: "auto" });
+  const ranges = [
+    [60, "second"],
+    [60, "minute"],
+    [24, "hour"],
+    [7, "day"],
+    [4.345, "week"],
+    [12, "month"],
+    [Number.POSITIVE_INFINITY, "year"],
   ];
 
-  const generateNewEncouragement = () => {
-    const randomIndex = Math.floor(Math.random() * tipsArray.length);
-    setWelcomeTip(tipsArray[randomIndex]);
-    onUpdateXp(5, "Đã nhận tips truyền cảm hứng từ EduPath");
+  let duration = seconds;
+  for (const [amount, unit] of ranges) {
+    if (Math.abs(duration) < amount) return formatter.format(Math.round(duration), unit);
+    duration /= amount;
+  }
+  return "";
+}
+
+function StatCard({ icon: Icon, label, value, hint, color, onClick }) {
+  const colors = {
+    indigo: "bg-indigo-50 text-indigo-600",
+    emerald: "bg-emerald-50 text-emerald-600",
+    amber: "bg-amber-50 text-amber-600",
+    violet: "bg-violet-50 text-violet-600",
   };
 
-  const activeEnrolled = courses.filter((c) => c.isEnrolled);
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="min-h-36 rounded-2xl border border-slate-100 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-100 hover:shadow-md"
+    >
+      <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${colors[color]}`}>
+        <Icon className="h-5 w-5" />
+      </div>
+      <p className="mt-4 text-xs font-medium text-slate-500">{label}</p>
+      <p className="mt-1 text-2xl font-bold text-slate-900">{value}</p>
+      <p className="mt-2 text-[11px] text-slate-400">{hint}</p>
+    </button>
+  );
+}
+
+function Thumbnail({ src, title, className = "h-32" }) {
+  return (
+    <div className={`relative overflow-hidden bg-linear-to-br from-indigo-700 to-violet-500 ${className}`}>
+      {src ? (
+        <img src={src} alt={title} className="h-full w-full object-cover" />
+      ) : (
+        <div className="flex h-full items-center justify-center">
+          <BookOpen className="h-10 w-10 text-white/70" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function HomeView({
+  dashboard,
+  enrollingSlug,
+  onContinueCourse,
+  onExplore,
+  onViewRoadmaps,
+  onViewProfile,
+  onViewCertificates,
+  onViewContributions,
+  onViewCurrentNode,
+  onViewCurrentQuiz,
+  onEnroll,
+}) {
+  const [encouragementIndex, setEncouragementIndex] = useState(0);
+  const { user, stats, continueLearning, enrollments, recentActivities, recommendations } =
+    dashboard;
+
+  const visibleEnrollments = useMemo(() => enrollments.slice(0, 4), [enrollments]);
+  const progress = Math.round(continueLearning?.progressPercent || 0);
 
   return (
-    <div
-      id="home_view_container"
-      className="w-full space-y-6 sm:space-y-7 lg:space-y-8"
-    >
-      <div className="relative overflow-hidden bg-[#635BFF] rounded-3xl text-white p-5 sm:p-6 md:p-8 shadow-xl">
-        <div className="absolute -right-10 -top-10 w-64 h-64 rounded-full bg-indigo-500/10 blur-3xl" />
-        <div className="absolute left-[30%] bottom-[-20%] w-56 h-56 rounded-full bg-violet-400/20 blur-2xl" />
-
-        <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 lg:gap-8 items-center">
-          <div className="lg:col-span-7 space-y-4">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide">
-              <Zap className="w-3.5 h-3.5 text-yellow-300 animate-pulse" />
-              <span>EduPath Dashboard • Level {user.level}</span>
+    <div className="space-y-8">
+      <section className="relative overflow-hidden rounded-3xl bg-[#635BFF] p-5 text-white shadow-xl sm:p-7 lg:p-8">
+        <div className="absolute -right-16 -top-16 h-72 w-72 rounded-full bg-violet-300/20 blur-3xl" />
+        <div className="relative grid items-center gap-8 lg:grid-cols-12">
+          <div className="space-y-5 lg:col-span-8">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-semibold backdrop-blur">
+              <Zap className="h-3.5 w-3.5 text-yellow-300" />
+              Dashboard học viên
             </div>
-
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold font-display tracking-tight md:text-4xl">
-                Chào lại, {user.name} 👋
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+                Chào bạn, {user.name} 👋
               </h1>
-              <p className="text-blue-100 text-sm md:text-base leading-relaxed">
-                Hôm nay là một ngày tuyệt vời để học hỏi và phát triển bản thân.
-                Trình duyệt tài liệu học tập của bạn luôn sẵn sàng!
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-indigo-100 md:text-base">
+                Theo dõi tiến độ thật của bạn và tiếp tục hành trình học tập ngay từ nơi đã dừng lại.
               </p>
             </div>
-
-            <div className="bg-white/10 backdrop-blur-lg border border-white/10 rounded-2xl p-3 text-xs md:text-sm italic text-blue-50/90 flex justify-between items-center gap-3">
-              <span>{welcomeTip}</span>
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/10 p-3 text-xs italic text-indigo-50 sm:text-sm">
+              <span>“{ENCOURAGEMENTS[encouragementIndex]}”</span>
               <button
-                id="btn_new_encouragement"
-                onClick={generateNewEncouragement}
-                className="shrink-0 bg-white/20 hover:bg-white/30 text-white font-medium py-1 px-2.5 rounded-lg text-xs transition duration-200"
+                type="button"
+                onClick={() =>
+                  setEncouragementIndex((current) => (current + 1) % ENCOURAGEMENTS.length)
+                }
+                className="shrink-0 rounded-lg bg-white/15 px-3 py-1.5 text-xs font-semibold not-italic hover:bg-white/25"
               >
-                Tạo cảm hứng ⚡
+                Câu khác
               </button>
             </div>
-
-            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 pt-2">
+            <div className="flex flex-col gap-3 sm:flex-row">
               <button
-                id="btn_banner_continue"
-                onClick={handleContinueStudy}
-                className="w-full sm:w-auto bg-white hover:bg-blue-50 text-indigo-700 font-semibold py-2.5 px-5 rounded-xl text-sm transition duration-200 flex items-center justify-center gap-1.5 shadow-md"
+                type="button"
+                onClick={() => (continueLearning ? onContinueCourse(continueLearning) : onExplore())}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-indigo-700 shadow-md hover:bg-indigo-50"
               >
-                Tiếp tục học
-                <ArrowRight className="w-4 h-4" />
+                {continueLearning ? "Tiếp tục học" : "Khám phá lộ trình"}
+                <ArrowRight className="h-4 w-4" />
               </button>
               <button
-                id="btn_banner_catalog"
-                onClick={handleViewMyPath}
-                className="w-full sm:w-auto bg-transparent hover:bg-white/10 border border-white/30 hover:border-white text-white font-medium py-2.5 px-5 rounded-xl text-sm transition duration-200"
+                type="button"
+                onClick={onViewRoadmaps}
+                className="rounded-xl border border-white/30 px-5 py-2.5 text-sm font-medium hover:bg-white/10"
               >
                 Xem lộ trình của tôi
               </button>
             </div>
           </div>
-
-          <div className="hidden lg:flex lg:col-span-5 justify-center items-center">
-            <div className="relative w-full max-w-105 h-60 bg-slate-900/30 rounded-2xl flex items-center justify-center border border-white/10">
-              <div className="absolute w-40 h-27.5 bg-indigo-950/70 border border-indigo-400/30 rounded-lg shadow-2xl flex items-center justify-center overflow-hidden">
-                <div className="absolute top-1 left-2 flex gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                </div>
-                <div className="text-left font-mono text-[8px] text-indigo-300 space-y-1 p-2">
-                  <p className="text-yellow-400">const course = "EduPath";</p>
-                  <p className="text-sky-300">
-                    import {"{ React }"} from "packages";
-                  </p>
-                  <p className="text-emerald-400">
-                    console.log("Welcome Back!");
-                  </p>
-                </div>
-              </div>
-              <div className="absolute w-45 h-8.75 border-[3px] border-violet-400/50 rounded-full rotate-[-15deg] animate-pulse" />
-              <div className="absolute right-4 bottom-4 w-12 h-12 rounded-lg bg-green-500/20 border border-green-500/40 flex items-center justify-center text-green-300">
-                <BookOpen className="w-6 h-6" />
-              </div>
-              <div className="absolute left-[15%] bottom-[5%] w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-300">
-                <Zap className="w-4 h-4" />
+          <div className="hidden justify-center lg:col-span-4 lg:flex">
+            <div className="flex h-48 w-full max-w-sm items-center justify-center rounded-3xl border border-white/10 bg-slate-950/20">
+              <div className="flex h-28 w-40 flex-col justify-center rounded-xl border border-indigo-300/30 bg-indigo-950/70 p-4 font-mono text-[9px] shadow-2xl">
+                <span className="text-yellow-300">const progress = {progress};</span>
+                <span className="mt-2 text-sky-300">learn(today);</span>
+                <span className="mt-2 text-emerald-300">keepGoing();</span>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div
-        id="stats_cards_grid"
-        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5"
-      >
-        <div
-          id="stat_card_courses"
-          onClick={handleViewMyPath}
-          className="min-h-38 bg-white hover:bg-slate-50 border border-slate-100 hover:border-indigo-100 p-4 rounded-2xl shadow-sm cursor-pointer transition duration-300 group"
-        >
-          <div className="flex justify-between items-start">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center text-blue-600 transition duration-300">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] text-indigo-600 font-semibold uppercase bg-indigo-50 px-2 py-0.5 rounded-full">
-              Lộ trình
-            </span>
-          </div>
-          <div className="mt-4 space-y-1">
-            <p className="text-xs text-slate-500 font-medium">
-              Lộ trình đang học
-            </p>
-            <h3 className="text-2xl font-bold font-display text-slate-800">
-              {activeEnrolled.length}
-            </h3>
-          </div>
-          <div className="mt-3 pt-2 border-t border-slate-100 flex items-center text-[11px] text-slate-500 group-hover:text-blue-600 transition">
-            <span>Xem chi tiết</span>
-            <ChevronRight className="w-3.5 h-3.5 ml-1 transition duration-200 group-hover:translate-x-1" />
-          </div>
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard icon={BookOpen} label="Lộ trình đang học" value={stats.activeEnrollmentCount} hint={`${stats.completedEnrollmentCount} lộ trình đã hoàn thành`} color="indigo" onClick={onViewRoadmaps} />
+        <StatCard icon={TrendingUp} label="Tiến độ trung bình" value={`${Math.round(stats.averageProgress)}%`} hint={`Tính trên ${enrollments.length} lộ trình đã đăng ký`} color="emerald" onClick={onViewRoadmaps} />
+        <StatCard icon={Zap} label="Tổng XP" value={user.xp.toLocaleString("vi-VN")} hint="Điểm kinh nghiệm hiện có" color="amber" onClick={onViewProfile} />
+        <StatCard icon={Award} label="Chứng chỉ đã nhận" value={stats.certificateCount} hint={`${stats.passedQuizCount} lượt quiz đã vượt qua`} color="violet" onClick={onViewCertificates} />
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
+            <BookOpen className="h-5 w-5 text-indigo-600" />
+            Tiếp tục học tập
+          </h2>
+          <button type="button" onClick={onViewRoadmaps} className="text-xs font-semibold text-indigo-600 hover:text-indigo-800">Xem tất cả</button>
         </div>
-
-        <div
-          id="stat_card_average"
-          className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"
-        >
-          <div className="flex justify-between items-start">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] text-emerald-600 font-semibold uppercase bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-              Tỷ lệ
-            </span>
-          </div>
-          <div className="mt-4 space-y-1">
-            <p className="text-xs text-slate-500 font-medium">
-              Tiến độ trung bình
-            </p>
-            <h3 className="text-2xl font-bold font-display text-slate-800">
-              {Math.round(
-                activeEnrolled.reduce((acc, c) => acc + c.progress, 0) /
-                  (activeEnrolled.length || 1),
-              )}
-              %
-            </h3>
-          </div>
-          <div className="mt-3 pt-2 border-t border-slate-100 flex items-center text-[11px] text-emerald-600 font-medium">
-            <span className="flex items-center gap-0.5">Cải thiện 12% 📈</span>
-          </div>
-        </div>
-
-        <div
-          id="stat_card_xp"
-          onClick={handleViewXP}
-          className="min-h-38 bg-white hover:bg-slate-50 border border-slate-100 hover:border-amber-100 p-4 rounded-2xl shadow-sm cursor-pointer transition duration-300 group"
-        >
-          <div className="flex justify-between items-start">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 group-hover:bg-amber-100 flex items-center justify-center text-amber-600 transition duration-300">
-              <Zap className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] text-amber-600 font-semibold uppercase bg-amber-50 px-2 py-0.5 rounded-full">
-              Kinh nghiệm
-            </span>
-          </div>
-          <div className="mt-4 space-y-1">
-            <p className="text-xs text-slate-500 font-medium">Tổng XP</p>
-            <h3 className="text-2xl font-bold font-display text-slate-800">
-              2,450
-            </h3>
-          </div>
-          <div className="mt-3 pt-2 border-t border-slate-100 flex items-center text-[11px] text-slate-500 group-hover:text-amber-600 transition">
-            <span>Xem thành tích</span>
-            <ChevronRight className="w-3.5 h-3.5 ml-1 transition duration-200 group-hover:translate-x-1" />
-          </div>
-        </div>
-
-        <div
-          id="stat_card_certificates"
-          onClick={handleViewCertificates}
-          className="min-h-38 bg-white hover:bg-slate-50 border border-slate-100 hover:border-violet-100 p-4 rounded-2xl shadow-sm cursor-pointer transition duration-300 group"
-        >
-          <div className="flex justify-between items-start">
-            <div className="w-10 h-10 rounded-xl bg-violet-50 group-hover:bg-violet-100 flex items-center justify-center text-violet-600 transition duration-300">
-              <Award className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] text-violet-600 font-semibold uppercase bg-violet-50 px-2 py-0.5 rounded-full">
-              Hồ sơ
-            </span>
-          </div>
-          <div className="mt-4 space-y-1">
-            <p className="text-xs text-slate-500 font-medium">
-              Chứng chỉ đã nhận
-            </p>
-            <h3 className="text-2xl font-bold font-display text-slate-800">
-              4
-            </h3>
-          </div>
-          <div className="mt-3 pt-2 border-t border-slate-100 flex items-center text-[11px] text-slate-500 group-hover:text-violet-600 transition">
-            <span>Xem chứng chỉ</span>
-            <ChevronRight className="w-3.5 h-3.5 ml-1 transition duration-200 group-hover:translate-x-1" />
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mt-8">
-        <h2 className="text-lg font-bold font-display text-slate-800 flex items-center gap-2">
-          <BookOpen className="w-5 h-5 text-indigo-600" />
-          Tiếp tục học tập
-        </h2>
-        <button
-          id="btn_view_all_learning"
-          onClick={handleViewAllLearning}
-          className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition"
-        >
-          Xem tất cả
-        </button>
-      </div>
-
-      <div
-        id="continue_learning_hero"
-        className="bg-white border border-slate-100 rounded-3xl p-4 sm:p-5 md:p-6 shadow-sm hover:shadow-md transition"
-      >
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 lg:gap-6 items-center">
-          <div className="xl:col-span-4 relative h-40 sm:h-44 xl:h-full w-full rounded-2xl overflow-hidden bg-slate-900 border border-slate-100 flex items-center justify-center min-h-55">
-            <div
-              className="absolute inset-0 bg-cover bg-center opacity-70"
-              style={{
-                backgroundImage:
-                  "url('https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&w=600&q=80')",
-              }}
-            />
-            <span className="absolute top-2.5 left-2.5 bg-indigo-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
-              Đang học
-            </span>
-          </div>
-
-          <div className="xl:col-span-8 flex flex-col justify-between space-y-4">
-            <div className="space-y-1.5">
-              <h3 className="text-xl font-bold font-display text-slate-800">
-                Fullstack Web Development
-              </h3>
-              <p className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
-                <span>Bộ khung: Node.js & Express.js</span>
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between items-center text-xs text-slate-600">
-                <span className="font-semibold text-slate-800">
-                  Tiến trình học tập
-                </span>
-                <span className="font-bold text-indigo-600">72%</span>
-              </div>
-              <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-indigo-600 rounded-full transition-all duration-500"
-                  style={{ width: "72%" }}
-                />
-              </div>
-            </div>
-
-            <div className="bg-indigo-50/50 rounded-2xl p-3 border border-indigo-100/30 text-xs flex justify-between items-center">
+        {continueLearning ? (
+          <div className="grid overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm lg:grid-cols-12">
+            <Thumbnail src={continueLearning.thumbnail} title={continueLearning.title} className="h-56 lg:col-span-4 lg:h-full" />
+            <div className="space-y-5 p-5 sm:p-6 lg:col-span-8">
               <div>
-                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
-                  Node hiện tại
-                </p>
-                <p className="font-bold text-indigo-900 mt-0.5">
-                  API & Authentication
-                </p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">{continueLearning.subjectName}</p>
+                <h3 className="mt-1 text-xl font-bold text-slate-900">{continueLearning.title}</h3>
+                <p className="mt-1 text-xs text-slate-500">Hướng dẫn bởi {continueLearning.mentorName}</p>
               </div>
-              <span className="text-[11px] text-indigo-600 font-medium bg-white border border-indigo-100 px-2.5 py-1 rounded-full">
-                Sắp hoàn thành ✨
-              </span>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                id="btn_continue_fullstack"
-                onClick={() => handleContinueCourse(activeEnrolled[0])}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-xs sm:text-sm transition duration-200 flex items-center justify-center gap-1.5"
-              >
-                Tiếp tục học
-              </button>
-              <button
-                id="btn_view_roadmap_fullstack"
-                onClick={() => handleViewRoadmap(activeEnrolled[0])}
-                className="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-800 border border-slate-200/80 font-medium py-2.5 rounded-xl text-xs sm:text-sm transition duration-200 flex items-center justify-center gap-1"
-              >
-                Xem roadmap
-                <ChevronRight className="w-4 h-4 text-slate-400" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-3 mt-8">
-        <h3 className="text-base font-bold font-display text-slate-800">
-          Truy cập nhanh
-        </h3>
-        <div
-          id="quick_access_grid"
-          className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-4 sm:gap-5"
-        >
-          <div
-            id="quick_acc_path"
-            onClick={handleQuickPath}
-            className="bg-white hover:bg-blue-50 border border-blue-200/80 rounded-2xl p-5 text-center cursor-pointer hover:shadow-md transition duration-200 group flex flex-col items-center justify-center space-y-2.5 shadow-sm"
-          >
-            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 shadow-inner">
-              <BookOpen className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-sm font-extrabold text-slate-900">
-                Lộ trình của tôi
-              </p>
-              <p className="text-xs text-slate-500 mt-1">Tiến độ và học tập</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform" />
-          </div>
-
-          <div
-            id="quick_acc_node"
-            onClick={handleQuickNode}
-            className="bg-white hover:bg-emerald-50 border border-emerald-200/80 rounded-2xl p-5 text-center cursor-pointer hover:shadow-md transition duration-200 group flex flex-col items-center justify-center space-y-2.5 shadow-sm"
-          >
-            <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 shadow-inner">
-              <FileText className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-sm font-extrabold text-slate-900">
-                Học tập (Node View)
-              </p>
-              <p className="text-xs text-slate-500 mt-1">
-                Tài liệu, checklist & tips
-              </p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-emerald-600 group-hover:translate-x-1 transition-transform" />
-          </div>
-
-          <div
-            id="quick_acc_quiz"
-            onClick={handleQuickQuiz}
-            className="bg-white hover:bg-amber-50 border border-amber-200/80 rounded-2xl p-5 text-center cursor-pointer hover:shadow-md transition duration-200 group flex flex-col items-center justify-center space-y-2.5 shadow-sm"
-          >
-            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 shadow-inner">
-              <HelpCircle className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-sm font-extrabold text-slate-900">Làm Quiz</p>
-              <p className="text-xs text-slate-500 mt-1">
-                Luyện đề và tích luỹ XP
-              </p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-amber-600 group-hover:translate-x-1 transition-transform" />
-          </div>
-
-          <div
-            id="quick_acc_tip"
-            onClick={handleQuickTip}
-            className="bg-white hover:bg-red-50 border border-red-200/80 rounded-2xl p-5 text-center cursor-pointer hover:shadow-md transition duration-200 group flex flex-col items-center justify-center space-y-2.5 shadow-sm"
-          >
-            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-700 shadow-inner">
-              <Lightbulb className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-sm font-extrabold text-slate-900">
-                Đóng góp Tip-tricks
-              </p>
-              <p className="text-xs text-slate-500 mt-1">
-                Chia sẻ mẹo lập trình
-              </p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-red-600 group-hover:translate-x-1 transition-transform" />
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-4 mt-8">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-bold font-display text-slate-800">
-            Lộ trình của tôi
-          </h3>
-          <span className="text-xs text-slate-400 font-medium">
-            Học song hành nhiều chủ đề
-          </span>
-        </div>
-
-        <div
-          id="my_courses_horizontal_list"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
-        >
-          {activeEnrolled.map((course) => (
-            <div
-              key={course.id}
-              id={`course_card_${course.id}`}
-              className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col group justify-between"
-            >
               <div>
-                <div className="relative h-28 bg-slate-900 overflow-hidden">
-                  <img
-                    src={course.image}
-                    alt={course.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-                <div className="p-4 space-y-1.5">
-                  <h4 className="font-bold text-sm text-slate-800 group-hover:text-indigo-600 transition tracking-tight line-clamp-1">
-                    {course.title}
-                  </h4>
-                  <p className="text-[10px] text-slate-400">
-                    Tutor: {course.tutor}
-                  </p>
-                  <div className="space-y-1 pt-2">
-                    <div className="flex justify-between items-center text-[10px]">
-                      <span className="text-slate-500">Tiến độ</span>
-                      <span className="font-bold text-slate-800">
-                        {course.progress}%
-                      </span>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-indigo-600 rounded-full"
-                        style={{ width: `${course.progress}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
+                <div className="mb-2 flex justify-between text-xs"><span className="font-medium text-slate-600">Tiến trình học tập</span><strong className="text-indigo-600">{progress}%</strong></div>
+                <div className="h-2.5 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-indigo-600" style={{ width: `${progress}%` }} /></div>
               </div>
-              <div className="p-3 bg-slate-50 border-t border-slate-100">
-                <button
-                  id={`btn_goto_course_${course.id}`}
-                  onClick={() => handleContinueCourse(course)}
-                  className="w-full bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 py-1.5 text-xs rounded-xl font-semibold transition"
-                >
-                  Tiếp tục học
-                </button>
+              <div className="flex items-center justify-between rounded-2xl border border-indigo-100 bg-indigo-50/60 p-3">
+                <div><p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Nội dung tiếp theo</p><p className="mt-0.5 text-sm font-bold text-indigo-950">{continueLearning.currentNode?.title || "Roadmap chưa có nội dung"}</p></div>
+                <span className="rounded-full bg-white px-3 py-1 text-[11px] font-medium text-indigo-600">{continueLearning.completedNodeCount}/{continueLearning.nodeCount} nội dung</span>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <button type="button" onClick={() => onContinueCourse(continueLearning)} className="flex-1 rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">Tiếp tục học</button>
+                <button type="button" onClick={onViewCurrentNode} disabled={!continueLearning.currentNode} className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">Xem nội dung hiện tại</button>
               </div>
             </div>
+          </div>
+        ) : (
+          <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
+            <BookOpen className="mx-auto h-10 w-10 text-slate-300" />
+            <h3 className="mt-3 font-bold text-slate-900">Bạn chưa có lộ trình đang học</h3>
+            <p className="mt-1 text-sm text-slate-500">Khám phá các lộ trình phù hợp và bắt đầu học ngay.</p>
+            <button type="button" onClick={onExplore} className="mt-5 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white">Khám phá lộ trình</button>
+          </div>
+        )}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-base font-bold text-slate-900">Truy cập nhanh</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {[
+            [BookOpen, "Lộ trình của tôi", "Tiến độ và học tập", onViewRoadmaps, "bg-blue-50 text-blue-600"],
+            [FileText, "Nội dung hiện tại", "Tài liệu, checklist và tips", onViewCurrentNode, "bg-emerald-50 text-emerald-600"],
+            [HelpCircle, "Làm quiz", continueLearning?.currentNode?.hasQuiz ? "Quiz của nội dung hiện tại" : "Xem quiz trong lộ trình", onViewCurrentQuiz, "bg-amber-50 text-amber-600"],
+            [Lightbulb, "Đóng góp của tôi", "Theo dõi tip đã đóng góp", onViewContributions, "bg-rose-50 text-rose-600"],
+          ].map(([Icon, title, description, action, colorClasses]) => (
+            <button key={title} type="button" onClick={action} className="group rounded-2xl border border-slate-100 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+              <div className={`flex h-11 w-11 items-center justify-center rounded-full ${colorClasses}`}><Icon className="h-5 w-5" /></div>
+              <p className="mt-3 text-sm font-bold text-slate-900">{title}</p><p className="mt-1 text-xs text-slate-500">{description}</p><ArrowRight className="mt-3 h-4 w-4 text-indigo-500 transition group-hover:translate-x-1" />
+            </button>
           ))}
         </div>
-      </div>
+      </section>
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 mt-8">
-        <div className="xl:col-span-7 space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-base font-bold font-display text-slate-800 flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              Hoạt động gần đây
-            </h3>
-            <button
-              onClick={handleViewAllActivities}
-              className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
-            >
-              Xem tất cả
-            </button>
+      <section className="space-y-4">
+        <div className="flex items-center justify-between"><h2 className="text-lg font-bold text-slate-900">Lộ trình của tôi</h2><button type="button" onClick={onViewRoadmaps} className="text-xs font-semibold text-indigo-600">Xem tất cả</button></div>
+        {visibleEnrollments.length ? (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {visibleEnrollments.map((course) => (
+              <article key={course.id} className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:shadow-md">
+                <Thumbnail src={course.thumbnail} title={course.title} className="h-28" />
+                <div className="p-4"><h3 className="line-clamp-2 min-h-10 text-sm font-bold text-slate-900">{course.title}</h3><p className="mt-1 text-[11px] text-slate-400">{course.mentorName}</p><div className="mt-4 flex justify-between text-[10px]"><span className="text-slate-500">Tiến độ</span><strong>{Math.round(course.progressPercent)}%</strong></div><div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-indigo-600" style={{ width: `${course.progressPercent}%` }} /></div><button type="button" onClick={() => onContinueCourse(course)} className="mt-4 w-full rounded-xl border border-slate-200 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">{course.status === "COMPLETED" ? "Xem lại" : "Tiếp tục học"}</button></div>
+              </article>
+            ))}
           </div>
+        ) : <p className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center text-sm text-slate-500">Chưa có lộ trình nào.</p>}
+      </section>
 
-          <div
-            id="home_activity_feed"
-            className="bg-white border border-slate-100 rounded-2xl p-4 divide-y divide-slate-100 shadow-sm space-y-3.5"
-          >
-            {activities.length === 0 ? (
-              <p className="text-xs text-slate-400 text-center py-4">
-                Chưa có hoạt động nào được ghi nhận.
-              </p>
-            ) : (
-              activities.map((act) => (
-                <div
-                  key={act.id}
-                  className="pt-3.5 first:pt-0 flex items-start gap-3"
-                >
-                  <div
-                    className={`mt-0.5 w-7.5 h-7.5 rounded-full flex items-center justify-center shrink-0 ${
-                      act.iconType === "check"
-                        ? "bg-emerald-50 text-emerald-600"
-                        : act.iconType === "quiz"
-                          ? "bg-blue-50 text-blue-600"
-                          : act.iconType === "tip"
-                            ? "bg-amber-50 text-amber-600"
-                            : "bg-indigo-50 text-indigo-600"
-                    }`}
-                  >
-                    {act.iconType === "check" ? (
-                      <CheckCircle2 className="w-4 h-4" />
-                    ) : act.iconType === "quiz" ? (
-                      <HelpCircle className="w-4 h-4" />
-                    ) : act.iconType === "tip" ? (
-                      <Lightbulb className="w-4 h-4" />
-                    ) : (
-                      <BookOpen className="w-4 h-4" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-slate-800 truncate">
-                      {act.title}
-                    </p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">
-                      {act.description}
-                    </p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <span className="text-[9px] text-slate-400 block">
-                      {act.timeAgo}
-                    </span>
-                    {act.xpGained > 0 && (
-                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50/80 px-1.5 py-0.5 rounded-md mt-1 inline-block">
-                        +{act.xpGained} XP
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <div className="space-y-4 xl:col-span-7">
+          <div className="flex items-center justify-between"><h2 className="flex items-center gap-2 text-base font-bold text-slate-900"><span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />Hoạt động gần đây</h2></div>
+          <div className="divide-y divide-slate-100 rounded-2xl border border-slate-100 bg-white px-4 shadow-sm">
+            {recentActivities.length ? recentActivities.map((activity) => {
+              const Icon = ACTIVITY_ICONS[activity.type] || Sparkles;
+              return <div key={activity.id} className="flex items-start gap-3 py-4"><div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600"><Icon className="h-4 w-4" /></div><div className="min-w-0 flex-1"><p className="truncate text-xs font-bold text-slate-800">{activity.title}</p><p className="mt-0.5 truncate text-[11px] text-slate-400">{activity.description}</p></div><time className="shrink-0 text-[10px] text-slate-400">{formatRelativeTime(activity.occurredAt)}</time></div>;
+            }) : <p className="py-10 text-center text-sm text-slate-400">Chưa có hoạt động học tập nào.</p>}
           </div>
         </div>
-
-        <div className="xl:col-span-5 space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-base font-bold font-display text-slate-800">
-              Thành tích của bạn
-            </h3>
-            <button
-              onClick={handleViewAllAchievements}
-              className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
-            >
-              Xem tất cả
-            </button>
-          </div>
-
-          <div
-            id="home_achievements_panel"
-            className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm space-y-4"
-          >
-            <div className="bg-linear-to-br from-indigo-50 to-violet-50 rounded-2xl p-4 border border-indigo-100/50 flex items-center gap-3">
-              <div className="relative w-14 h-14 rounded-full bg-indigo-600 shadow-md flex items-center justify-center text-white shrink-0">
-                <Zap className="w-7 h-7 text-yellow-300 animate-pulse" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h4 className="text-sm font-bold text-slate-800 truncate">
-                  Consistent Learner
-                </h4>
-                <p className="text-[10px] text-slate-500 mt-0.5">
-                  Duy trì học tập liên tục {user.streakDays} ngày
-                </p>
-                <span className="text-[10px] font-bold text-indigo-600 mt-1 block">
-                  +100 XP Đã nhận
-                </span>
-              </div>
+        <div className="space-y-4 xl:col-span-5">
+          <h2 className="text-base font-bold text-slate-900">Thành tích thực tế</h2>
+          <div className="space-y-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+            <div className="grid grid-cols-3 gap-3 text-center">
+              {[[Medal, stats.completedEnrollmentCount, "Hoàn thành"], [ClipboardCheck, stats.passedQuizCount, "Quiz đạt"], [Award, stats.certificateCount, "Chứng chỉ"]].map(([Icon, value, label]) => <div key={label} className="rounded-xl bg-slate-50 p-3"><Icon className="mx-auto h-5 w-5 text-indigo-600" /><strong className="mt-2 block text-lg text-slate-900">{value}</strong><span className="text-[10px] text-slate-500">{label}</span></div>)}
             </div>
-
-            <div className="space-y-2">
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                Huy hiệu mới nhất
-              </p>
-              <div
-                id="latest_badges_row"
-                className="flex items-center gap-3 flex-wrap"
-              >
-                {badges.map((badge) => (
-                  <div
-                    key={badge.id}
-                    className={`w-11 h-11 rounded-full flex items-center justify-center border transition relative group cursor-pointer shrink-0 ${
-                      badge.isUnlocked
-                        ? "bg-violet-50 text-violet-600 border-violet-100 hover:bg-violet-100"
-                        : "bg-slate-50 text-slate-300 border-slate-100"
-                    }`}
-                  >
-                    {badge.iconName === "award" ? (
-                      <Award className="w-5 h-5" />
-                    ) : badge.iconName === "star" ? (
-                      <Star className="w-5 h-5" />
-                    ) : badge.iconName === "zap" ? (
-                      <Zap className="w-5 h-5" />
-                    ) : (
-                      <Lock className="w-4 h-4 text-slate-400" />
-                    )}
-                    <span className="absolute bottom-12 left-1/2 -translate-x-1/2 w-48 bg-slate-800 text-white text-[10px] rounded-lg p-2 opacity-0 pointer-events-none group-hover:opacity-100 transition z-50 shadow-lg text-center">
-                      <strong className="block">{badge.title}</strong>
-                      {badge.description}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            {dashboard.latestCertificate ? <button type="button" onClick={onViewCertificates} className="flex w-full items-center gap-3 rounded-xl border border-amber-100 bg-amber-50 p-3 text-left"><Award className="h-6 w-6 shrink-0 text-amber-600" /><span className="min-w-0 flex-1"><span className="block text-[10px] font-semibold uppercase text-amber-700">Chứng chỉ mới nhất</span><span className="block truncate text-xs font-bold text-slate-800">{dashboard.latestCertificate.learningPathTitle}</span></span><ChevronRight className="h-4 w-4 text-amber-600" /></button> : <p className="rounded-xl bg-slate-50 p-4 text-center text-xs text-slate-500">Hoàn thành lộ trình để nhận chứng chỉ đầu tiên.</p>}
           </div>
         </div>
-      </div>
+      </section>
 
-      <div id="suggested_courses_section" className="space-y-4 mt-8">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-bold font-display text-slate-800">
-            Đề xuất dành cho bạn
-          </h3>
-          <button
-            onClick={handleViewSuggestedCourses}
-            className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
-          >
-            Xem tất cả
-          </button>
-        </div>
-
-        <div
-          id="suggestion_course_cards_grid"
-          className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-4 sm:gap-5"
-        >
-          {suggestedCourses.map((course) => (
-            <div
-              key={course.id}
-              className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between group min-h-80"
-            >
-              <div>
-                <div className="relative h-28 bg-slate-900 overflow-hidden">
-                  <img
-                    src={course.image}
-                    alt={course.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-md text-white text-[10px] px-2 py-0.5 rounded-md">
-                    <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                    <span>{course.rating || "4.8"}</span>
-                  </div>
-                </div>
-
-                <div className="p-4 space-y-1.5">
-                  <h4 className="font-bold text-sm text-slate-800 tracking-tight group-hover:text-indigo-600 transition line-clamp-1">
-                    {course.title}
-                  </h4>
-                  <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                    {course.description}
-                  </p>
-                  <p className="text-[10px] text-slate-400 font-medium">
-                    {course.learners || "1k+ học viên"} • Hướng dẫn bởi{" "}
-                    {course.tutor}
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-3 pt-0">
-                <button
-                  id={`btn_enroll_sugg_${course.id}`}
-                  onClick={() => onEnrollGame(course.id)}
-                  className="w-full bg-indigo-50 hover:bg-indigo-600 group-hover:bg-indigo-600 text-indigo-700 group-hover:text-white py-2.5 rounded-xl text-xs font-semibold transition duration-200"
-                >
-                  Đăng ký ngay
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <section className="space-y-4">
+        <div className="flex items-center justify-between"><h2 className="text-lg font-bold text-slate-900">Đề xuất dành cho bạn</h2><button type="button" onClick={onExplore} className="text-xs font-semibold text-indigo-600">Xem tất cả</button></div>
+        {recommendations.length ? <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">{recommendations.map((course) => <article key={course.id} className="flex min-h-80 flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:shadow-md"><div className="relative"><Thumbnail src={course.thumbnail} title={course.title} className="h-32" />{course.rating !== null && <span className="absolute right-2 top-2 flex items-center gap-1 rounded-lg bg-slate-950/65 px-2 py-1 text-[10px] text-white"><Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />{course.rating}</span>}</div><div className="flex flex-1 flex-col p-4"><p className="text-[10px] font-semibold uppercase text-indigo-600">{course.subjectName}</p><h3 className="mt-1 line-clamp-2 text-sm font-bold text-slate-900">{course.title}</h3><p className="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-500">{course.description || "Chưa có mô tả."}</p><p className="mt-3 text-[10px] text-slate-400">{course.enrollmentCount} học viên · {course.nodeCount} nội dung</p><button type="button" disabled={enrollingSlug === course.slug} onClick={() => onEnroll(course)} className="mt-auto flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-50 py-2.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-600 hover:text-white disabled:cursor-wait disabled:opacity-60">{enrollingSlug === course.slug ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}{enrollingSlug === course.slug ? "Đang đăng ký..." : "Đăng ký ngay"}</button></div></article>)}</div> : <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center"><CheckCircle2 className="mx-auto h-9 w-9 text-emerald-500" /><p className="mt-2 text-sm font-semibold text-slate-800">Bạn đã đăng ký tất cả lộ trình hiện có.</p></div>}
+      </section>
     </div>
   );
 }

@@ -81,11 +81,15 @@ exports.countPendingByMentorRoadmap = async (mentorId) => {
   });
 };
 
-exports.findByContributor = async (contributorId, { skip = 0, take = 10 }) => {
+exports.findByContributor = async (
+  contributorId,
+  { skip = 0, take = 10, status }
+) => {
   return prisma.tip.findMany({
     where: {
       contributorId,
       ...ACTIVE_TIP_FILTER,
+      ...(status ? { status } : {}),
     },
     include: {
       node: {
@@ -105,12 +109,24 @@ exports.findByContributor = async (contributorId, { skip = 0, take = 10 }) => {
   });
 };
 
-exports.countByContributor = async (contributorId) => {
+exports.countByContributor = async (contributorId, status) => {
   return prisma.tip.count({
     where: {
       contributorId,
       ...ACTIVE_TIP_FILTER,
+      ...(status ? { status } : {}),
     },
+  });
+};
+
+exports.countByContributorStatus = async (contributorId) => {
+  return prisma.tip.groupBy({
+    by: ['status'],
+    where: {
+      contributorId,
+      ...ACTIVE_TIP_FILTER,
+    },
+    _count: { _all: true },
   });
 };
 

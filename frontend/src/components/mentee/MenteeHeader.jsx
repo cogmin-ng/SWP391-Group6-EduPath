@@ -29,7 +29,7 @@ const accountMenuItems = [
   { label: 'Tiến độ học tập', icon: BarChart3, action: 'placeholder' },
   { label: 'Đăng kí mentor', icon: GraduationCap, to: '/profile/become-mentor' },
   { label: 'Đóng góp', icon: Lightbulb, to: '/mentee/contributions' },
-  { label: 'Huy hiệu', icon: Award, to: '/mentee/profile#badges-section' },
+  { label: 'Huy hiệu', icon: Award, to: '/mentee/badges' },
   { label: 'Chứng chỉ của tôi', icon: FileText, to: '/my-certificates' },
   { label: 'Cài đặt', icon: Settings, action: 'placeholder' },
   { label: 'Đăng xuất', icon: LogOut, action: 'logout' },

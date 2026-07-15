@@ -28,6 +28,7 @@ export const SEMESTER_OPTIONS = [
   { value: "7", label: "Kì 7" },
   { value: "8", label: "Kì 8" },
   { value: "9", label: "Kì 9" },
+  { value: "Đã tốt nghiệp", label: "Đã tốt nghiệp" },
 ];
 
 /* ------------------------------------------------------------------ */

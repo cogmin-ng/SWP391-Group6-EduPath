@@ -71,9 +71,8 @@ export default function BecomeMentorPage() {
         ]);
         setAvailableSubjects(subjectList || []);
         setExistingApplication(myApp || null);
-
-        // Auto switch to status tab if application is pending or approved
-        if (myApp && (myApp.status === "PENDING" || myApp.status === "APPROVED")) {
+        // Auto switch to status tab if application is pending
+        if (myApp && myApp.status === "PENDING") {
           setActiveTab("status");
         }
       } catch {
@@ -336,6 +335,17 @@ export default function BecomeMentorPage() {
 
         {activeTab === "form" ? (
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
+            {existingApplication?.status === "APPROVED" && (
+              <div className="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl p-4 flex items-start gap-3 animate-fadeIn">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-bold text-sm">Bạn đã là Mentor!</h4>
+                  <p className="text-xs text-emerald-700 mt-1">
+                    Bạn đã được phê duyệt làm Mentor trước đó. Bạn vẫn có thể đăng ký bổ sung các môn học hoặc chuyên ngành khác bằng cách điền và gửi đơn bên dưới.
+                  </p>
+                </div>
+              </div>
+            )}
             <MentorInfoSection register={register} errors={errors} />
 
             <SubjectMentorSection

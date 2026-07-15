@@ -1,6 +1,6 @@
 const Router = require('express').Router;
 const subjectController = require('../controllers/subjectController');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireRole } = require('../middleware/auth');
 
 const router = Router();
 
@@ -40,5 +40,8 @@ const router = Router();
  *         description: Unauthorized
  */
 router.get('/', requireAuth, subjectController.getAll);
+router.post('/', requireAuth, requireRole(['ADMIN']), subjectController.create);
+router.put('/:id', requireAuth, requireRole(['ADMIN']), subjectController.update);
+router.delete('/:id', requireAuth, requireRole(['ADMIN']), subjectController.delete);
 
 module.exports = router;

@@ -6,7 +6,10 @@ exports.createApplication = asyncHandler(async (req, res) => {
   const userId = req.user.id;
   const data = req.body;
 
-  const application = await advisorApplicationService.createApplication(userId, data);
+  const application = await advisorApplicationService.createApplication(
+    userId,
+    data
+  );
 
   return sendSuccess(res, {
     statusCode: 201,
@@ -23,6 +26,17 @@ exports.getMyApplication = asyncHandler(async (req, res) => {
   return sendSuccess(res, {
     message: 'Application retrieved successfully',
     data: application,
+  });
+});
+
+exports.getMyApprovedSubjects = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  const subjects = await advisorApplicationService.getMyApprovedSubjects(userId);
+
+  return sendSuccess(res, {
+    message: 'Approved subjects retrieved successfully',
+    data: subjects,
   });
 });
 

@@ -9,6 +9,8 @@ import {
   getCachedMenteeDashboard,
   getMenteeDashboard,
 } from "../../services/menteeDashboardService";
+import { badgeService } from "../../services/badgeService";
+import { useAuth } from "../../hooks/useAuth";
 
 function DashboardSkeleton() {
   return (
@@ -26,10 +28,12 @@ function DashboardSkeleton() {
 
 export default function MenteeHomePage() {
   const navigate = useNavigate();
+  const { user: authUser, updateUser } = useAuth();
   const [dashboard, setDashboard] = useState(() => getCachedMenteeDashboard());
   const [loading, setLoading] = useState(() => !getCachedMenteeDashboard());
   const [error, setError] = useState("");
   const [enrollingSlug, setEnrollingSlug] = useState(null);
+  const [badges, setBadges] = useState([]);
 
   const loadDashboard = useCallback(async ({ showLoading = true } = {}) => {
     if (showLoading) setLoading(true);
@@ -73,6 +77,26 @@ export default function MenteeHomePage() {
       active = false;
     };
   }, []);
+
+  // Fetch badges safely
+  useEffect(() => {
+    const fetchBadges = async () => {
+      try {
+        const res = await badgeService.getMyBadges();
+        if (res && res.data) {
+          setBadges(res.data.badges || []);
+          if (res.data.xp !== undefined && authUser && authUser.xp !== res.data.xp) {
+            updateUser({ xp: res.data.xp });
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching badges:", err);
+      }
+    };
+    if (authUser?.id) {
+      fetchBadges();
+    }
+  }, [authUser?.id]);
 
   const goToCourse = (course) => {
     if (course?.slug) navigate(`/roadmaps/${course.slug}/learn`);
@@ -138,6 +162,7 @@ export default function MenteeHomePage() {
         ) : (
           <HomeView
             dashboard={dashboard}
+            badges={badges}
             enrollingSlug={enrollingSlug}
             onContinueCourse={goToCourse}
             onExplore={() => navigate("/explore")}

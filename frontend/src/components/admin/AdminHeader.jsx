@@ -17,6 +17,7 @@ import {
   X,
   Check,
   Shield,
+  GraduationCap,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { notificationService } from '../../services/notificationService';
@@ -136,8 +137,8 @@ export default function AdminHeader() {
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
             <Link to="/admin/dashboard" className="flex items-center gap-2 select-none group">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white shadow-md shadow-slate-900/20">
-                <Shield className="h-5 w-5 text-indigo-400" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-600/20">
+                <GraduationCap className="h-5 w-5" />
               </div>
               <span className="text-xl font-bold tracking-tight text-slate-900">
                 EduPath <span className="text-indigo-600 font-medium text-base">Quản trị</span>

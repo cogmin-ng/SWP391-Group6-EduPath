@@ -4,6 +4,7 @@ const userRepo = require('../repositories/userRepository');
 const otpRepo = require('../repositories/otpRepository');
 const resendService = require('./externalService/resend/resendService');
 const ApiError = require('../utils/ApiError');
+const normalizeEmail = require('../utils/normalizeEmail');
 const { otp: otpMessages } = require('../constants/messages');
 
 const OTP_EXPIRE_MINUTES = 10;
@@ -32,7 +33,7 @@ const createOtp = async ({ userId, otpType }) => {
 };
 
 exports.sendOtp = async ({ email, otpType = OTP_TYPE_DEFAULT }) => {
-  const user = await userRepo.findByEmail(email);
+  const user = await userRepo.findByEmail(normalizeEmail(email));
   if (!user) {
     throw new ApiError(404, otpMessages.userNotFound);
   }
@@ -42,17 +43,27 @@ exports.sendOtp = async ({ email, otpType = OTP_TYPE_DEFAULT }) => {
   }
 
   const since = new Date(Date.now() - RESEND_WINDOW_MS);
-  const sentCount = await otpRepo.countCreatedSince({ userId: user.id, otpType, since });
+  const sentCount = await otpRepo.countCreatedSince({
+    userId: user.id,
+    otpType,
+    since,
+  });
   if (sentCount >= RESEND_MAX_PER_WINDOW) {
     throw new ApiError(429, 'Gửi mã quá nhiều lần. Vui lòng thử lại sau.');
   }
 
-  const last = await otpRepo.findLatestByUserAndType({ userId: user.id, otpType });
+  const last = await otpRepo.findLatestByUserAndType({
+    userId: user.id,
+    otpType,
+  });
   if (last && last.createdAt) {
     const delta = Date.now() - new Date(last.createdAt).getTime();
     if (delta < RESEND_MIN_SECONDS * 1000) {
       const wait = Math.ceil((RESEND_MIN_SECONDS * 1000 - delta) / 1000);
-      throw new ApiError(429, `Vui lòng đợi ${wait} giây trước khi yêu cầu lại mã.`);
+      throw new ApiError(
+        429,
+        `Vui lòng đợi ${wait} giây trước khi yêu cầu lại mã.`
+      );
     }
   }
 
@@ -72,7 +83,7 @@ exports.resendOtp = async ({ email, otpType = OTP_TYPE_DEFAULT }) => {
 };
 
 exports.verifyOtp = async ({ email, otp, otpType = OTP_TYPE_DEFAULT }) => {
-  const user = await userRepo.findByEmail(email);
+  const user = await userRepo.findByEmail(normalizeEmail(email));
   if (!user) {
     throw new ApiError(404, otpMessages.userNotFound);
   }

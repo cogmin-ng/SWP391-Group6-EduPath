@@ -2,6 +2,15 @@ const userService = require('../services/userService');
 const asyncHandler = require('../middleware/asyncHandler');
 const { sendSuccess } = require('../utils/response');
 
+exports.getAdminDashboardStats = asyncHandler(async (req, res) => {
+  const stats = await userService.getDashboardStats();
+
+  return sendSuccess(res, {
+    message: 'Dashboard stats retrieved successfully',
+    data: stats,
+  });
+});
+
 exports.getUsers = asyncHandler(async (req, res) => {
   const { skip, take } = req.query;
   const { users, total } = await userService.getUsers({

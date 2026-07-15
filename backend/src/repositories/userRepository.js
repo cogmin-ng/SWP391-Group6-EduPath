@@ -1,19 +1,20 @@
 const prisma = require('../lib/prisma');
+const normalizeEmail = require('../utils/normalizeEmail');
 
 const ACTIVE_USER_FILTER = { isDeleted: false };
 
 exports.findByEmail = async (email) => {
-  return prisma.user.findUnique({ where: { email } });
+  return prisma.user.findUnique({ where: { email: normalizeEmail(email) } });
 };
 
 exports.findByEmailActive = async (email) => {
   return prisma.user.findFirst({
-    where: { email, ...ACTIVE_USER_FILTER },
+    where: { email: normalizeEmail(email), ...ACTIVE_USER_FILTER },
   });
 };
 
 exports.create = async ({ email, passwordHash, name, roleId }) => {
-  const data = { email, passwordHash, name };
+  const data = { email: normalizeEmail(email), passwordHash, name };
   if (roleId) {
     data.role = { connect: { id: roleId } };
   }

@@ -39,6 +39,15 @@ export const mentorApplicationService = {
   },
 
   /**
+   * Get all approved subjects for the current mentor.
+   * @returns {Promise<Array<{ id: string, name: string, categoryId: string }>>}
+   */
+  async getMyApprovedSubjects() {
+    const { data } = await api.get('/advisor-applications/me/approved-subjects');
+    return data.data;
+  },
+
+  /**
    * Upload transcript file via the existing media upload endpoint.
    * @param {File} file
    * @returns {Promise<{ url: string, publicId: string }>}

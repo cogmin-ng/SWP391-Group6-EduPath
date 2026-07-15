@@ -21,6 +21,25 @@ exports.requireAuth = (req, res, next) => {
   }
 };
 
+exports.optionalAuth = (req, res, next) => {
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith('Bearer ')) {
+    return next();
+  }
+  const token = auth.slice(7);
+  try {
+    const payload = jwt.verify(token, config.jwt.accessSecret);
+    req.user = { 
+      id: payload.sub, 
+      email: payload.email,
+      roles: payload.roles || []
+    };
+  } catch (err) {
+    // Ignore invalid token for optional auth
+  }
+  next();
+};
+
 exports.requireRole = (allowedRoles) => {
   return (req, res, next) => {
     if (!req.user) {

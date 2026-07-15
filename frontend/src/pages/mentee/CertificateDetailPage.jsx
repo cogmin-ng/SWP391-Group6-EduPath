@@ -92,7 +92,7 @@ export default function CertificateDetailPage() {
     );
   }
 
-  const userName = JSON.parse(localStorage.getItem('user') || '{}')?.name || 'Học viên';
+  const userName = JSON.parse(sessionStorage.getItem('user') || '{}')?.name || 'Học viên';
 
   return (
     <div className="min-h-screen bg-slate-50">

@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import MenteeHeader from '../components/mentee/MenteeHeader';
+import Navbar from '../components/landing/Navbar';
+import { useAuth } from '../hooks/useAuth';
 import ExploreFilters from './mentee/features/explore/components/ExploreFilters';
 import RoadmapCard from './mentee/features/explore/components/RoadmapCard';
 import { exploreService } from '../services/exploreService';
@@ -10,9 +13,14 @@ function toggleValue(list, value) {
 }
 
 export default function ExplorePage() {
+  const { isAuthenticated } = useAuth();
   const [exploreRoadmaps, setExploreRoadmaps] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [searchParams] = useSearchParams();
+  const [selectedCategories, setSelectedCategories] = useState(() => {
+    const cat = searchParams.get('category');
+    return cat ? [cat] : [];
+  });
   const [selectedMentors, setSelectedMentors] = useState([]);
   const [mentorQuery, setMentorQuery] = useState('');
   const [sortBy] = useState('popular');
@@ -105,7 +113,7 @@ export default function ExplorePage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <MenteeHeader />
+      {isAuthenticated ? <MenteeHeader /> : <Navbar />}
 
       <main className="mx-auto flex w-full max-w-420 px-4 sm:px-6 lg:px-8 xl:px-10 pt-20">
         <ExploreFilters

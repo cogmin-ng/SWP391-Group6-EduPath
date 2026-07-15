@@ -1,17 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams, useNavigate } from 'react-router-dom';
 import { ArrowRight, Clock3, Heart, Loader2, Star, StarHalf, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import MenteeHeader from '../components/mentee/MenteeHeader';
+import Navbar from '../components/landing/Navbar';
 import Button from '../components/ui/Button';
 import RoadmapTimeline from './mentee/features/explore/components/RoadmapTimeline';
 import { isFavorited, toggleFavorite } from './mentee/features/enrollments/favorites';
 import { enrollInRoadmapBySlug } from '../services/enrollmentService';
 import { getRoadmapBySlug } from '../services/roadmapService';
 import ReviewSection from '../components/ui/ReviewSection';
+import { useAuth } from '../hooks/useAuth';
 
 export default function RoadmapDetailPage() {
   const { slug } = useParams();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [roadmap, setRoadmap] = useState(null);
   const [enrolled, setEnrolled] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -94,6 +98,11 @@ export default function RoadmapDetailPage() {
   }
 
   const handleEnroll = async () => {
+    if (!isAuthenticated) {
+      toast.error('Bạn cần đăng nhập để đăng ký lộ trình.');
+      navigate('/login');
+      return;
+    }
     try {
       await enrollInRoadmapBySlug(roadmapView.slug);
       setEnrolled(true);
@@ -105,6 +114,11 @@ export default function RoadmapDetailPage() {
   };
 
   const handleToggleFavorite = () => {
+    if (!isAuthenticated) {
+      toast.error('Bạn cần đăng nhập để lưu vào yêu thích.');
+      navigate('/login');
+      return;
+    }
     toggleFavorite(roadmapView.slug);
     const next = !favorited;
     setFavorited(next);
@@ -113,7 +127,7 @@ export default function RoadmapDetailPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <MenteeHeader />
+      {isAuthenticated ? <MenteeHeader /> : <Navbar />}
 
       <main className="mx-auto w-full max-w-7xl px-4 pb-12 pt-24 sm:px-6 lg:px-8">
         <section className="grid grid-cols-1 gap-6 lg:grid-cols-12">

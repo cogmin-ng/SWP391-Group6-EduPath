@@ -26,6 +26,17 @@ exports.getMyApplication = asyncHandler(async (req, res) => {
   });
 });
 
+exports.getMyApprovedSubjects = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  const subjects = await advisorApplicationService.getMyApprovedSubjects(userId);
+
+  return sendSuccess(res, {
+    message: 'Approved subjects retrieved successfully',
+    data: subjects,
+  });
+});
+
 exports.getAllApplications = asyncHandler(async (req, res) => {
   const applications = await advisorApplicationService.getAllApplications();
 

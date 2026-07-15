@@ -10,6 +10,7 @@ import Badge from '../../components/ui/Badge';
 import { createRoadmap, submitRoadmap } from '../../services/roadmapService';
 import { subjectCategoryService } from '../../services/subjectCategoryService';
 import { subjectService } from '../../services/subjectService';
+import { mentorApplicationService } from '../../services/mentorApplicationService';
 
 const CreateRoadmapPage = () => {
   const navigate = useNavigate();
@@ -36,16 +37,27 @@ const CreateRoadmapPage = () => {
   });
   const [categories, setCategories] = useState([]);
   const [subjects, setSubjects] = useState([]);
-
+  const [approvedSubjects, setApprovedSubjects] = useState([]);
 
   const loadInitialData = async () => {
     try {
-      const [catData, subData] = await Promise.all([
+      const [catData, subData, myApprovedSubjects] = await Promise.all([
         subjectCategoryService.getSubjectCategories(),
         subjectService.getAllSubjects(),
+        mentorApplicationService.getMyApprovedSubjects(),
       ]);
       setCategories(catData || []);
       setSubjects(subData || []);
+      setApprovedSubjects(myApprovedSubjects || []);
+
+      if (myApprovedSubjects?.length === 1 && !location.state?.formData) {
+        const assignedSubject = myApprovedSubjects[0];
+        setFormData(prev => ({
+          ...prev,
+          subjectId: assignedSubject.id,
+          category: assignedSubject.categoryId || prev.category
+        }));
+      }
     } catch (err) {
       console.error('Lỗi khi tải dữ liệu ban đầu:', err);
     }
@@ -147,8 +159,11 @@ const CreateRoadmapPage = () => {
     }
   };
 
-  const categoryOptions = categories.map(c => ({ value: c.id, label: c.name }));
-  const subjectOptions = subjects
+  const categoryOptions = categories
+    .filter(c => approvedSubjects.some(s => s.categoryId === c.id))
+    .map(c => ({ value: c.id, label: c.name }));
+
+  const subjectOptions = approvedSubjects
     .filter(s => !formData.category || s.categoryId === formData.category)
     .map(s => ({ value: s.id, label: s.name }));
 

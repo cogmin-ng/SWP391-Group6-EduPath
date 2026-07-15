@@ -9,7 +9,7 @@ import { Play, Check, Circle, ChevronDown } from 'lucide-react';
  * - currentNodeId: string – highlights the active node
  * - onNodeClick: (nodeId) => void – navigation callback
  */
-export default function NodeSidebar({ roadmap, currentNodeId, onNodeClick }) {
+export default function NodeSidebar({ roadmap, currentNodeId, onNodeClick, hideProgress = false }) {
   if (!roadmap) return null;
 
   const getStatusIcon = (node) => {
@@ -42,24 +42,26 @@ export default function NodeSidebar({ roadmap, currentNodeId, onNodeClick }) {
           {roadmap.title}
         </h2>
 
-        <div className="mt-6 mb-6">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-500">
-              Path Progress
-            </span>
-            <span className="text-lg font-bold text-indigo-600">
-              {roadmap.progress}%
-            </span>
+        {!hideProgress && (
+          <div className="mt-6 mb-6">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-sm font-medium text-slate-500">
+                Path Progress
+              </span>
+              <span className="text-lg font-bold text-indigo-600">
+                {roadmap.progress}%
+              </span>
+            </div>
+            <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-violet-500 transition-all duration-500 ease-out"
+                style={{ width: `${roadmap.progress}%` }}
+              />
+            </div>
           </div>
-          <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-violet-500 transition-all duration-500 ease-out"
-              style={{ width: `${roadmap.progress}%` }}
-            />
-          </div>
-        </div>
+        )}
 
-        <div className="mb-4 flex items-center justify-between">
+        <div className={`mb-4 flex items-center justify-between ${hideProgress ? 'mt-6' : ''}`}>
           <p className="text-sm font-semibold text-slate-900">Các chặng học</p>
           <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
             {roadmap.nodes.length} nodes
@@ -107,12 +109,14 @@ export default function NodeSidebar({ roadmap, currentNodeId, onNodeClick }) {
           })}
         </nav>
 
-        <div className="mt-6 rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-white p-4">
-          <p className="text-sm font-semibold text-slate-900">Hoàn thành lộ trình</p>
-          <p className="mt-1 text-sm leading-6 text-slate-500">
-            Tiếp tục đều tay để mở khóa thêm nội dung và tiến gần hơn đến chứng chỉ hoàn thành.
-          </p>
-        </div>
+        {!hideProgress && (
+          <div className="mt-6 rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-white p-4">
+            <p className="text-sm font-semibold text-slate-900">Hoàn thành lộ trình</p>
+            <p className="mt-1 text-sm leading-6 text-slate-500">
+              Tiếp tục đều tay để mở khóa thêm nội dung và tiến gần hơn đến chứng chỉ hoàn thành.
+            </p>
+          </div>
+        )}
       </div>
     </aside>
   );

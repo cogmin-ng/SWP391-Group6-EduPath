@@ -14,6 +14,7 @@ import {
   Star,
   TrendingUp,
   Zap,
+  Lock,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -68,7 +69,7 @@ function StatCard({ icon: Icon, label, value, hint, color, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="min-h-36 rounded-2xl border border-slate-100 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-100 hover:shadow-md"
+      className="min-h-36 rounded-2xl border border-slate-100 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-100 hover:shadow-md w-full"
     >
       <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${colors[color]}`}>
         <Icon className="h-5 w-5" />
@@ -96,6 +97,7 @@ function Thumbnail({ src, title, className = "h-32" }) {
 
 export default function HomeView({
   dashboard,
+  badges = [],
   enrollingSlug,
   onContinueCourse,
   onExplore,
@@ -148,7 +150,7 @@ export default function HomeView({
               <button
                 type="button"
                 onClick={() => (continueLearning ? onContinueCourse(continueLearning) : onExplore())}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-indigo-700 shadow-md hover:bg-indigo-50"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-indigo-700 shadow-md hover:bg-indigo-50 cursor-pointer"
               >
                 {continueLearning ? "Tiếp tục học" : "Khám phá lộ trình"}
                 <ArrowRight className="h-4 w-4" />
@@ -156,7 +158,7 @@ export default function HomeView({
               <button
                 type="button"
                 onClick={onViewRoadmaps}
-                className="rounded-xl border border-white/30 px-5 py-2.5 text-sm font-medium hover:bg-white/10"
+                className="rounded-xl border border-white/30 px-5 py-2.5 text-sm font-medium hover:bg-white/10 cursor-pointer"
               >
                 Xem lộ trình của tôi
               </button>
@@ -187,28 +189,28 @@ export default function HomeView({
             <BookOpen className="h-5 w-5 text-indigo-600" />
             Tiếp tục học tập
           </h2>
-          <button type="button" onClick={onViewRoadmaps} className="text-xs font-semibold text-indigo-600 hover:text-indigo-800">Xem tất cả</button>
+          <button type="button" onClick={onViewRoadmaps} className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 cursor-pointer">Xem tất cả</button>
         </div>
         {continueLearning ? (
           <div className="grid overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm lg:grid-cols-12">
             <Thumbnail src={continueLearning.thumbnail} title={continueLearning.title} className="h-56 lg:col-span-4 lg:h-full" />
-            <div className="space-y-5 p-5 sm:p-6 lg:col-span-8">
+            <div className="space-y-5 p-5 sm:p-6 lg:col-span-8 flex flex-col justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">{continueLearning.subjectName}</p>
                 <h3 className="mt-1 text-xl font-bold text-slate-900">{continueLearning.title}</h3>
                 <p className="mt-1 text-xs text-slate-500">Hướng dẫn bởi {continueLearning.mentorName}</p>
               </div>
-              <div>
+              <div className="my-2">
                 <div className="mb-2 flex justify-between text-xs"><span className="font-medium text-slate-600">Tiến trình học tập</span><strong className="text-indigo-600">{progress}%</strong></div>
                 <div className="h-2.5 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-indigo-600" style={{ width: `${progress}%` }} /></div>
               </div>
-              <div className="flex items-center justify-between rounded-2xl border border-indigo-100 bg-indigo-50/60 p-3">
+              <div className="flex items-center justify-between rounded-2xl border border-indigo-100 bg-indigo-50/60 p-3 my-2">
                 <div><p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Nội dung tiếp theo</p><p className="mt-0.5 text-sm font-bold text-indigo-950">{continueLearning.currentNode?.title || "Roadmap chưa có nội dung"}</p></div>
-                <span className="rounded-full bg-white px-3 py-1 text-[11px] font-medium text-indigo-600">{continueLearning.completedNodeCount}/{continueLearning.nodeCount} nội dung</span>
+                <span className="rounded-full bg-white px-3 py-1 text-[11px] font-medium text-indigo-600 shrink-0">{continueLearning.completedNodeCount}/{continueLearning.nodeCount} nội dung</span>
               </div>
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <button type="button" onClick={() => onContinueCourse(continueLearning)} className="flex-1 rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">Tiếp tục học</button>
-                <button type="button" onClick={onViewCurrentNode} disabled={!continueLearning.currentNode} className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">Xem nội dung hiện tại</button>
+              <div className="flex flex-col gap-3 sm:flex-row mt-2">
+                <button type="button" onClick={() => onContinueCourse(continueLearning)} className="flex-1 rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 cursor-pointer">Tiếp tục học</button>
+                <button type="button" onClick={onViewCurrentNode} disabled={!continueLearning.currentNode} className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer">Xem nội dung hiện tại</button>
               </div>
             </div>
           </div>
@@ -217,7 +219,7 @@ export default function HomeView({
             <BookOpen className="mx-auto h-10 w-10 text-slate-300" />
             <h3 className="mt-3 font-bold text-slate-900">Bạn chưa có lộ trình đang học</h3>
             <p className="mt-1 text-sm text-slate-500">Khám phá các lộ trình phù hợp và bắt đầu học ngay.</p>
-            <button type="button" onClick={onExplore} className="mt-5 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white">Khám phá lộ trình</button>
+            <button type="button" onClick={onExplore} className="mt-5 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white cursor-pointer">Khám phá lộ trình</button>
           </div>
         )}
       </section>
@@ -231,7 +233,7 @@ export default function HomeView({
             [HelpCircle, "Làm quiz", continueLearning?.currentNode?.hasQuiz ? "Quiz của nội dung hiện tại" : "Xem quiz trong lộ trình", onViewCurrentQuiz, "bg-amber-50 text-amber-600"],
             [Lightbulb, "Đóng góp của tôi", "Theo dõi tip đã đóng góp", onViewContributions, "bg-rose-50 text-rose-600"],
           ].map(([Icon, title, description, action, colorClasses]) => (
-            <button key={title} type="button" onClick={action} className="group rounded-2xl border border-slate-100 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+            <button key={title} type="button" onClick={action} className="group rounded-2xl border border-slate-100 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md cursor-pointer">
               <div className={`flex h-11 w-11 items-center justify-center rounded-full ${colorClasses}`}><Icon className="h-5 w-5" /></div>
               <p className="mt-3 text-sm font-bold text-slate-900">{title}</p><p className="mt-1 text-xs text-slate-500">{description}</p><ArrowRight className="mt-3 h-4 w-4 text-indigo-500 transition group-hover:translate-x-1" />
             </button>
@@ -240,13 +242,13 @@ export default function HomeView({
       </section>
 
       <section className="space-y-4">
-        <div className="flex items-center justify-between"><h2 className="text-lg font-bold text-slate-900">Lộ trình của tôi</h2><button type="button" onClick={onViewRoadmaps} className="text-xs font-semibold text-indigo-600">Xem tất cả</button></div>
+        <div className="flex items-center justify-between"><h2 className="text-lg font-bold text-slate-900">Lộ trình của tôi</h2><button type="button" onClick={onViewRoadmaps} className="text-xs font-semibold text-indigo-600 cursor-pointer">Xem tất cả</button></div>
         {visibleEnrollments.length ? (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
             {visibleEnrollments.map((course) => (
               <article key={course.id} className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:shadow-md">
                 <Thumbnail src={course.thumbnail} title={course.title} className="h-28" />
-                <div className="p-4"><h3 className="line-clamp-2 min-h-10 text-sm font-bold text-slate-900">{course.title}</h3><p className="mt-1 text-[11px] text-slate-400">{course.mentorName}</p><div className="mt-4 flex justify-between text-[10px]"><span className="text-slate-500">Tiến độ</span><strong>{Math.round(course.progressPercent)}%</strong></div><div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-indigo-600" style={{ width: `${course.progressPercent}%` }} /></div><button type="button" onClick={() => onContinueCourse(course)} className="mt-4 w-full rounded-xl border border-slate-200 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">{course.status === "COMPLETED" ? "Xem lại" : "Tiếp tục học"}</button></div>
+                <div className="p-4"><h3 className="line-clamp-2 min-h-10 text-sm font-bold text-slate-900">{course.title}</h3><p className="mt-1 text-[11px] text-slate-400">{course.mentorName}</p><div className="mt-4 flex justify-between text-[10px]"><span className="text-slate-500">Tiến độ</span><strong>{Math.round(course.progressPercent)}%</strong></div><div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-indigo-600" style={{ width: `${course.progressPercent}%` }} /></div><button type="button" onClick={() => onContinueCourse(course)} className="mt-4 w-full rounded-xl border border-slate-200 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer">{course.status === "COMPLETED" ? "Xem lại" : "Tiếp tục học"}</button></div>
               </article>
             ))}
           </div>
@@ -263,20 +265,92 @@ export default function HomeView({
             }) : <p className="py-10 text-center text-sm text-slate-400">Chưa có hoạt động học tập nào.</p>}
           </div>
         </div>
+
         <div className="space-y-4 xl:col-span-5">
-          <h2 className="text-base font-bold text-slate-900">Thành tích thực tế</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-base font-bold text-slate-900">Huy hiệu & Thành tích</h2>
+            <button
+              type="button"
+              onClick={onViewProfile}
+              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 cursor-pointer"
+            >
+              Xem tất cả
+            </button>
+          </div>
           <div className="space-y-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+            {/* Stats row */}
             <div className="grid grid-cols-3 gap-3 text-center">
               {[[Medal, stats.completedEnrollmentCount, "Hoàn thành"], [ClipboardCheck, stats.passedQuizCount, "Quiz đạt"], [Award, stats.certificateCount, "Chứng chỉ"]].map(([Icon, value, label]) => <div key={label} className="rounded-xl bg-slate-50 p-3"><Icon className="mx-auto h-5 w-5 text-indigo-600" /><strong className="mt-2 block text-lg text-slate-900">{value}</strong><span className="text-[10px] text-slate-500">{label}</span></div>)}
             </div>
-            {dashboard.latestCertificate ? <button type="button" onClick={onViewCertificates} className="flex w-full items-center gap-3 rounded-xl border border-amber-100 bg-amber-50 p-3 text-left"><Award className="h-6 w-6 shrink-0 text-amber-600" /><span className="min-w-0 flex-1"><span className="block text-[10px] font-semibold uppercase text-amber-700">Chứng chỉ mới nhất</span><span className="block truncate text-xs font-bold text-slate-800">{dashboard.latestCertificate.learningPathTitle}</span></span><ChevronRight className="h-4 w-4 text-amber-600" /></button> : <p className="rounded-xl bg-slate-50 p-4 text-center text-xs text-slate-500">Hoàn thành lộ trình để nhận chứng chỉ đầu tiên.</p>}
+
+            {/* Badges row */}
+            {badges && badges.length > 0 && (
+              <div className="space-y-2 pt-4 border-t border-slate-100">
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                  Huy hiệu mới nhất
+                </p>
+                <div
+                  id="latest_badges_row"
+                  className="flex items-center gap-3 flex-wrap"
+                >
+                  {badges.slice(0, 5).map((badge) => (
+                    <div
+                      key={badge.id}
+                      className={`w-11 h-11 rounded-full flex items-center justify-center border transition relative group cursor-pointer shrink-0 ${
+                        badge.isUnlocked
+                          ? "bg-violet-50 text-violet-600 border-violet-100 hover:bg-violet-100"
+                          : "bg-slate-50 text-slate-300 border-slate-100"
+                      }`}
+                    >
+                      {badge.iconName === "award" ? (
+                        <Award className="w-5 h-5" />
+                      ) : badge.iconName === "star" ? (
+                        <Star className="w-5 h-5" />
+                      ) : badge.iconName === "zap" ? (
+                        <Zap className="w-5 h-5" />
+                      ) : (
+                        <Lock className="w-4 h-4 text-slate-400" />
+                      )}
+                      <span className="absolute bottom-12 left-1/2 -translate-x-1/2 w-48 bg-slate-800 text-white text-[10px] rounded-lg p-2 opacity-0 pointer-events-none group-hover:opacity-100 transition z-50 shadow-lg text-center font-normal">
+                        <strong className="block font-bold">{badge.title}</strong>
+                        {badge.description}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Latest certificate row */}
+            {dashboard.latestCertificate ? (
+              <button
+                type="button"
+                onClick={onViewCertificates}
+                className="flex w-full items-center gap-3 rounded-xl border border-amber-100 bg-amber-50 p-3 text-left pt-2 mt-2 cursor-pointer"
+              >
+                <Award className="h-6 w-6 shrink-0 text-amber-600" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[10px] font-semibold uppercase text-amber-700">
+                    Chứng chỉ mới nhất
+                  </span>
+                  <span className="block truncate text-xs font-bold text-slate-800">
+                    {dashboard.latestCertificate.learningPathTitle}
+                  </span>
+                </span>
+                <ChevronRight className="h-4 w-4 text-amber-600" />
+              </button>
+            ) : (
+              <p className="rounded-xl bg-slate-50 p-4 text-center text-xs text-slate-500 mt-2">
+                Hoàn thành lộ trình để nhận chứng chỉ đầu tiên.
+              </p>
+            )}
           </div>
         </div>
       </section>
 
       <section className="space-y-4">
-        <div className="flex items-center justify-between"><h2 className="text-lg font-bold text-slate-900">Đề xuất dành cho bạn</h2><button type="button" onClick={onExplore} className="text-xs font-semibold text-indigo-600">Xem tất cả</button></div>
-        {recommendations.length ? <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">{recommendations.map((course) => <article key={course.id} className="flex min-h-80 flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:shadow-md"><div className="relative"><Thumbnail src={course.thumbnail} title={course.title} className="h-32" />{course.rating !== null && <span className="absolute right-2 top-2 flex items-center gap-1 rounded-lg bg-slate-950/65 px-2 py-1 text-[10px] text-white"><Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />{course.rating}</span>}</div><div className="flex flex-1 flex-col p-4"><p className="text-[10px] font-semibold uppercase text-indigo-600">{course.subjectName}</p><h3 className="mt-1 line-clamp-2 text-sm font-bold text-slate-900">{course.title}</h3><p className="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-500">{course.description || "Chưa có mô tả."}</p><p className="mt-3 text-[10px] text-slate-400">{course.enrollmentCount} học viên · {course.nodeCount} nội dung</p><button type="button" disabled={enrollingSlug === course.slug} onClick={() => onEnroll(course)} className="mt-auto flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-50 py-2.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-600 hover:text-white disabled:cursor-wait disabled:opacity-60">{enrollingSlug === course.slug ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}{enrollingSlug === course.slug ? "Đang đăng ký..." : "Đăng ký ngay"}</button></div></article>)}</div> : <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center"><CheckCircle2 className="mx-auto h-9 w-9 text-emerald-500" /><p className="mt-2 text-sm font-semibold text-slate-800">Bạn đã đăng ký tất cả lộ trình hiện có.</p></div>}
+        <div className="flex items-center justify-between"><h2 className="text-lg font-bold text-slate-900">Đề xuất dành cho bạn</h2><button type="button" onClick={onExplore} className="text-xs font-semibold text-indigo-600 cursor-pointer">Xem tất cả</button></div>
+        {recommendations.length ? <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">{recommendations.map((course) => <article key={course.id} className="flex min-h-80 flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:shadow-md"><div className="relative"><Thumbnail src={course.thumbnail} title={course.title} className="h-32" />{course.rating !== null && <span className="absolute right-2 top-2 flex items-center gap-1 rounded-lg bg-slate-950/65 px-2 py-1 text-[10px] text-white"><Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />{course.rating}</span>}</div><div className="flex flex-1 flex-col p-4"><p className="text-[10px] font-semibold uppercase text-indigo-600">{course.subjectName}</p><h3 className="mt-1 line-clamp-2 text-sm font-bold text-slate-900">{course.title}</h3><p className="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-500">{course.description || "Chưa có mô tả."}</p><p className="mt-3 text-[10px] text-slate-400">{course.enrollmentCount} học viên · {course.nodeCount} nội dung</p><button type="button" disabled={enrollingSlug === course.slug} onClick={() => onEnroll(course)} className="mt-auto flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-50 py-2.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-600 hover:text-white disabled:cursor-wait disabled:opacity-60 cursor-pointer">{enrollingSlug === course.slug ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}{enrollingSlug === course.slug ? "Đang đăng ký..." : "Đăng ký ngay"}</button></div></article>)}</div> : <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center"><CheckCircle2 className="mx-auto h-9 w-9 text-emerald-500" /><p className="mt-2 text-sm font-semibold text-slate-800">Bạn đã đăng ký tất cả lộ trình hiện có.</p></div>}
       </section>
     </div>
   );

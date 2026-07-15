@@ -7,7 +7,10 @@ const {
   toRoadmapSlug,
 } = require('../utils/roadmapSlug');
 const nodeRepository = require('../repositories/nodeRepository');
-const { normalizeDurationParts, serializeDuration } = require('../utils/duration');
+const {
+  normalizeDurationParts,
+  serializeDuration,
+} = require('../utils/duration');
 
 const MSG = {
   notFound: 'Roadmap not found',
@@ -90,13 +93,18 @@ async function notifyMentorAboutRoadmapReview(tx, roadmap, status, feedback) {
   const message =
     status === 'APPROVED'
       ? `Lộ trình "${roadmap.title}" của bạn đã được phê duyệt.`
-      : `Lộ trình "${roadmap.title}" của bạn đã bị từ chối.${feedback ? ` Lý do: ${feedback}` : ''}`;
+      : `Lộ trình "${roadmap.title}" của bạn đã bị từ chối.${
+          feedback ? ` Lý do: ${feedback}` : ''
+        }`;
 
   await notificationService.createNotification(
     roadmap.mentorId,
     {
       type: 'ROADMAP',
-      title: status === 'APPROVED' ? 'Lộ trình được phê duyệt' : 'Lộ trình bị từ chối',
+      title:
+        status === 'APPROVED'
+          ? 'Lộ trình được phê duyệt'
+          : 'Lộ trình bị từ chối',
       content: message,
     },
     tx
@@ -116,7 +124,9 @@ exports.createRoadmap = async (data, mentorId) => {
 
   const nodes = data.nodes || [];
   const normalizedNodes = nodes.map((node, idx) => {
-    const durationParts = normalizeDurationParts(node.durationParts || node.duration);
+    const durationParts = normalizeDurationParts(
+      node.durationParts || node.duration
+    );
     return {
       ...node,
       orderIndex: node.orderIndex !== undefined ? node.orderIndex : idx,
@@ -309,7 +319,9 @@ exports.updateRoadmap = async (roadmapId, data, mentorId) => {
     // Sync nodes if provided
     if (Array.isArray(data.nodes)) {
       const normalizedNodesForUpdate = data.nodes.map((node, idx) => {
-        const durationParts = normalizeDurationParts(node.durationParts || node.duration);
+        const durationParts = normalizeDurationParts(
+          node.durationParts || node.duration
+        );
         return {
           ...node,
           orderIndex: node.orderIndex !== undefined ? node.orderIndex : idx,
@@ -317,7 +329,11 @@ exports.updateRoadmap = async (roadmapId, data, mentorId) => {
           durationParts,
         };
       });
-      await roadmapRepository.syncNodes(roadmapId, normalizedNodesForUpdate, tx);
+      await roadmapRepository.syncNodes(
+        roadmapId,
+        normalizedNodesForUpdate,
+        tx
+      );
     }
 
     return null;
@@ -483,7 +499,10 @@ exports.getMentorDashboardStats = async (mentorId) => {
 
   let contributionsTrend = '+0%';
   if (lastMonthContributions === 0) {
-    contributionsTrend = currentMonthContributions > 0 ? `+${currentMonthContributions * 100}%` : '0%';
+    contributionsTrend =
+      currentMonthContributions > 0
+        ? `+${currentMonthContributions * 100}%`
+        : '0%';
   } else {
     const diff = currentMonthContributions - lastMonthContributions;
     const percent = Math.round((diff / lastMonthContributions) * 100);
@@ -522,7 +541,8 @@ exports.getMentorDashboardStats = async (mentorId) => {
 
   let studentsTrend = '+0%';
   if (lastMonthStudents === 0) {
-    studentsTrend = currentMonthStudents > 0 ? `+${currentMonthStudents * 100}%` : '0%';
+    studentsTrend =
+      currentMonthStudents > 0 ? `+${currentMonthStudents * 100}%` : '0%';
   } else {
     const diff = currentMonthStudents - lastMonthStudents;
     const percent = Math.round((diff / lastMonthStudents) * 100);
@@ -537,7 +557,9 @@ exports.getMentorDashboardStats = async (mentorId) => {
       isDeleted: false,
     },
   });
-  const averageRating = reviewAggr._avg.rating ? Number(reviewAggr._avg.rating.toFixed(1)) : 0;
+  const averageRating = reviewAggr._avg.rating
+    ? Number(reviewAggr._avg.rating.toFixed(1))
+    : 0;
 
   const reviewAggrBeforeThisMonth = await prisma.review.aggregate({
     _avg: { rating: true },
@@ -547,8 +569,10 @@ exports.getMentorDashboardStats = async (mentorId) => {
       createdAt: { lt: startOfMonth },
     },
   });
-  const prevAverageRating = reviewAggrBeforeThisMonth._avg.rating ? Number(reviewAggrBeforeThisMonth._avg.rating.toFixed(1)) : averageRating;
-  
+  const prevAverageRating = reviewAggrBeforeThisMonth._avg.rating
+    ? Number(reviewAggrBeforeThisMonth._avg.rating.toFixed(1))
+    : averageRating;
+
   const ratingDiff = (averageRating - prevAverageRating).toFixed(1);
   const ratingTrend = ratingDiff >= 0 ? `+${ratingDiff}` : `${ratingDiff}`;
 

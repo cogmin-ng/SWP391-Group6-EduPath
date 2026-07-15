@@ -35,7 +35,11 @@ const router = Router();
  *       400:
  *         description: Invalid input
  */
-router.post('/register', validateSchema(registerSchema), authController.register);
+router.post(
+  '/register',
+  validateSchema(registerSchema),
+  authController.register
+);
 
 /**
  * @swagger
@@ -182,6 +186,5 @@ router.post(
  *         description: Unauthorized
  */
 router.get('/me', requireAuth, authController.getMe);
- 
 
 module.exports = router;

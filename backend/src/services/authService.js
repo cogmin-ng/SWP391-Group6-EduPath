@@ -109,7 +109,11 @@ exports.resetPassword = async ({ email, otp, newPassword }) => {
 exports.login = async ({ email, password }) => {
   const user = await userRepo.findByEmail(email);
   if (!user) throw new ApiError(401, authMessages.invalidCredentials);
-  if (!user.isVerified) throw new ApiError(403, 'Email not verified. Please verify your email to continue.');
+  if (!user.isVerified)
+    throw new ApiError(
+      403,
+      'Email not verified. Please verify your email to continue.'
+    );
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) throw new ApiError(401, authMessages.invalidCredentials);
 

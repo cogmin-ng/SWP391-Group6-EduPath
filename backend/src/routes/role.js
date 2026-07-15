@@ -208,6 +208,11 @@ router.put(
  *       404:
  *         description: Role not found
  */
-router.delete('/:id', requireAuth, requireRole(['ADMIN']), roleController.deleteRole);
+router.delete(
+  '/:id',
+  requireAuth,
+  requireRole(['ADMIN']),
+  roleController.deleteRole
+);
 
 module.exports = router;

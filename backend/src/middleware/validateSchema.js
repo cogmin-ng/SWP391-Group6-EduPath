@@ -9,7 +9,10 @@ function validateSchema(schema, source = 'body') {
     });
 
     if (error) {
-      console.error('Validation failed details:', JSON.stringify(error.details, null, 2));
+      console.error(
+        'Validation failed details:',
+        JSON.stringify(error.details, null, 2)
+      );
       return next(
         new ApiError(400, 'Validation failed', {
           fields: error.details.map((item) => ({

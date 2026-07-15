@@ -143,6 +143,14 @@ exports.approveTip = async (tipId, mentorId) => {
       }" đã được mentor phê duyệt và công bố thành công.`,
       relatedTipId: updatedTip.id,
     });
+
+    // Run automatic badge checks
+    try {
+      const badgeService = require('./badgeService');
+      await badgeService.runBadgeChecks(updatedTip.contributorId);
+    } catch (badgeError) {
+      console.error('Error running badge checks on tip approval:', badgeError);
+    }
   }
 
   return updatedTip;

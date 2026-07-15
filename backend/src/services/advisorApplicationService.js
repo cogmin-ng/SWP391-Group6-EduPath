@@ -115,7 +115,8 @@ exports.createApplication = async (userId, data) => {
         {
           type: 'SYSTEM',
           title: 'Yêu cầu làm Mentor mới',
-          content: 'Một học viên vừa gửi yêu cầu để trở thành Mentor. Vui lòng kiểm tra trang quản lý.',
+          content:
+            'Một học viên vừa gửi yêu cầu để trở thành Mentor. Vui lòng kiểm tra trang quản lý.',
         },
         tx
       );
@@ -126,7 +127,15 @@ exports.createApplication = async (userId, data) => {
       where: { id: app.id },
       include: {
         mentorSubjects: {
-          include: { subject: { select: { id: true, name: true } } },
+          include: {
+            subject: {
+              select: {
+                id: true,
+                name: true,
+                category: { select: { id: true, name: true } },
+              },
+            },
+          },
         },
         academicRecords: {
           include: { subject: { select: { id: true, name: true } } },
@@ -152,7 +161,15 @@ exports.getMyApplication = async (userId) => {
     orderBy: { createdAt: 'desc' },
     include: {
       mentorSubjects: {
-        include: { subject: { select: { id: true, name: true } } },
+        include: {
+          subject: {
+            select: {
+              id: true,
+              name: true,
+              category: { select: { id: true, name: true } },
+            },
+          },
+        },
       },
       academicRecords: {
         include: { subject: { select: { id: true, name: true } } },
@@ -214,7 +231,15 @@ exports.getAllApplications = async () => {
         },
       },
       mentorSubjects: {
-        include: { subject: { select: { id: true, name: true } } },
+        include: {
+          subject: {
+            select: {
+              id: true,
+              name: true,
+              category: { select: { id: true, name: true } },
+            },
+          },
+        },
       },
       academicRecords: {
         include: { subject: { select: { id: true, name: true } } },
@@ -226,7 +251,12 @@ exports.getAllApplications = async () => {
 /**
  * Update the status of an advisor application.
  */
-exports.updateApplicationStatus = async (id, status, reviewerId, rejectReason) => {
+exports.updateApplicationStatus = async (
+  id,
+  status,
+  reviewerId,
+  rejectReason
+) => {
   const application = await prisma.advisorApplication.findUnique({
     where: { id },
   });
@@ -264,14 +294,23 @@ exports.updateApplicationStatus = async (id, status, reviewerId, rejectReason) =
     if (updatedApp.userId) {
       const notificationPayload = {
         type: 'SYSTEM',
-        title: status === 'APPROVED' ? 'Đơn đăng ký Mentor được phê duyệt' : 'Đơn đăng ký Mentor bị từ chối',
+        title:
+          status === 'APPROVED'
+            ? 'Đơn đăng ký Mentor được phê duyệt'
+            : 'Đơn đăng ký Mentor bị từ chối',
         content:
           status === 'APPROVED'
             ? 'Đơn đăng ký Mentor của bạn đã được phê duyệt. Bạn có thể bắt đầu tạo lộ trình và hỗ trợ học viên.'
-            : `Đơn đăng ký Mentor của bạn đã bị từ chối.${rejectReason ? ` Lý do: ${rejectReason}` : ''}`,
+            : `Đơn đăng ký Mentor của bạn đã bị từ chối.${
+                rejectReason ? ` Lý do: ${rejectReason}` : ''
+              }`,
       };
 
-      await notificationService.createNotification(updatedApp.userId, notificationPayload, tx);
+      await notificationService.createNotification(
+        updatedApp.userId,
+        notificationPayload,
+        tx
+      );
     }
 
     return updatedApp;

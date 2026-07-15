@@ -61,4 +61,3 @@ exports.resetPassword = asyncHandler(async (req, res) => {
     message: 'Mật khẩu đã được đặt lại thành công.',
   });
 });
-

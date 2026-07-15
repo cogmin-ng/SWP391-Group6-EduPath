@@ -1,36 +1,33 @@
-import { Edit3, Star, X, Camera, Sparkles, MapPin, CalendarDays, BookOpen, Award, Users } from 'lucide-react';
+import { Edit3, Star, X, Camera, Sparkles, MapPin, CalendarDays, BookOpen, Award, Users, Mail, GraduationCap, Briefcase, Plus, Hash, Info } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import { userService } from '../../services/userService';
+import { getMentorDashboardStats, getMentorRoadmaps } from '../../services/roadmapService';
+import { mentorApplicationService } from '../../services/mentorApplicationService';
 
-const PROFILE_STORAGE_KEY = "mentor_profile_overrides";
+// Local storage overrides are now scoped per user ID to prevent account data mixing
 
-const readStoredProfile = (fallback) => {
-  const stored = localStorage.getItem(PROFILE_STORAGE_KEY);
-  if (!stored) return fallback;
-
-  try {
-    const parsed = JSON.parse(stored);
-    return {
-      ...fallback,
-      name: parsed.name ?? fallback.name,
-      email: parsed.email ?? fallback.email,
-        major: parsed.major ?? fallback.major,
-        termStatus: parsed.termStatus ?? fallback.termStatus,
-      title: parsed.title ?? fallback.title,
-      bio: parsed.bio ?? fallback.bio,
-      location: parsed.location ?? fallback.location,
-      avatar: parsed.avatar ?? fallback.avatar,
-    };
-  } catch {
-    return fallback;
+const getStatusBadge = (status) => {
+  switch (status) {
+    case 'PUBLISHED':
+      return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Đã xuất bản</span>;
+    case 'APPROVED':
+      return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">Đã duyệt</span>;
+    case 'PENDING':
+      return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">Đang chờ duyệt</span>;
+    case 'REJECTED':
+      return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">Bị từ chối</span>;
+    default:
+      return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-50 text-slate-700 border border-slate-200">Bản nháp</span>;
   }
 };
 
-const MentorProfilePage = () => {
+export default function MentorProfilePage() {
   const { user: authUser, updateUser } = useAuth();
+  const navigate = useNavigate();
   const avatarInputRef = useRef(null);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -39,16 +36,20 @@ const MentorProfilePage = () => {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [toast, setToast] = useState(null);
 
-  useEffect(() => {
-    if (!toast) return undefined;
-    const timer = window.setTimeout(() => setToast(null), 2600);
-    return () => window.clearTimeout(timer);
-  }, [toast]);
+  // Dynamic dashboard stats state
+  const [stats, setStats] = useState({
+    totalRoadmaps: 0,
+    approvedContributions: 0,
+    totalStudents: 0,
+  });
 
-  useEffect(() => {
-    if (!avatarPreview) return undefined;
-    return () => window.URL.revokeObjectURL(avatarPreview);
-  }, [avatarPreview]);
+  // Dynamic roadmaps state
+  const [roadmaps, setRoadmaps] = useState([]);
+  const [roadmapsLoading, setRoadmapsLoading] = useState(true);
+
+  // Dynamic advisor application details state
+  const [application, setApplication] = useState(null);
+  const [loadingApp, setLoadingApp] = useState(true);
 
   const baseProfile = {
     name: authUser?.name || 'Dr. Aris Thorne',
@@ -57,60 +58,50 @@ const MentorProfilePage = () => {
     avatar: authUser?.avatarUrl || authUser?.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop',
     bio: authUser?.bio || 'Chuyên gia về Chiến lược Sản phẩm và UI/UX với hơn 10 năm kinh nghiệm dẫn dắt các đội ngũ thiết kế tại các tập đoàn công nghệ hàng đầu toàn cầu.',
     location: authUser?.location || 'Hà Nội, Việt Nam',
-    joinDate: authUser?.joinDate || '15/03/2024',
-    students: '124',
-    roadmaps: 12,
-    rating: 4.9,
-    reviewCount: 2,
+    joinDate: authUser?.createdAt ? new Date(authUser.createdAt).toLocaleDateString('vi-VN') : '15/03/2024',
     major: authUser?.major || 'UI/UX Design',
     termStatus: authUser?.termStatus || 'Đã tốt nghiệp',
-    contributions: 32,
-    roadmapCount: 12,
-    xp: 12450,
-    quizzes: 54,
     specialties: [
-      { label: 'UI Design', color: 'bg-blue-100 text-blue-700' },
-      { label: 'UX Research', color: 'bg-purple-100 text-purple-700' },
-      { label: 'Figma', color: 'bg-pink-100 text-pink-700' },
-      { label: 'Product Strategy', color: 'bg-indigo-100 text-indigo-700' },
-      { label: 'Mentorship', color: 'bg-green-100 text-green-700' },
-      { label: 'Design Systems', color: 'bg-amber-100 text-amber-700' },
-      { label: 'Prototyping', color: 'bg-red-100 text-red-700' },
+      { label: 'UI Design', color: 'bg-blue-50 text-blue-700 border-blue-200/50' },
+      { label: 'UX Research', color: 'bg-purple-50 text-purple-700 border-purple-200/50' },
+      { label: 'Figma Mastery', color: 'bg-pink-50 text-pink-700 border-pink-200/50' },
+      { label: 'Product Strategy', color: 'bg-indigo-50 text-indigo-700 border-indigo-200/50' },
+      { label: 'Agile Mentorship', color: 'bg-green-50 text-green-700 border-green-200/50' },
+      { label: 'Design Systems', color: 'bg-amber-50 text-amber-700 border-amber-200/50' },
+      { label: 'Prototyping', color: 'bg-red-50 text-red-700 border-red-200/50' },
     ],
     reviews: [
       {
         stars: 5,
-        count: 2,
-        text: '"Cách Dr. Aris giải thích về Design Systems thực sự mang tư duy của mình."',
-        author: '— Nguyễn Anh Minh',
+        text: '"Cách Mentor giải thích về Design Systems thực sự mang tư duy và phương pháp học của mình lên tầm cao mới."',
+        author: 'Nguyễn Anh Minh',
+        date: '28/06/2026',
       },
       {
         stars: 5,
-        count: 1,
-        text: '"Lộ trình học rất rõ ràng, không bị ngoài kiến thức. Mentor hỗ trợ rất nhiệt tình."',
-        author: '— Trần Thị Lan',
+        text: '"Lộ trình học rất rõ ràng, không bị quá tải kiến thức. Mentor hỗ trợ giải đáp thắc mắc rất nhiệt tình."',
+        author: 'Trần Thị Lan',
+        date: '20/06/2026',
       },
-    ],
-    roadmapList: [
-      { title: 'UI Fundamentals', nodes: 24, emoji: '🎨', students: 450 },
-      { title: 'Advanced Prototyping', nodes: 18, emoji: '🎭', students: 320 },
-      { title: 'Design Systems at Scale', nodes: 32, emoji: '◆', students: 210 },
-      { title: 'Career in UX Strategy', nodes: 15, emoji: '🚀', students: 580 },
     ],
   };
 
-  const [profileData, setProfileData] = useState(() =>
-    readStoredProfile({
-      name: baseProfile.name,
-      email: baseProfile.email,
-      major: baseProfile.major,
-      termStatus: baseProfile.termStatus,
-      title: baseProfile.title,
-      bio: baseProfile.bio,
-      location: baseProfile.location,
-      avatar: baseProfile.avatar,
-    }),
-  );
+  const [profileData, setProfileData] = useState({});
+
+  useEffect(() => {
+    if (authUser?.id) {
+      const stored = localStorage.getItem(`mentor_profile_overrides_${authUser.id}`);
+      if (stored) {
+        try {
+          setProfileData(JSON.parse(stored));
+        } catch (e) {
+          console.error('Failed to parse profile overrides:', e);
+        }
+      } else {
+        setProfileData({});
+      }
+    }
+  }, [authUser?.id]);
 
   const [editForm, setEditForm] = useState(() => ({
     name: baseProfile.name,
@@ -122,10 +113,79 @@ const MentorProfilePage = () => {
     termStatus: baseProfile.termStatus,
   }));
 
+  // Map application details if available, falling back to base/local overrides
   const profile = {
     ...baseProfile,
-    ...profileData,
+    title: profileData.title || baseProfile.title,
+    location: profileData.location || baseProfile.location,
+    major: application?.specialization || profileData.major || baseProfile.major,
+    termStatus: application?.currentSemester || profileData.termStatus || baseProfile.termStatus,
+    specialties: application?.mentorSubjects && application.mentorSubjects.length > 0 
+      ? application.mentorSubjects.map(ms => ({ label: ms.subject.name, color: 'bg-indigo-50 text-indigo-700 border-indigo-200/50' }))
+      : baseProfile.specialties,
   };
+
+  const mentorCategories = application?.mentorSubjects
+    ? Array.from(new Set(application.mentorSubjects
+        .map(ms => ms.subject?.category?.name)
+        .filter(Boolean)
+      ))
+    : [];
+
+  const mentorSubjectsList = application?.mentorSubjects
+    ? application.mentorSubjects.map(ms => ms.subject?.name).filter(Boolean)
+    : [];
+
+  // Fetch stats, roadmaps, and advisor application dynamically on load
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const statsData = await getMentorDashboardStats();
+        if (statsData) {
+          setStats(statsData);
+        }
+      } catch (err) {
+        console.error('Failed to fetch mentor dashboard stats:', err);
+      }
+
+      try {
+        setRoadmapsLoading(true);
+        const roadmapsData = await getMentorRoadmaps(0, 10);
+        if (roadmapsData && roadmapsData.roadmaps) {
+          setRoadmaps(roadmapsData.roadmaps);
+        }
+      } catch (err) {
+        console.error('Failed to fetch mentor roadmaps:', err);
+      } finally {
+        setRoadmapsLoading(false);
+      }
+
+      try {
+        setLoadingApp(true);
+        const appData = await mentorApplicationService.getMyApplication();
+        if (appData) {
+          setApplication(appData);
+        }
+      } catch (err) {
+        console.error('Failed to fetch mentor application details:', err);
+      } finally {
+        setLoadingApp(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  useEffect(() => {
+    if (!toast) return undefined;
+    const timer = window.setTimeout(() => setToast(null), 2600);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
+
+  useEffect(() => {
+    if (!avatarPreview) return undefined;
+    return () => window.URL.revokeObjectURL(avatarPreview);
+  }, [avatarPreview]);
 
   const displayedAvatarUrl = avatarPreview || profile.avatar;
 
@@ -141,8 +201,8 @@ const MentorProfilePage = () => {
       title: profile.title,
       bio: profile.bio,
       location: profile.location,
-      major: profile.major,
-      termStatus: profile.termStatus,
+      major: application?.specialization || profile.major,
+      termStatus: application?.currentSemester || profile.termStatus,
     });
     setIsEditModalOpen(true);
   };
@@ -180,47 +240,47 @@ const MentorProfilePage = () => {
 
       if (avatarFile && authUser?.id) {
         const response = await userService.updateAvatar(authUser.id, avatarFile);
-        const updatedUser = response.data;
+        const updatedUser = response.data || response;
         if (!updatedUser) {
           throw new Error("Avatar upload response is invalid");
         }
-        updateUser(updatedUser);
         nextAvatarUrl = updatedUser.avatarUrl || updatedUser.avatar || nextAvatarUrl;
       }
 
       const nextProfile = {
-        name: editForm.name.trim() || baseProfile.name,
-        email: editForm.email.trim() || baseProfile.email,
         title: editForm.title.trim() || baseProfile.title,
-        bio: editForm.bio.trim() || baseProfile.bio,
         location: editForm.location.trim() || baseProfile.location,
         major: editForm.major?.trim() || baseProfile.major,
         termStatus: editForm.termStatus?.trim() || baseProfile.termStatus,
-        avatar: nextAvatarUrl,
       };
 
       setProfileData(nextProfile);
-      localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(nextProfile));
       if (authUser?.id) {
+        localStorage.setItem(`mentor_profile_overrides_${authUser.id}`, JSON.stringify(nextProfile));
+
+        await userService.updateUser(authUser.id, {
+          name: editForm.name.trim() || baseProfile.name,
+          bio: editForm.bio.trim() || baseProfile.bio,
+        });
+
         updateUser({
           ...authUser,
-          name: nextProfile.name,
-          email: nextProfile.email,
+          name: editForm.name.trim() || baseProfile.name,
+          email: editForm.email.trim() || baseProfile.email,
           avatarUrl: nextAvatarUrl,
           avatar: nextAvatarUrl,
-          bio: nextProfile.bio,
-          location: nextProfile.location,
-          major: nextProfile.major,
-          termStatus: nextProfile.termStatus,
+          bio: editForm.bio.trim() || baseProfile.bio,
         });
       }
+
       setToast({
         type: "success",
-        message: "Đã lưu thay đổi hồ sơ.",
+        message: "Cập nhật hồ sơ cá nhân thành công!",
       });
       setIsEditModalOpen(false);
       clearAvatarSelection();
     } catch (error) {
+      console.error(error);
       setToast({
         type: "error",
         message:
@@ -234,68 +294,78 @@ const MentorProfilePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F6F8FC] text-slate-900">
-      {toast ? (
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800">
+      {/* Toast Alert */}
+      {toast && (
         <div
-          className={`fixed top-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-2xl border px-4 py-3 text-xs font-semibold shadow-xl ${
+          className={`fixed top-6 right-6 z-50 flex items-center gap-3 rounded-2xl px-5 py-3.5 text-sm font-semibold shadow-xl border transition-all duration-300 animate-in fade-in slide-in-from-top-4 ${
             toast.type === "success"
-              ? "border-emerald-300 bg-emerald-600 text-white"
-              : "border-indigo-200 bg-white text-slate-700"
+              ? "border-emerald-200 bg-emerald-600 text-white"
+              : "border-rose-200 bg-rose-600 text-white"
           }`}
         >
-          <Sparkles className="h-4 w-4" />
+          <Sparkles className="h-5 w-5 text-amber-200" />
           <span>{toast.message}</span>
         </div>
-      ) : null}
+      )}
 
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <div className="space-y-6">
-          <section className="relative overflow-hidden rounded-[2rem] bg-[#635BFF] p-6 text-white shadow-xl sm:p-8">
-            <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-indigo-500/20 blur-3xl" />
-            <div className="absolute bottom-[-12%] left-1/4 h-56 w-56 rounded-full bg-violet-400/20 blur-2xl" />
-
-            <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-                <div className="relative h-24 w-24 overflow-hidden rounded-full border-4 border-white/20 bg-slate-900 shadow-2xl shadow-slate-950/10 sm:h-28 sm:w-28">
+      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="space-y-8">
+          
+          {/* Hero Banner Profile Section */}
+          <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 p-6 text-white shadow-xl shadow-indigo-100 sm:p-8 md:p-10">
+            {/* Background elements */}
+            <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-indigo-400/20 blur-3xl" />
+            <div className="absolute bottom-[-10%] left-1/3 h-56 w-56 rounded-full bg-violet-300/20 blur-2xl" />
+            
+            <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-center text-center sm:text-left">
+                {/* Avatar */}
+                <div className="relative mx-auto sm:mx-0 h-28 w-28 overflow-hidden rounded-3xl border-4 border-white/20 bg-slate-900 shadow-2xl transition-transform hover:scale-105 duration-300">
                   <img
                     src={displayedAvatarUrl}
                     alt={profile.name}
                     className="h-full w-full object-cover"
                   />
                 </div>
-                <div className="space-y-3 text-center sm:text-left">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl lg:text-4xl">
+                {/* Profile info */}
+                <div className="space-y-3">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center justify-center sm:justify-start">
+                    <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">
                       {profile.name}
                     </h1>
-                    <span className="mx-auto rounded-full border border-white/20 bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-100 sm:mx-0">
+                    <span className="mx-auto sm:mx-0 inline-flex items-center rounded-full bg-white/15 border border-white/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-100 backdrop-blur-sm">
                       Mentor
                     </span>
                   </div>
-                  <p className="flex items-center justify-center gap-1 text-sm font-medium text-indigo-100 sm:justify-start">
-                    <span>✉️</span>
-                    {profile.email}
+
+                  <p className="text-indigo-100/90 text-sm font-semibold flex items-center justify-center sm:justify-start gap-2">
+                    <Briefcase className="w-4 h-4 text-indigo-200" />
+                    <span>{profile.title}</span>
                   </p>
-                  <p className="max-w-2xl text-sm leading-relaxed text-white/90 sm:text-base">
+
+                  <p className="max-w-xl text-sm leading-relaxed text-indigo-50/90 font-medium">
                     {profile.bio}
                   </p>
-                  <div className="flex flex-wrap items-center justify-center gap-4 pt-1 text-xs font-medium text-white/85 sm:justify-start">
+                  
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs font-semibold text-white/80 pt-1">
                     <span className="flex items-center gap-1.5">
-                      <MapPin className="h-3.5 w-3.5" />
+                      <MapPin className="h-4 w-4 text-indigo-300" />
                       {profile.location}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <CalendarDays className="h-3.5 w-3.5" />
+                      <CalendarDays className="h-4 w-4 text-indigo-300" />
                       Tham gia: {profile.joinDate}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+              {/* Edit button */}
+              <div className="flex-shrink-0 flex justify-center">
                 <button
                   onClick={handleEditClick}
-                  className="inline-flex items-center justify-center gap-2 rounded-3xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white hover:bg-slate-50 px-6 py-3.5 text-sm font-bold text-indigo-600 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-950/10 cursor-pointer"
                 >
                   <Edit3 className="h-4 w-4" />
                   Chỉnh sửa hồ sơ
@@ -304,197 +374,150 @@ const MentorProfilePage = () => {
             </div>
           </section>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {/* Quick Statistics Row */}
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <InfoCard
               icon={BookOpen}
-              iconClassName="text-indigo-600 bg-indigo-50"
+              iconBg="bg-indigo-50 text-indigo-600"
               label="Số Lộ Trình"
-              value={profile.roadmapCount}
-              meta="Cải thiện 18%"
+              value={stats.totalRoadmaps ?? profile.roadmapCount}
+              meta="Hoạt động"
             />
             <InfoCard
               icon={Award}
-              iconClassName="text-emerald-600 bg-emerald-50"
+              iconBg="bg-emerald-50 text-emerald-600"
               label="Đóng Góp Được Duyệt"
-              value={profile.contributions}
-              meta="Cải thiện 25%"
+              value={stats.approvedContributions ?? 32}
+              meta="Đóng góp"
             />
             <InfoCard
               icon={Users}
-              iconClassName="text-rose-600 bg-rose-50"
+              iconBg="bg-rose-50 text-rose-600"
               label="Tổng Số Học Viên"
-              value={profile.students}
-              meta="Cải thiện 12%"
+              value={stats.totalStudents ?? 124}
+              meta="Theo dõi"
             />
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-8">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          {/* Main Centered 1-Column Layout */}
+          <div className="max-w-4xl mx-auto space-y-8">
+            
+            {/* Account Information Card */}
+            <div className="rounded-3xl bg-white border border-slate-100 shadow-sm p-6 md:p-8 space-y-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-900">Thông tin tài khoản</h2>
-                <p className="text-sm text-slate-500 mt-2">
-                  Thông tin cá nhân và chi tiết tài khoản mentor.
-                </p>
+                <p className="text-slate-400 text-xs mt-1">Thông tin cá nhân và chi tiết tài khoản mentor.</p>
+              </div>
+              
+              <div className="grid gap-4 sm:grid-cols-2">
+                <DetailItem icon={Mail} label="EMAIL" value={profile.email} />
+                <DetailItem icon={GraduationCap} label="VAI TRÒ" value="Mentor" />
+                <DetailItem icon={MapPin} label="VỊ TRÍ" value={profile.location} />
+                <DetailItem icon={CalendarDays} label="NGÀY THAM GIA" value={profile.joinDate} />
+                <DetailItem icon={BookOpen} label="CHUYÊN NGÀNH" value={profile.major} />
+                <DetailItem icon={Info} label="KỲ HỌC HIỆN TẠI" value={profile.termStatus} />
+                <DetailItem 
+                  icon={BookOpen} 
+                  label="DANH MỤC ĐĂNG KÝ" 
+                  value={mentorCategories.length > 0 ? mentorCategories.join(', ') : 'Chưa cập nhật'} 
+                />
+                <DetailItem 
+                  icon={BookOpen} 
+                  label="MÔN HỌC ĐĂNG KÝ" 
+                  value={mentorSubjectsList.length > 0 ? mentorSubjectsList.join(', ') : 'Chưa cập nhật'} 
+                />
               </div>
             </div>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-                  Email
-                </div>
-                <div className="mt-2 text-sm font-semibold text-slate-900">
-                  {profile.email}
-                </div>
-              </div>
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-                  Vai trò
-                </div>
-                <div className="mt-2 text-sm font-semibold text-slate-900">
-                  Mentor
-                </div>
-              </div>
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-                  Vị trí
-                </div>
-                <div className="mt-2 text-sm font-semibold text-slate-900">
-                  {profile.location}
-                </div>
-              </div>
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-                  Ngày tham gia
-                </div>
-                <div className="mt-2 text-sm font-semibold text-slate-900">
-                  {profile.joinDate}
-                </div>
-              </div>
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-                  Chuyên ngành
-                </div>
-                <div className="mt-2 text-sm font-semibold text-slate-900">
-                  {profile.major}
-                </div>
-              </div>
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-                  Kỳ học hiện tại
-                </div>
-                <div className="mt-2 text-sm font-semibold text-slate-900">
-                  {profile.termStatus}
-                </div>
+
+            {/* Mentor Specialties Badges */}
+            <div className="rounded-3xl bg-white border border-slate-100 shadow-sm p-6 md:p-8 space-y-4">
+              <h2 className="text-xl font-bold text-slate-900">Chuyên môn & kỹ năng</h2>
+              <div className="flex flex-wrap gap-2.5 pt-1">
+                {profile.specialties.map((specialty, idx) => (
+                  <span
+                    key={idx}
+                    className={`inline-flex items-center rounded-2xl border px-4 py-2 text-xs font-bold tracking-wide transition-colors ${specialty.color}`}
+                  >
+                    # {specialty.label}
+                  </span>
+                ))}
               </div>
             </div>
+
           </div>
         </div>
       </main>
 
-      {isEditModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/45 px-4 py-4 backdrop-blur-sm sm:items-center sm:py-6">
-          <div className="w-full max-w-2xl overflow-hidden rounded-[28px] bg-white shadow-2xl ring-1 ring-slate-200/70">
-            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 sm:px-6">
+      {/* Edit Profile Modal Dialog */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 px-4 py-4 backdrop-blur-sm sm:items-center sm:py-6 animate-in fade-in duration-200">
+          <div className="w-full max-w-2xl overflow-hidden rounded-[30px] bg-white shadow-2xl border border-slate-100 flex flex-col max-h-[90vh]">
+            
+            {/* Modal Header */}
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-indigo-600">
-                  Hồ sơ cá nhân
-                </p>
-                <h3 className="mt-1 text-xl font-bold tracking-tight text-slate-900">
-                  Chỉnh sửa hồ sơ
-                </h3>
-                <p className="mt-1 text-sm text-slate-500">
-                  Cập nhật thông tin hiển thị trên hồ sơ của bạn.
-                </p>
+                <p className="text-xs font-bold uppercase tracking-wider text-indigo-600">Hồ sơ cá nhân</p>
+                <h3 className="mt-1 text-xl font-bold tracking-tight text-slate-900">Chỉnh sửa hồ sơ</h3>
+                <p className="mt-1 text-xs text-slate-400">Cập nhật thông tin chi tiết hiển thị trên trang hồ sơ của bạn.</p>
               </div>
 
               <button
                 type="button"
                 onClick={() => setIsEditModalOpen(false)}
-                className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-                aria-label="Đóng form chỉnh sửa hồ sơ"
+                className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <form
-              className="grid gap-5 px-5 py-5 sm:px-6"
-              onSubmit={handleProfileSubmit}
-            >
+            {/* Modal Form Content */}
+            <form className="overflow-y-auto flex-1 p-6 space-y-6" onSubmit={handleProfileSubmit}>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Input
-                  label="Tên"
+                  label="Họ và tên"
                   value={editForm.name}
-                  onChange={(event) =>
-                    setEditForm((prev) => ({
-                      ...prev,
-                      name: event.target.value,
-                    }))
-                  }
-                  placeholder="Nhập tên của bạn"
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))}
+                  placeholder="Nhập tên hiển thị"
+                  required
                 />
                 <Input
-                  label="Email"
+                  label="Địa chỉ Email"
                   type="email"
                   value={editForm.email}
-                  onChange={(event) =>
-                    setEditForm((prev) => ({
-                      ...prev,
-                      email: event.target.value,
-                    }))
-                  }
-                  placeholder="Nhập email"
+                  disabled
+                  placeholder="Không thể chỉnh sửa Email"
                 />
                 <Input
-                  label="Chức danh"
+                  label="Chức danh hiển thị"
                   value={editForm.title}
-                  onChange={(event) =>
-                    setEditForm((prev) => ({
-                      ...prev,
-                      title: event.target.value,
-                    }))
-                  }
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, title: e.target.value }))}
                   placeholder="Ví dụ: Senior Design Mentor"
                 />
                 <Input
-                  label="Vị trí"
+                  label="Vị trí làm việc"
                   value={editForm.location}
-                  onChange={(event) =>
-                    setEditForm((prev) => ({
-                      ...prev,
-                      location: event.target.value,
-                    }))
-                  }
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, location: e.target.value }))}
                   placeholder="Ví dụ: Hà Nội, Việt Nam"
                 />
                 <Input
                   label="Chuyên ngành"
                   value={editForm.major}
-                  onChange={(event) =>
-                    setEditForm((prev) => ({
-                      ...prev,
-                      major: event.target.value,
-                    }))
-                  }
-                  placeholder="Ví dụ: UI/UX Design"
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, major: e.target.value }))}
+                  placeholder="Ví dụ: Công nghệ thông tin"
                 />
                 <Input
-                  label="Kì học / Trạng thái"
+                  label="Học vị / Kỳ học hiện tại"
                   value={editForm.termStatus}
-                  onChange={(event) =>
-                    setEditForm((prev) => ({
-                      ...prev,
-                      termStatus: event.target.value,
-                    }))
-                  }
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, termStatus: e.target.value }))}
                   placeholder="Ví dụ: Đang học / Đã tốt nghiệp"
                 />
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              {/* Avatar Uploader Section */}
+              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="h-16 w-16 overflow-hidden rounded-2xl border border-white bg-white shadow-sm">
+                    <div className="h-16 w-16 overflow-hidden rounded-2xl border-2 border-white bg-white shadow-sm flex-shrink-0">
                       {displayedAvatarUrl ? (
                         <img
                           src={displayedAvatarUrl}
@@ -502,7 +525,7 @@ const MentorProfilePage = () => {
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-indigo-50 text-lg font-bold text-indigo-600">
+                        <div className="flex h-full w-full items-center justify-center bg-indigo-100 text-lg font-bold text-indigo-600">
                           {profile.name
                             .split(" ")
                             .map((part) => part[0])
@@ -512,39 +535,35 @@ const MentorProfilePage = () => {
                       )}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-slate-900">
-                        Ảnh đại diện
+                      <p className="text-sm font-bold text-slate-800">Ảnh đại diện</p>
+                      <p className="mt-1 text-xs text-slate-400 leading-relaxed">
+                        Tải ảnh mới từ máy để đồng bộ với Cloudinary.
                       </p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Chọn file ảnh từ máy để upload lên Cloudinary.
-                      </p>
-                      {avatarFile ? (
-                        <p className="mt-1 text-xs font-medium text-indigo-600">
+                      {avatarFile && (
+                        <p className="mt-1.5 text-xs font-semibold text-indigo-600 truncate max-w-[200px]">
                           Đã chọn: {avatarFile.name}
                         </p>
-                      ) : null}
+                      )}
                     </div>
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    <Button
+                    <button
                       type="button"
-                      variant="secondary"
-                      size="sm"
                       onClick={handleAvatarPick}
+                      className="px-4 py-2 border border-slate-200 bg-white hover:bg-slate-50 rounded-xl text-xs font-bold text-slate-700 shadow-sm cursor-pointer transition-colors"
                     >
-                      Chọn file
-                    </Button>
-                    {avatarFile ? (
-                      <Button
+                      Đổi ảnh
+                    </button>
+                    {avatarFile && (
+                      <button
                         type="button"
-                        variant="ghost"
-                        size="sm"
                         onClick={clearAvatarSelection}
+                        className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                       >
-                        Xóa chọn
-                      </Button>
-                    ) : null}
+                        Hủy chọn
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -557,37 +576,32 @@ const MentorProfilePage = () => {
                 />
               </div>
 
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                  Giới thiệu bản thân
-                </label>
+              {/* Bio Field */}
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-slate-700">Giới thiệu bản thân</label>
                 <textarea
                   rows="4"
                   value={editForm.bio}
-                  onChange={(event) =>
-                    setEditForm((prev) => ({
-                      ...prev,
-                      bio: event.target.value,
-                    }))
-                  }
-                  placeholder="Viết vài dòng giới thiệu ngắn gọn"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, bio: e.target.value }))}
+                  placeholder="Viết vài dòng giới thiệu ngắn gọn về thế mạnh hoặc kinh nghiệm của bạn..."
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                 />
               </div>
 
+              {/* Modal Actions */}
               <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="justify-center sm:min-w-32"
+                  className="justify-center sm:min-w-[120px]"
                 >
                   Hủy
                 </Button>
                 <Button
                   type="submit"
                   isLoading={isSavingProfile}
-                  className="justify-center sm:min-w-40"
+                  className="justify-center sm:min-w-[150px]"
                 >
                   Lưu thay đổi
                 </Button>
@@ -595,32 +609,43 @@ const MentorProfilePage = () => {
             </form>
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
 
-function InfoCard({ icon: Icon, iconClassName, label, value, meta }) {
+// Sub-components
+function InfoCard({ icon: Icon, iconBg, label, value, meta }) {
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div
-          className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconClassName}`}
-        >
-          <Icon className="h-5 w-5" />
+    <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm flex items-center justify-between group hover:shadow-md hover:border-indigo-100/50 transition-all duration-300">
+      <div className="flex items-center gap-4">
+        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm ${iconBg} group-hover:scale-110 transition-transform duration-300`}>
+          <Icon className="h-6 w-6" />
         </div>
-        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-600">
-          {meta}
-        </span>
+        <div className="space-y-1">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{label}</p>
+          <h3 className="text-3xl font-extrabold tracking-tight text-slate-900 font-display">
+            {value}
+          </h3>
+        </div>
       </div>
-      <div className="mt-4 space-y-1">
-        <p className="text-xs font-medium text-slate-500">{label}</p>
-        <h3 className="text-2xl font-bold tracking-tight text-slate-900">
-          {value}
-        </h3>
-      </div>
+      <span className="rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-indigo-600">
+        {meta}
+      </span>
     </div>
   );
 }
 
-export default MentorProfilePage;
+function DetailItem({ icon: Icon, label, value }) {
+  return (
+    <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4 hover:bg-slate-50 transition-colors flex items-center gap-3">
+      <div className="h-9 w-9 bg-white border border-slate-200/50 rounded-xl flex items-center justify-center text-slate-500 shadow-sm flex-shrink-0">
+        <Icon className="w-5 h-5" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</div>
+        <div className="mt-1 text-sm font-semibold text-slate-800 truncate">{value || 'Chưa cập nhật'}</div>
+      </div>
+    </div>
+  );
+}

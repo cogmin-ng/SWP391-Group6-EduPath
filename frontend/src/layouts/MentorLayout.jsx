@@ -112,7 +112,6 @@ const MentorLayout = () => {
     { title: 'Tạo lộ trình', icon: Plus, path: '/mentor/create-roadmap' },
     { title: 'Đăng ký mentor', icon: GraduationCap, path: '/profile/become-mentor' },
     { title: 'Hồ sơ cá nhân', icon: User, path: '/mentor/profile' },
-    { title: 'Đăng ký mentor', icon: GraduationCap, path: '/profile/become-mentor' },
   ];
 
   return (

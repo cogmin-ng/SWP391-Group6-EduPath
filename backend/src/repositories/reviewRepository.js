@@ -6,6 +6,13 @@ const REVIEW_INCLUDE = {
   user: {
     select: { id: true, name: true, email: true, avatar: true },
   },
+  learningPath: {
+    select: {
+      mentor: {
+        select: { id: true, name: true, email: true, avatar: true },
+      },
+    },
+  },
 };
 
 exports.findByLearningPathId = async (learningPathId, { skip = 0, take = 20 } = {}) => {

@@ -401,3 +401,24 @@ exports.getDashboardStats = async () => {
     recentActivities
   };
 };
+
+exports.getHotMentors = async ({ page = 1, limit = 9 } = {}) => {
+  const result = await userRepository.getHotMentors({ page, limit });
+  
+  // Map to the response format, removing the score field
+  return {
+    mentors: result.mentors.map((mentor) => ({
+      id: mentor.id,
+      fullName: mentor.fullName,
+      avatar: mentor.avatar,
+      bio: mentor.bio,
+      averageRating: mentor.averageRating,
+      totalLearners: mentor.totalLearners,
+      totalLearningPaths: mentor.totalLearningPaths,
+      totalReviews: mentor.totalReviews,
+      subjects: mentor.subjects,
+      createdAt: mentor.createdAt,
+    })),
+    pagination: result.pagination,
+  };
+};

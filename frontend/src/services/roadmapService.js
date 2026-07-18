@@ -65,12 +65,13 @@ export const submitRoadmap = async (roadmapId) => {
 };
 
 /**
- * Delete a roadmap (soft delete).
+ * Delete a roadmap (soft delete or archive).
  * @param {string} roadmapId 
- * @returns {Promise<void>}
+ * @returns {Promise<Object>}
  */
 export const deleteRoadmap = async (roadmapId) => {
-  await api.delete(`/roadmaps/${roadmapId}`);
+  const res = await api.delete(`/roadmaps/${roadmapId}`);
+  return res.data.data;
 };
 
 /**

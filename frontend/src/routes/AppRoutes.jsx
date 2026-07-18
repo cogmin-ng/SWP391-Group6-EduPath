@@ -38,6 +38,7 @@ import UploadMaterialsPage from "../pages/mentor/UploadMaterialsPage";
 import CreateQuizPage from "../pages/mentor/CreateQuizPage";
 import MentorRoadmapLearningPage from "../pages/mentor/MentorRoadmapLearningPage";
 import MentorRoadmapDetailPage from "../pages/mentor/MentorRoadmapDetailPage";
+import QuestionBankPage from "../pages/mentor/QuestionBankPage";
 
 import CategoryManagementPage from "../pages/admin/CategoryManagementPage";
 
@@ -228,6 +229,10 @@ export default function AppRoutes() {
         <Route
           path="roadmaps"
           element={<MentorRoadmapsPage />}
+        />
+        <Route
+          path="question-bank"
+          element={<QuestionBankPage />}
         />
         <Route
           path="reviews"

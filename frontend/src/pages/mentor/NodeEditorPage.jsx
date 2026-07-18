@@ -252,6 +252,7 @@ const NodeEditorPage = () => {
               }
               roadmapId={roadmapId === 'new' ? null : roadmapId}
               nodeId={nodeData.id}
+              subjectId={roadmapFormData?.subjectId}
             />
           </div>
 

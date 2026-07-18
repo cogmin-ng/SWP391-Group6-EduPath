@@ -235,6 +235,7 @@ export default function MenteeProfilePage() {
   const displayedAvatar = avatarPreview || user.avatarUrl;
   const completedFields = [user.name, user.email, user.bio, user.avatarUrl].filter(Boolean).length;
   const profileCompletion = Math.round((completedFields / 4) * 100);
+  const levelProgress = user.progressPercent ?? 0;
 
   return (
     <div className="min-h-screen bg-[#F6F8FC] text-slate-800">
@@ -265,6 +266,16 @@ export default function MenteeProfilePage() {
                 <p className="mt-2 max-w-2xl text-sm leading-5 text-white/90">
                   {user.bio || "Bạn chưa thêm phần giới thiệu bản thân."}
                 </p>
+                <div className="mt-3 max-w-md rounded-2xl border border-white/15 bg-white/10 p-3 backdrop-blur">
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <span className="font-semibold text-white">Level {user.level}</span>
+                    <span className="text-indigo-100">{user.xpToNextLevel} XP để lên level {user.level + 1}</span>
+                  </div>
+                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/20">
+                    <div className="h-full rounded-full bg-white" style={{ width: `${levelProgress}%` }} />
+                  </div>
+                  <p className="mt-2 text-xs text-indigo-100">{user.xp.toLocaleString("vi-VN")} XP · Mốc tiếp theo {user.nextLevelXp.toLocaleString("vi-VN")} XP</p>
+                </div>
                 <p className="mt-2 text-xs text-indigo-100">Tham gia EduPath từ {formatDate(user.createdAt)}</p>
               </div>
             </div>
@@ -277,9 +288,9 @@ export default function MenteeProfilePage() {
           <div className="relative mt-5 grid grid-cols-2 gap-2.5 border-t border-white/10 pt-4 lg:grid-cols-4">
             {[
               [Star, "Tổng XP", user.xp.toLocaleString("vi-VN")],
+              [TrendingUp, "Level", user.level],
               [Route, "Đã đăng ký", stats.enrolledRoadmapCount],
               [CheckCircle2, "Đã hoàn thành", stats.completedRoadmapCount],
-              [Award, "Chứng chỉ", stats.certificateCount],
             ].map(([Icon, label, value]) => (
               <div key={label} className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 p-2.5 backdrop-blur">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10"><Icon className="h-4.5 w-4.5" /></div>

@@ -9,12 +9,37 @@ export default function ExploreFilters({
   onMentorQueryChange,
   onToggleCategory,
   onToggleMentor,
+  hotFilter,
+  onSelectHotFilter,
 }) {
   return (
     <aside className="hidden md:block md:w-72 shrink-0 border-r border-slate-200 bg-white">
       <div className="sticky top-24 p-6 space-y-8">
         <div>
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Bộ lọc</h2>
+
+          <h3 className="text-xs font-semibold tracking-wide text-slate-500 uppercase mb-3">Nổi bật</h3>
+          <div className="space-y-2.5 mb-6">
+            <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={hotFilter === 'hot-paths'}
+                onChange={() => onSelectHotFilter('hot-paths')}
+                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+              />
+              <span>Lộ trình nổi bật</span>
+            </label>
+            <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={hotFilter === 'hot-mentors'}
+                onChange={() => onSelectHotFilter('hot-mentors')}
+                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+              />
+              <span>Mentor nổi bật</span>
+            </label>
+          </div>
+
           <h3 className="text-xs font-semibold tracking-wide text-slate-500 uppercase mb-3">Danh mục</h3>
           <div className="space-y-2.5">
             {categories.map((category) => (
@@ -32,7 +57,7 @@ export default function ExploreFilters({
         </div>
 
         <div>
-          <h3 className="text-xs font-semibold tracking-wide text-slate-500 uppercase mb-3">Mentor</h3>
+          <h3 className="text-xs font-semibold tracking-wide text-slate-500 uppercase mb-3">Mentors</h3>
           <div className="relative mb-3">
             <Search className="w-4 h-4 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
@@ -61,3 +86,4 @@ export default function ExploreFilters({
     </aside>
   );
 }
+

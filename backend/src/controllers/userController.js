@@ -100,3 +100,15 @@ exports.deleteUser = asyncHandler(async (req, res) => {
     message: 'User deleted successfully',
   });
 });
+
+exports.getHotMentors = asyncHandler(async (req, res) => {
+  const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+  const limit = Math.max(1, Math.min(Number.parseInt(req.query.limit, 10) || 9, 50));
+
+  const result = await userService.getHotMentors({ page, limit });
+
+  return sendSuccess(res, {
+    message: 'Hot mentors retrieved successfully',
+    data: result,
+  });
+});

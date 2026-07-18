@@ -204,24 +204,33 @@ export default function ReviewSection({ learningPathId, mentorId, isEnrolled }) 
 
         {/* Mentor Reply Display */}
         {review.mentorReply && !isReplyMode && (
-          <div className="mt-4 rounded-xl bg-slate-50 p-4 border border-slate-100 ml-4 relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-100 text-indigo-700">Author</span>
-                <span className="text-xs text-slate-500">{new Date(review.mentorReplyAt).toLocaleDateString('vi-VN')}</span>
-              </div>
-              {isMentor && (
-                <div className="flex gap-2">
-                  <button onClick={() => { setReplyingTo(review.id); setReplyText(review.mentorReply); }} className="text-slate-400 hover:text-indigo-600">
-                    <Edit2 className="h-4 w-4" />
-                  </button>
-                  <button onClick={() => handleDeleteReply(review.id)} className="text-slate-400 hover:text-rose-600">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
+          <div className="mt-4 rounded-xl bg-slate-50 p-4 border border-slate-100 ml-4 relative flex items-start gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 overflow-hidden mt-0.5 flex-shrink-0 border border-indigo-100">
+              {review.learningPath?.mentor?.avatar ? (
+                <img src={review.learningPath.mentor.avatar} alt="avatar" className="w-full h-full object-cover" />
+              ) : (
+                <User className="h-4 w-4 text-indigo-500" />
               )}
             </div>
-            <p className="text-sm text-slate-700">{review.mentorReply}</p>
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-100 text-indigo-700">Author</span>
+                  <span className="text-xs text-slate-500">{new Date(review.mentorReplyAt).toLocaleDateString('vi-VN')}</span>
+                </div>
+                {isMentor && (
+                  <div className="flex gap-2">
+                    <button onClick={() => { setReplyingTo(review.id); setReplyText(review.mentorReply); }} className="text-slate-400 hover:text-indigo-600">
+                      <Edit2 className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => handleDeleteReply(review.id)} className="text-slate-400 hover:text-rose-600">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+              <p className="text-sm text-slate-700">{review.mentorReply}</p>
+            </div>
           </div>
         )}
 

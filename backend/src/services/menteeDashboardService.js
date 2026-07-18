@@ -2,6 +2,26 @@ const { Prisma } = require('@prisma/client');
 const prisma = require('../lib/prisma');
 const ApiError = require('../utils/ApiError');
 const { toRoadmapSlug } = require('../utils/roadmapSlug');
+const { getLevelInfo } = require('../utils/level');
+
+function normalizePeriod(period) {
+  return period === 'month' ? 'month' : 'week';
+}
+
+function getPeriodStart(period) {
+  const now = new Date();
+
+  if (period === 'month') {
+    return new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+  }
+
+  const start = new Date(now);
+  const day = start.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  start.setDate(start.getDate() + diff);
+  start.setHours(0, 0, 0, 0);
+  return start;
+}
 
 function mapEnrollment(enrollment) {
   const completedNodeIds = new Set(
@@ -329,6 +349,7 @@ exports.getDashboard = async (userId) => {
     ? enrollments.reduce((total, item) => total + item.progressPercent, 0) /
       enrollments.length
     : 0;
+  const levelInfo = getLevelInfo(user.xp);
 
   return {
     user: {
@@ -336,6 +357,7 @@ exports.getDashboard = async (userId) => {
       name: user.name || 'Học viên',
       avatarUrl: user.avatar,
       xp: user.xp,
+      ...levelInfo,
     },
     stats: {
       activeEnrollmentCount: activeEnrollments.length,
@@ -362,5 +384,50 @@ exports.getDashboard = async (userId) => {
         }
       : null,
     recommendations: recommendations.map(mapRecommendation),
+  };
+};
+
+exports.getLeaderboard = async (currentUserId, { period = 'week', limit = 10 } = {}) => {
+  const normalizedPeriod = normalizePeriod(period);
+  const normalizedLimit = Math.min(20, Math.max(1, Number(limit) || 10));
+  const startAt = getPeriodStart(normalizedPeriod);
+
+  const rows = await prisma.$queryRaw(Prisma.sql`
+    SELECT
+      u.id,
+      COALESCE(u.name, 'Học viên') AS name,
+      u.avatar,
+      u.xp AS "totalXp",
+      SUM(event."xpAmount")::int AS "xpEarned"
+    FROM "UserXpEvent" event
+    JOIN "User" u ON u.id = event."userId"
+    LEFT JOIN "Role" r ON r.id = u."roleId"
+    WHERE event."createdAt" >= ${startAt}
+      AND u."isDeleted" = false
+      AND r.name = 'MENTEE'
+    GROUP BY u.id, u.name, u.avatar, u.xp
+    ORDER BY "xpEarned" DESC, u."xp" DESC, u."createdAt" ASC
+  `);
+
+  const ranked = rows.map((row, index) => ({
+    rank: index + 1,
+    userId: row.id,
+    name: row.name,
+    avatarUrl: row.avatar,
+    xpEarned: Number(row.xpEarned) || 0,
+    totalXp: Number(row.totalXp) || 0,
+    level: getLevelInfo(Number(row.totalXp) || 0).level,
+    isCurrentUser: row.id === currentUserId,
+  }));
+
+  const top = ranked.slice(0, normalizedLimit);
+  const currentUserRank =
+    ranked.find((item) => item.userId === currentUserId) || null;
+
+  return {
+    period: normalizedPeriod,
+    startAt,
+    top,
+    currentUserRank,
   };
 };

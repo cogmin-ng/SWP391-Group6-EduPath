@@ -5,6 +5,13 @@ const { requireAuth, requireRole } = require('../middleware/auth');
 const router = Router();
 
 router.get(
+  '/leaderboard',
+  requireAuth,
+  requireRole(['MENTEE']),
+  menteeDashboardController.getLeaderboard
+);
+
+router.get(
   '/',
   requireAuth,
   requireRole(['MENTEE']),

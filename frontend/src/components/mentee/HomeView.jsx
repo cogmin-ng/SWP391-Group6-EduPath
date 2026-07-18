@@ -1,6 +1,7 @@
 import {
   ArrowRight,
   Award,
+  Crown,
   BookOpen,
   CheckCircle2,
   ChevronRight,
@@ -98,7 +99,10 @@ function Thumbnail({ src, title, className = "h-32" }) {
 export default function HomeView({
   dashboard,
   badges = [],
+  leaderboard = { top: [], currentUserRank: null, period: "week" },
+  leaderboardPeriod = "week",
   enrollingSlug,
+  onChangeLeaderboardPeriod,
   onContinueCourse,
   onExplore,
   onViewRoadmaps,
@@ -115,6 +119,8 @@ export default function HomeView({
 
   const visibleEnrollments = useMemo(() => enrollments.slice(0, 4), [enrollments]);
   const progress = Math.round(continueLearning?.progressPercent || 0);
+  const leaderboardTop = leaderboard?.top || [];
+  const currentUserRank = leaderboard?.currentUserRank || null;
 
   return (
     <div className="space-y-8">
@@ -162,6 +168,23 @@ export default function HomeView({
               >
                 Xem lộ trình của tôi
               </button>
+            </div>
+            <div className="grid gap-3 sm:max-w-xl sm:grid-cols-2">
+              <div className="rounded-2xl border border-white/15 bg-white/10 p-3 backdrop-blur">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-indigo-100">Level hiện tại</p>
+                <p className="mt-1 text-2xl font-bold text-white">Level {user.level}</p>
+                <p className="mt-1 text-xs text-indigo-100">{user.xp.toLocaleString("vi-VN")} XP tổng</p>
+              </div>
+              <div className="rounded-2xl border border-white/15 bg-white/10 p-3 backdrop-blur">
+                <div className="flex items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-wide text-indigo-100">
+                  <span>Tiến độ level</span>
+                  <span>{user.progressPercent}%</span>
+                </div>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/20">
+                  <div className="h-full rounded-full bg-white" style={{ width: `${user.progressPercent}%` }} />
+                </div>
+                <p className="mt-2 text-xs text-indigo-100">Còn {user.xpToNextLevel} XP để lên level {user.level + 1}</p>
+              </div>
             </div>
           </div>
           <div className="hidden justify-center lg:col-span-4 lg:flex">
@@ -343,6 +366,102 @@ export default function HomeView({
               <p className="rounded-xl bg-slate-50 p-4 text-center text-xs text-slate-500 mt-2">
                 Hoàn thành lộ trình để nhận chứng chỉ đầu tiên.
               </p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <div className="space-y-4 xl:col-span-7">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
+                <Crown className="h-5 w-5 text-amber-500" />
+                Bảng xếp hạng mentee
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">Xếp hạng theo XP kiếm được trong kỳ.</p>
+            </div>
+            <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+              {[
+                ["week", "Tuần"],
+                ["month", "Tháng"],
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => onChangeLeaderboardPeriod?.(value)}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                    leaderboardPeriod === value
+                      ? "bg-indigo-600 text-white"
+                      : "text-slate-500 hover:bg-slate-50"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
+            {leaderboardTop.length ? (
+              <div className="divide-y divide-slate-100">
+                {leaderboardTop.map((entry) => (
+                  <div
+                    key={entry.userId}
+                    className={`flex items-center gap-3 px-4 py-4 sm:px-5 ${entry.isCurrentUser ? "bg-indigo-50/60" : ""}`}
+                  >
+                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold ${entry.rank <= 3 ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600"}`}>
+                      {entry.rank}
+                    </div>
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-100 font-semibold text-indigo-700">
+                      {entry.avatarUrl ? (
+                        <img src={entry.avatarUrl} alt={entry.name} className="h-full w-full object-cover" />
+                      ) : (
+                        entry.name?.slice(0, 1)?.toUpperCase() || "M"
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-bold text-slate-900">{entry.name}</p>
+                      <p className="mt-0.5 text-xs text-slate-500">Level {entry.level} · Tổng {entry.totalXp.toLocaleString("vi-VN")} XP</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-indigo-700">+{entry.xpEarned.toLocaleString("vi-VN")} XP</p>
+                      <p className="mt-0.5 text-[11px] text-slate-400">trong {leaderboardPeriod === "week" ? "tuần" : "tháng"}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="px-6 py-10 text-center text-sm text-slate-500">
+                Chưa có dữ liệu leaderboard cho kỳ này.
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="xl:col-span-5">
+          <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
+            <h3 className="text-base font-bold text-slate-900">Vị trí của bạn</h3>
+            {currentUserRank ? (
+              <div className="mt-4 rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Hạng hiện tại</p>
+                    <p className="mt-1 text-3xl font-bold text-slate-900">#{currentUserRank.rank}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-indigo-700">+{currentUserRank.xpEarned.toLocaleString("vi-VN")} XP</p>
+                    <p className="mt-1 text-xs text-slate-500">Level {currentUserRank.level}</p>
+                  </div>
+                </div>
+                <p className="mt-3 text-sm text-slate-600">
+                  Bạn đang có {currentUserRank.totalXp.toLocaleString("vi-VN")} XP tổng và đang được xếp hạng trong {leaderboardPeriod === "week" ? "tuần" : "tháng"} này.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-center text-sm text-slate-500">
+                Bạn chưa kiếm được XP nào trong kỳ này.
+              </div>
             )}
           </div>
         </div>

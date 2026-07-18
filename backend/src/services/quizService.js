@@ -86,6 +86,7 @@ exports.createQuiz = async (data, mentorId) => {
         create: questions.map((q) => ({
           question: q.question,
           explanation: q.explanation || null,
+          bankQuestionId: q.bankQuestionId || null,
           options: {
             create: q.options.map((opt) => ({
               content: opt.content,
@@ -260,6 +261,7 @@ exports.updateQuiz = async (quizId, data, mentorId) => {
           create: questions.map((q) => ({
             question: q.question,
             explanation: q.explanation || null,
+            bankQuestionId: q.bankQuestionId || null,
             options: {
               create: q.options.map((opt) => ({
                 content: opt.content,

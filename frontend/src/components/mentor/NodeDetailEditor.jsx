@@ -13,6 +13,7 @@ const NodeDetailEditor = ({
   onQuizzesChange,
   roadmapId,
   nodeId,
+  subjectId,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState(null);
@@ -61,6 +62,8 @@ const NodeDetailEditor = ({
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveQuiz}
         initialData={editingQuiz}
+        roadmapId={roadmapId}
+        subjectId={subjectId}
       />
     </div>
   );

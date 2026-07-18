@@ -16,6 +16,7 @@ const quizQuestionSchema = Joi.object({
     'any.required': 'Question text is required',
   }),
   explanation: Joi.string().trim().allow('', null).optional(),
+  bankQuestionId: Joi.string().trim().allow('', null).optional(),
   options: Joi.array()
     .items(quizOptionSchema)
     .min(2)

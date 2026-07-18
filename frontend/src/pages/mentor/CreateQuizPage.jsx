@@ -6,6 +6,8 @@ import QuestionCard from '../../components/mentor/quiz/QuestionCard';
 import AddQuestionButton from '../../components/mentor/quiz/AddQuestionButton';
 import QuizOverviewCard from '../../components/mentor/quiz/QuizOverviewCard';
 import { createQuiz, getQuizById, updateQuiz } from '../../services/quizService';
+import { getRoadmapById } from '../../services/roadmapService';
+import ImportQuestionsModal from '../../components/mentor/ImportQuestionsModal';
 
 const CreateQuizPage = () => {
   const { roadmapId, nodeId, quizId } = useParams();
@@ -15,6 +17,8 @@ const CreateQuizPage = () => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [subjectId, setSubjectId] = useState('');
 
   const [quizData, setQuizData] = useState({
     title: '',
@@ -69,6 +73,19 @@ const CreateQuizPage = () => {
     fetchQuiz();
   }, [isEditing, quizId]);
 
+  // Load roadmap details for subjectId
+  useEffect(() => {
+    const fetchRoadmap = async () => {
+      try {
+        const roadmap = await getRoadmapById(roadmapId);
+        setSubjectId(roadmap.subjectId || '');
+      } catch (err) {
+        console.error('Failed to load roadmap details for subjectId:', err);
+      }
+    };
+    fetchRoadmap();
+  }, [roadmapId]);
+
   const handleQuizDataChange = (newData) => {
     setQuizData(newData);
   };
@@ -106,6 +123,30 @@ const CreateQuizPage = () => {
       const newQuestions = [...prev.questions];
       newQuestions.splice(index, 1);
       return { ...prev, questions: newQuestions };
+    });
+  };
+
+  const handleImportQuestions = (importedQuestions) => {
+    const formatted = importedQuestions.map(bq => ({
+      question: bq.question,
+      explanation: bq.explanation || '',
+      bankQuestionId: bq.id,
+      options: bq.options.map(opt => ({
+        content: opt.content,
+        isCorrect: opt.isCorrect
+      }))
+    }));
+
+    setQuizData(prev => {
+      // If we only have 1 initial blank question, replace it. Otherwise append.
+      const isInitialBlank = prev.questions.length === 1 && 
+                             !prev.questions[0].question.trim() && 
+                             prev.questions[0].options.every(opt => !opt.content.trim());
+      
+      return {
+        ...prev,
+        questions: isInitialBlank ? formatted : [...prev.questions, ...formatted]
+      };
     });
   };
 
@@ -246,9 +287,18 @@ const CreateQuizPage = () => {
             <div>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold text-slate-900">Danh sách câu hỏi</h2>
-                <span className="px-3 py-1 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-full">
-                  {quizData.questions.length} Câu hỏi
-                </span>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsImportModalOpen(true)}
+                    className="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg font-semibold transition"
+                  >
+                    Chọn từ ngân hàng
+                  </button>
+                  <span className="px-3 py-1 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-full">
+                    {quizData.questions.length} Câu hỏi
+                  </span>
+                </div>
               </div>
               
               <div className="space-y-6">
@@ -298,6 +348,14 @@ const CreateQuizPage = () => {
           </div>
         </div>
       </div>
+
+      <ImportQuestionsModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImport={handleImportQuestions}
+        subjectId={subjectId}
+        excludeBankQuestionIds={quizData.questions.map(q => q.bankQuestionId).filter(Boolean)}
+      />
     </div>
   );
 };

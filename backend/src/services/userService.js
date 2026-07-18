@@ -3,6 +3,7 @@ const roleRepository = require('../repositories/roleRepository');
 const ApiError = require('../utils/ApiError');
 const cloudinaryService = require('./externalService/cloudinary/cloudinaryService');
 const prisma = require('../lib/prisma');
+const { getLevelInfo } = require('../utils/level');
 
 const userMessages = {
   notFound: 'User not found',
@@ -131,6 +132,7 @@ exports.getMenteeProfile = async (userId) => {
         0
       ) / enrollments.length
     : 0;
+  const levelInfo = getLevelInfo(user.xp);
 
   return {
     user: {
@@ -140,6 +142,7 @@ exports.getMenteeProfile = async (userId) => {
       avatarUrl: user.avatar,
       bio: user.bio,
       xp: user.xp,
+      ...levelInfo,
       status: user.status,
       role: user.role?.name || 'MENTEE',
       createdAt: user.createdAt,

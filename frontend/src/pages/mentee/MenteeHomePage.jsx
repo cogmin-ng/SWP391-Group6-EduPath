@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import HomeView from "../../components/mentee/HomeView";
 import MenteeHeader from "../../components/mentee/MenteeHeader";
 import { enrollInRoadmapBySlug } from "../../services/enrollmentService";
+import { leaderboardService } from "../../services/leaderboardService";
 import {
   getCachedMenteeDashboard,
   getMenteeDashboard,
@@ -34,6 +35,8 @@ export default function MenteeHomePage() {
   const [error, setError] = useState("");
   const [enrollingSlug, setEnrollingSlug] = useState(null);
   const [badges, setBadges] = useState([]);
+  const [leaderboardPeriod, setLeaderboardPeriod] = useState("week");
+  const [leaderboard, setLeaderboard] = useState({ top: [], currentUserRank: null, period: "week" });
 
   const loadDashboard = useCallback(async ({ showLoading = true } = {}) => {
     if (showLoading) setLoading(true);
@@ -97,6 +100,23 @@ export default function MenteeHomePage() {
       fetchBadges();
     }
   }, [authUser?.id]);
+
+  useEffect(() => {
+    let active = true;
+
+    leaderboardService
+      .getMenteeLeaderboard(leaderboardPeriod)
+      .then((data) => {
+        if (active) setLeaderboard(data);
+      })
+      .catch((requestError) => {
+        console.error("Failed to load mentee leaderboard:", requestError);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [leaderboardPeriod]);
 
   const goToCourse = (course) => {
     if (course?.slug) navigate(`/roadmaps/${course.slug}/learn`);
@@ -163,7 +183,10 @@ export default function MenteeHomePage() {
           <HomeView
             dashboard={dashboard}
             badges={badges}
+            leaderboard={leaderboard}
+            leaderboardPeriod={leaderboardPeriod}
             enrollingSlug={enrollingSlug}
+            onChangeLeaderboardPeriod={setLeaderboardPeriod}
             onContinueCourse={goToCourse}
             onExplore={() => navigate("/explore")}
             onViewRoadmaps={() => navigate("/roadmaps")}

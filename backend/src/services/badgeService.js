@@ -32,6 +32,8 @@ exports.getUserBadges = async (userId) => {
       title: badge.title,
       description: badge.description,
       xpReward: badge.xpReward,
+      badgeType: badge.badgeType,
+      unlockThreshold: badge.unlockThreshold,
       isUnlocked,
       iconName: badge.iconName,
       unlockedDate: isUnlocked ? unlockedMap.get(badge.id) : null,
@@ -44,57 +46,75 @@ exports.getUserBadges = async (userId) => {
  */
 exports.runBadgeChecks = async (userId) => {
   try {
-    // Check 1: Consistent Learner (badge-streak-7)
-    // Criteria: >= 7 completed checklist items in the database
-    const completedChecklistsCount = await prisma.checklistProgress.count({
-      where: {
-        userId,
-        completed: true,
-        isDeleted: false,
-      },
-    });
-    if (completedChecklistsCount >= 7) {
-      await exports.checkAndUnlockBadge(userId, 'badge-streak-7');
+    const [user, completedNodesCount, aceQuizCount, approvedTipsCount, completedRoadmapsCount] =
+      await Promise.all([
+        prisma.user.findUnique({
+          where: { id: userId },
+          select: { xp: true },
+        }),
+        prisma.nodeProgress.count({
+          where: {
+            userId,
+            completed: true,
+            isDeleted: false,
+          },
+        }),
+        prisma.quizAttempt.count({
+          where: {
+            userId,
+            score: 100,
+            attemptCount: 1,
+            isDeleted: false,
+          },
+        }),
+        prisma.tip.count({
+          where: {
+            contributorId: userId,
+            status: 'APPROVED',
+            isDeleted: false,
+          },
+        }),
+        prisma.enrollment.count({
+          where: {
+            userId,
+            status: 'COMPLETED',
+            isDeleted: false,
+          },
+        }),
+      ]);
+
+    const xp = user?.xp ?? 0;
+
+    if (xp >= 100) {
+      await exports.checkAndUnlockBadge(userId, 'badge-xp-beginner');
     }
 
-    // Check 2: Academic Hunter (badge-quiz-ace)
-    // Criteria: At least one quiz attempt with 100% score on the first attempt (attemptCount = 1)
-    const aceQuizCount = await prisma.quizAttempt.count({
-      where: {
-        userId,
-        score: 100,
-        attemptCount: 1,
-        isDeleted: false,
-      },
-    });
+    if (xp >= 300) {
+      await exports.checkAndUnlockBadge(userId, 'badge-xp-fast-learner');
+    }
+
+    if (xp >= 500) {
+      await exports.checkAndUnlockBadge(userId, 'badge-xp-dedicated-learner');
+    }
+
+    if (xp >= 1000) {
+      await exports.checkAndUnlockBadge(userId, 'badge-xp-master');
+    }
+
+    if (completedNodesCount >= 1) {
+      await exports.checkAndUnlockBadge(userId, 'badge-first-step');
+    }
+
     if (aceQuizCount >= 1) {
       await exports.checkAndUnlockBadge(userId, 'badge-quiz-ace');
     }
 
-    // Check 3: Contribution Star (badge-tip-approved)
-    // Criteria: At least one tip-trick contribution approved by a mentor
-    const approvedTipsCount = await prisma.tip.count({
-      where: {
-        contributorId: userId,
-        status: 'APPROVED',
-        isDeleted: false,
-      },
-    });
     if (approvedTipsCount >= 1) {
-      await exports.checkAndUnlockBadge(userId, 'badge-tip-approved');
+      await exports.checkAndUnlockBadge(userId, 'badge-contributor');
     }
 
-    // Check 4: Docker Master Pro (badge-master-fullstack)
-    // Criteria: At least one roadmap enrollment completed (status = COMPLETED)
-    const completedRoadmapsCount = await prisma.enrollment.count({
-      where: {
-        userId,
-        status: 'COMPLETED',
-        isDeleted: false,
-      },
-    });
     if (completedRoadmapsCount >= 1) {
-      await exports.checkAndUnlockBadge(userId, 'badge-master-fullstack');
+      await exports.checkAndUnlockBadge(userId, 'badge-path-finisher');
     }
   } catch (error) {
     console.error('Error running badge checks:', error);
@@ -102,7 +122,7 @@ exports.runBadgeChecks = async (userId) => {
 };
 
 /**
- * Unlock a specific badge for a user, award them XP, and notify them.
+ * Unlock a specific badge for a user and notify them.
  */
 exports.checkAndUnlockBadge = async (userId, badgeId) => {
   // Check if already unlocked
@@ -127,27 +147,11 @@ exports.checkAndUnlockBadge = async (userId, badgeId) => {
     return null;
   }
 
-  // Perform unlock transaction: Create UserBadge, award User XP
-  const result = await prisma.$transaction(async (tx) => {
-    // 1. Create UserBadge
-    const userBadge = await tx.userBadge.create({
-      data: {
-        userId,
-        badgeId,
-      },
-    });
-
-    // 2. Increment user XP
-    await tx.user.update({
-      where: { id: userId },
-      data: {
-        xp: {
-          increment: badge.xpReward,
-        },
-      },
-    });
-
-    return userBadge;
+  const result = await prisma.userBadge.create({
+    data: {
+      userId,
+      badgeId,
+    },
   });
 
   // 3. Create a notification for the user
@@ -155,7 +159,7 @@ exports.checkAndUnlockBadge = async (userId, badgeId) => {
     await notificationService.createNotification(userId, {
       type: 'SYSTEM',
       title: 'Huy hiệu mới đã mở khoá! 🏆',
-      content: `Chúc mừng bạn đã mở khoá thành công huy hiệu "${badge.title}" và nhận được +${badge.xpReward} XP!`,
+      content: `Chúc mừng bạn đã mở khoá thành công huy hiệu "${badge.title}"!`,
     });
   } catch (notifError) {
     console.error('Error creating badge notification:', notifError);

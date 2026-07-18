@@ -2,6 +2,12 @@ const tipRepository = require('../repositories/tipRepository');
 const notificationService = require('./notificationService');
 const ApiError = require('../utils/ApiError');
 const prisma = require('../lib/prisma');
+const {
+  awardXp,
+  buildEventKey,
+  XP_EVENT_TYPES,
+  XP_REWARDS,
+} = require('./xpService');
 
 const tipMessages = {
   notFound: 'Tip not found',
@@ -135,6 +141,19 @@ exports.approveTip = async (tipId, mentorId) => {
 
   // Create notification for contributor/mentee about approval
   if (updatedTip.contributorId) {
+    await awardXp({
+      userId: updatedTip.contributorId,
+      type: XP_EVENT_TYPES.TIP_APPROVED,
+      sourceType: 'TIP',
+      sourceId: updatedTip.id,
+      eventKey: buildEventKey({
+        type: XP_EVENT_TYPES.TIP_APPROVED,
+        userId: updatedTip.contributorId,
+        sourceId: updatedTip.id,
+      }),
+      xpAmount: XP_REWARDS.TIP_APPROVED,
+    });
+
     await notificationService.createNotification(updatedTip.contributorId, {
       type: 'CONTRIBUTION',
       title: 'Tip của bạn đã được duyệt',

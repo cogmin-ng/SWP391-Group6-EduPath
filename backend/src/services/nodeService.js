@@ -2,6 +2,12 @@ const prisma = require('../lib/prisma');
 const ApiError = require('../utils/ApiError');
 const nodeRepository = require('../repositories/nodeRepository');
 const certificateService = require('./certificateService');
+const {
+  awardXp,
+  buildEventKey,
+  XP_EVENT_TYPES,
+  XP_REWARDS,
+} = require('./xpService');
 
 const MSG = {
   notFound: 'Node not found',
@@ -267,7 +273,24 @@ exports.toggleChecklistProgress = async (
 
 exports.updateNodeProgress = async (nodeId, completed, userId, roles = []) => {
   await assertReadAccess(nodeId, userId, roles);
-  const { node } = await assertEnrollment(nodeId, userId);
+  const { node, enrollment: currentEnrollment } = await assertEnrollment(nodeId, userId);
+
+  const existingNodeProgress = await prisma.nodeProgress.findUnique({
+    where: {
+      userId_nodeId: {
+        userId,
+        nodeId,
+      },
+    },
+    select: {
+      completed: true,
+    },
+  });
+
+  const wasNodeCompleted = Boolean(existingNodeProgress?.completed);
+  const wasRoadmapCompleted =
+    currentEnrollment?.status === 'COMPLETED' ||
+    Number(currentEnrollment?.progressPercent || 0) >= 100;
 
   await prisma.$transaction(async (tx) => {
     await tx.nodeProgress.upsert({
@@ -316,6 +339,39 @@ exports.updateNodeProgress = async (nodeId, completed, userId, roles = []) => {
       userId,
       node.learningPathId
     );
+
+  if (completed && !wasNodeCompleted) {
+    await awardXp({
+      userId,
+      type: XP_EVENT_TYPES.NODE_COMPLETED,
+      sourceType: 'NODE',
+      sourceId: nodeId,
+      eventKey: buildEventKey({
+        type: XP_EVENT_TYPES.NODE_COMPLETED,
+        userId,
+        sourceId: nodeId,
+      }),
+      xpAmount: XP_REWARDS.NODE_COMPLETED,
+    });
+  }
+
+  const isRoadmapCompleted =
+    enrollment?.status === 'COMPLETED' || Number(enrollment?.progressPercent || 0) >= 100;
+
+  if (isRoadmapCompleted && !wasRoadmapCompleted) {
+    await awardXp({
+      userId,
+      type: XP_EVENT_TYPES.ROADMAP_COMPLETED,
+      sourceType: 'LEARNING_PATH',
+      sourceId: node.learningPathId,
+      eventKey: buildEventKey({
+        type: XP_EVENT_TYPES.ROADMAP_COMPLETED,
+        userId,
+        sourceId: node.learningPathId,
+      }),
+      xpAmount: XP_REWARDS.ROADMAP_COMPLETED,
+    });
+  }
 
   // Run automatic badge checks
   try {

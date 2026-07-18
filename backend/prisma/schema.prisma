@@ -84,6 +84,7 @@ model User {
   notifications       Notification[]
 
   userBadges   UserBadge[]
+  xpEvents     UserXpEvent[]
   nodeComments NodeComment[]
   reviews      Review[]
 }
@@ -575,6 +576,8 @@ model Badge {
   description String
   xpReward    Int         @default(100)
   iconName    String      @default("award")
+  badgeType   String      @default("ACHIEVEMENT")
+  unlockThreshold Int?
   isDeleted   Boolean     @default(false)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -591,4 +594,20 @@ model UserBadge {
   badge      Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
 
   @@unique([userId, badgeId])
+}
+
+model UserXpEvent {
+  id         String   @id @default(cuid())
+  userId     String
+  type       String
+  sourceType String?
+  sourceId   String?
+  eventKey   String   @unique
+  xpAmount   Int
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
 }

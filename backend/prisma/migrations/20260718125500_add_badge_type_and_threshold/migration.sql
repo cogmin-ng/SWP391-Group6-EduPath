@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Badge"
+ADD COLUMN "badgeType" TEXT NOT NULL DEFAULT 'ACHIEVEMENT',
+ADD COLUMN "unlockThreshold" INTEGER;

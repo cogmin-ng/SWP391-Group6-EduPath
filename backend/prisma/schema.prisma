@@ -20,6 +20,7 @@ enum RoadmapStatus {
   APPROVED
   REJECTED
   PUBLISHED
+  ARCHIVED
 }
 
 enum EnrollmentStatus {
@@ -86,6 +87,7 @@ model User {
   userBadges   UserBadge[]
   nodeComments NodeComment[]
   reviews      Review[]
+  createdBankQuestions BankQuestion[] @relation("BankQuestionCreator")
 }
 
 model RefreshToken {
@@ -149,6 +151,7 @@ model Subject {
   advisorSubjects AdvisorSubject[]
 
   academicRecords AdvisorAcademicRecord[]
+  bankQuestions BankQuestion[]
 }
 
 model AdvisorApplication {
@@ -349,6 +352,9 @@ model QuizQuestion {
 
   question    String
   explanation String?
+
+  bankQuestionId String?
+  bankQuestion   BankQuestion? @relation(fields: [bankQuestionId], references: [id], onDelete: SetNull)
 
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -591,4 +597,43 @@ model UserBadge {
   badge      Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
 
   @@unique([userId, badgeId])
+}
+
+enum QuestionDifficulty {
+  DE
+  TRUNG_BINH
+  KHO
+}
+
+model BankQuestion {
+  id          String             @id @default(cuid())
+  question    String             @db.Text
+  explanation String?            @db.Text
+  difficulty  QuestionDifficulty @default(TRUNG_BINH)
+
+  subjectId   String
+  subject     Subject            @relation(fields: [subjectId], references: [id])
+
+  creatorId   String
+  creator     User               @relation("BankQuestionCreator", fields: [creatorId], references: [id])
+
+  isDeleted   Boolean            @default(false)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  options     BankQuestionOption[]
+  quizQuestions QuizQuestion[]
+
+  @@index([subjectId])
+  @@index([creatorId])
+}
+
+model BankQuestionOption {
+  id          String       @id @default(cuid())
+  questionId  String
+  question    BankQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  content     String       @db.Text
+  isCorrect   Boolean      @default(false)
+  isDeleted   Boolean      @default(false)
 }

@@ -135,6 +135,17 @@ model SubjectCategory {
   subjects Subject[]
 }
 
+model Major {
+  id String @id @default(cuid())
+
+  name        String  @unique
+  description String?
+
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Subject {
   id String @id @default(cuid())
 

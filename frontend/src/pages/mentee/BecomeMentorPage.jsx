@@ -40,6 +40,7 @@ export default function BecomeMentorPage() {
 
   /* ---- data from API ---- */
   const [availableSubjects, setAvailableSubjects] = useState([]);
+  const [specializationOptions, setSpecializationOptions] = useState([]);
   const [existingApplication, setExistingApplication] = useState(undefined); // undefined = loading, null = none
   const [pageLoading, setPageLoading] = useState(true);
 
@@ -74,12 +75,14 @@ export default function BecomeMentorPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [subjectList, myApp] = await Promise.all([
+        const [subjectList, myApp, majors] = await Promise.all([
           mentorApplicationService.getSubjects(),
           mentorApplicationService.getMyApplication(),
+          mentorApplicationService.getMajors(),
         ]);
         setAvailableSubjects(subjectList || []);
         setExistingApplication(myApp || null);
+        setSpecializationOptions(majors || []);
         // Auto switch to status tab if application is pending
         if (myApp && myApp.status === "PENDING") {
           setActiveTab("status");
@@ -358,7 +361,7 @@ export default function BecomeMentorPage() {
                 </div>
               </div>
             )}
-            <MentorInfoSection register={register} errors={errors} />
+            <MentorInfoSection register={register} errors={errors} specializationOptions={specializationOptions} />
 
             <SubjectMentorSection
               subjects={subjects}

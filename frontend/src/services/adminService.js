@@ -6,16 +6,16 @@ export const adminService = {
     return data.data;
   },
 
-  getUsers: async ({ skip = 0, take = 10 }) => {
+  getUsers: async ({ roleId, skip = 0, take = 10 }) => {
     const { data } = await api.get('/users', {
-      params: { skip, take }
+      params: { roleId, skip, take }
     });
     return data.data;
   },
 
-  searchUsers: async ({ q, skip = 0, take = 10 }) => {
+  searchUsers: async ({ q, roleId, skip = 0, take = 10 }) => {
     const { data } = await api.get('/users/search', {
-      params: { q, skip, take }
+      params: { q, roleId, skip, take }
     });
     return data.data;
   },

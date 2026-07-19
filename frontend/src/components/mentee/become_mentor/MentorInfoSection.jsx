@@ -11,7 +11,7 @@ import {
  *
  * @param {{ register: Function, errors: Object }} props
  */
-export default function MentorInfoSection({ register, errors }) {
+export default function MentorInfoSection({ register, errors, specializationOptions }) {
   const selectCls = (hasError) =>
     `w-full appearance-none rounded-xl border bg-white text-slate-800 text-sm px-4 py-3 pr-10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer ${hasError
       ? "border-red-300 focus:ring-red-500/20 focus:border-red-500"
@@ -46,9 +46,12 @@ export default function MentorInfoSection({ register, errors }) {
                 })}
                 className={selectCls(errors.specialization)}
               >
-                {SPECIALIZATION_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
+                {(specializationOptions && specializationOptions.length > 0
+                  ? specializationOptions
+                  : SPECIALIZATION_OPTIONS
+                ).map((opt) => (
+                  <option key={opt.id ?? opt.value} value={opt.id ?? opt.value}>
+                    {opt.name ?? opt.label}
                   </option>
                 ))}
               </select>

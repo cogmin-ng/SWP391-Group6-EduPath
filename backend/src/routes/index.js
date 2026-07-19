@@ -3,6 +3,7 @@ const authRoutes = require('./auth');
 const uploadRoutes = require('./upload');
 const roleRoutes = require('./role');
 const userRoutes = require('./user');
+const mentorRoutes = require('./mentor');
 const tipRoutes = require('./tip');
 const notificationRoutes = require('./notification');
 const subjectRoutes = require('./subject');
@@ -19,6 +20,7 @@ const reviewRoutes = require('./review');
 const nodeCommentRoutes = require('./nodeComment');
 const menteeDashboardRoutes = require('./menteeDashboard');
 const badgeRoutes = require('./badge');
+const questionBankRoutes = require('./questionBank');
 const quizController = require('../controllers/quizController');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
@@ -28,6 +30,7 @@ router.use('/auth', authRoutes);
 router.use('/uploads', uploadRoutes);
 router.use('/roles', roleRoutes);
 router.use('/users', userRoutes);
+router.use('/mentors', mentorRoutes);
 router.use('/tips', tipRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/subjects', subjectRoutes);
@@ -44,6 +47,7 @@ router.use('/reviews', reviewRoutes);
 router.use('/node-comments', nodeCommentRoutes);
 router.use('/mentee-dashboard', menteeDashboardRoutes);
 router.use('/badges', badgeRoutes);
+router.use('/question-bank', questionBankRoutes);
 
 // Node-scoped quiz endpoint
 router.get(

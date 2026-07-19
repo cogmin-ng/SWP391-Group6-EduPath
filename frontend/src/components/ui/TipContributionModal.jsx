@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Lightbulb } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { submitTip } from '../../services/roadmapService';
@@ -30,8 +31,10 @@ const TipContributionModal = ({ nodeId, onClose, onSubmitted }) => {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fadeIn">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl z-10 overflow-hidden animate-slideUp">
         {/* Header */}
@@ -108,7 +111,8 @@ const TipContributionModal = ({ nodeId, onClose, onSubmitted }) => {
           </form>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

@@ -43,13 +43,22 @@ export default function BecomeMentorPage() {
   const [existingApplication, setExistingApplication] = useState(undefined); // undefined = loading, null = none
   const [pageLoading, setPageLoading] = useState(true);
 
-  /* ---- component states ---- */
   const [subjects, setSubjects] = useState([]);
   const [subjectError, setSubjectError] = useState(null);
+  const [achievementError, setAchievementError] = useState(null);
 
   const [achievements, setAchievements] = useState([
     { subjectId: "", grade: "" },
   ]);
+
+  useEffect(() => {
+    const validRecords = achievements.filter(
+      (a) => a.subjectId && a.grade !== ""
+    );
+    if (validRecords.length > 0) {
+      setAchievementError(null);
+    }
+  }, [achievements]);
 
   const [uploadFile, setUploadFile] = useState(null);
   const [uploadError, setUploadError] = useState("");
@@ -118,7 +127,10 @@ export default function BecomeMentorPage() {
       (a) => a.subjectId && a.grade !== ""
     );
     if (validRecords.length === 0) {
+      setAchievementError("Vui lòng nhập thành tích học tập cho ít nhất 1 môn học.");
       hasError = true;
+    } else {
+      setAchievementError(null);
     }
 
     if (hasError) return;
@@ -359,6 +371,7 @@ export default function BecomeMentorPage() {
               achievements={achievements}
               setAchievements={setAchievements}
               subjects={subjects}
+              error={achievementError}
             />
 
             <BioSection register={register} errors={errors} />

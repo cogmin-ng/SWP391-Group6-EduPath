@@ -3,6 +3,7 @@ const roleRepository = require('../repositories/roleRepository');
 const ApiError = require('../utils/ApiError');
 const cloudinaryService = require('./externalService/cloudinary/cloudinaryService');
 const prisma = require('../lib/prisma');
+const { getLevelInfo } = require('../utils/level');
 
 const userMessages = {
   notFound: 'User not found',
@@ -131,6 +132,7 @@ exports.getMenteeProfile = async (userId) => {
         0
       ) / enrollments.length
     : 0;
+  const levelInfo = getLevelInfo(user.xp);
 
   return {
     user: {
@@ -140,6 +142,7 @@ exports.getMenteeProfile = async (userId) => {
       avatarUrl: user.avatar,
       bio: user.bio,
       xp: user.xp,
+      ...levelInfo,
       status: user.status,
       role: user.role?.name || 'MENTEE',
       createdAt: user.createdAt,
@@ -396,5 +399,26 @@ exports.getDashboardStats = async () => {
     totalMentees,
     totalRoadmaps,
     recentActivities
+  };
+};
+
+exports.getHotMentors = async ({ page = 1, limit = 9 } = {}) => {
+  const result = await userRepository.getHotMentors({ page, limit });
+  
+  // Map to the response format, removing the score field
+  return {
+    mentors: result.mentors.map((mentor) => ({
+      id: mentor.id,
+      fullName: mentor.fullName,
+      avatar: mentor.avatar,
+      bio: mentor.bio,
+      averageRating: mentor.averageRating,
+      totalLearners: mentor.totalLearners,
+      totalLearningPaths: mentor.totalLearningPaths,
+      totalReviews: mentor.totalReviews,
+      subjects: mentor.subjects,
+      createdAt: mentor.createdAt,
+    })),
+    pagination: result.pagination,
   };
 };

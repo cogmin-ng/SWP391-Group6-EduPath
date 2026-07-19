@@ -93,9 +93,8 @@ async function notifyMentorAboutRoadmapReview(tx, roadmap, status, feedback) {
   const message =
     status === 'APPROVED'
       ? `Lộ trình "${roadmap.title}" của bạn đã được phê duyệt.`
-      : `Lộ trình "${roadmap.title}" của bạn đã bị từ chối.${
-          feedback ? ` Lý do: ${feedback}` : ''
-        }`;
+      : `Lộ trình "${roadmap.title}" của bạn đã bị từ chối.${feedback ? ` Lý do: ${feedback}` : ''
+      }`;
 
   await notificationService.createNotification(
     roadmap.mentorId,

@@ -9,6 +9,7 @@ import {
   QuizSection,
   TipsSection,
   ProgressCard,
+  DiscussionSection,
 } from '../../components/mentee/node';
 import { getRoadmapById } from '../../services/roadmapService';
 import { getNodeDetails } from '../../services/nodeService';
@@ -275,6 +276,9 @@ export default function MentorRoadmapLearningPage() {
               compact
               onStart={() => {}}
             />
+            {currentPhase?.id && (
+              <DiscussionSection nodeId={currentPhase.id} />
+            )}
           </aside>
         </div>
       </main>

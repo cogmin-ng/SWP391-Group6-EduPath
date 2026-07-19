@@ -5,6 +5,30 @@ const router = Router();
 
 /**
  * @swagger
+ * /api/learning-paths/hot:
+ *   get:
+ *     tags:
+ *       - Learning Path
+ *     summary: Get hot/trending learning paths sorted by popularity
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 9
+ *     responses:
+ *       200:
+ *         description: Paginated list of hot learning paths
+ */
+router.get('/hot', learningPathController.getHotLearningPaths);
+
+/**
+ * @swagger
  * /api/learning-paths/explore:
  *   get:
  *     tags:

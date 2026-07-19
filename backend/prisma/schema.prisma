@@ -21,6 +21,7 @@ enum RoadmapStatus {
   REJECTED
   PUBLISHED
   ARCHIVED
+  PENDING_DELETE
 }
 
 enum EnrollmentStatus {
@@ -238,6 +239,10 @@ model LearningPath {
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  parentLearningPathId String?
+  parentLearningPath   LearningPath?  @relation("LearningPathVersions", fields: [parentLearningPathId], references: [id], onDelete: SetNull)
+  childVersions        LearningPath[] @relation("LearningPathVersions")
 
   nodes Node[]
 

@@ -199,8 +199,11 @@ exports.getNodeDetails = async (nodeId, userId, roles = []) => {
 exports.syncNodeDetails = async (nodeId, data, mentorId, roles = []) => {
   const node = await assertOwnership(nodeId, mentorId, roles);
 
-  // If roadmap has already been published, prevent editing node details
-  if (node.learningPath?.status === 'PUBLISHED') {
+  // If roadmap is already live (APPROVED or PUBLISHED), prevent direct editing of node details
+  if (
+    node.learningPath?.status === 'PUBLISHED' ||
+    node.learningPath?.status === 'APPROVED'
+  ) {
     throw new ApiError(400, MSG.cannotEditPublished);
   }
 

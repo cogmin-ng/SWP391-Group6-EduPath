@@ -45,7 +45,11 @@ export default function MentorInfoSection({ register, errors, specializationOpti
                   required: "Vui lòng chọn chuyên ngành.",
                 })}
                 className={selectCls(errors.specialization)}
+                defaultValue=""
               >
+                <option value="" disabled hidden>
+                  Chọn chuyên ngành
+                </option>
                 {(specializationOptions && specializationOptions.length > 0
                   ? specializationOptions
                   : SPECIALIZATION_OPTIONS

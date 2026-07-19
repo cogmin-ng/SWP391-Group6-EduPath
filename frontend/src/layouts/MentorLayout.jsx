@@ -97,7 +97,7 @@ const MentorLayout = () => {
     { title: 'Đánh giá chờ', icon: ClipboardList, path: '/mentor/reviews' },
     { title: 'Tạo lộ trình', icon: Plus, path: '/mentor/create-roadmap' },
     { title: 'Ngân hàng câu hỏi', icon: HelpCircle, path: '/mentor/question-bank' },
-    { title: 'Đăng ký mentor', icon: GraduationCap, path: '/profile/become-mentor' },
+    { title: 'Đăng ký trở thành mentor', icon: GraduationCap, path: '/profile/become-mentor' },
     { title: 'Hồ sơ cá nhân', icon: User, path: '/mentor/profile' },
   ];
 

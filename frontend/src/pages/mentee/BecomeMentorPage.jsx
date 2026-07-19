@@ -43,6 +43,7 @@ export default function BecomeMentorPage() {
   const [specializationOptions, setSpecializationOptions] = useState([]);
   const [existingApplication, setExistingApplication] = useState(undefined); // undefined = loading, null = none
   const [pageLoading, setPageLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
 
   const [subjects, setSubjects] = useState([]);
   const [subjectError, setSubjectError] = useState(null);
@@ -75,6 +76,7 @@ export default function BecomeMentorPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setFetchError(null);
         const [subjectList, myApp, majors] = await Promise.all([
           mentorApplicationService.getSubjects(),
           mentorApplicationService.getMyApplication(),
@@ -87,7 +89,11 @@ export default function BecomeMentorPage() {
         if (myApp && myApp.status === "PENDING") {
           setActiveTab("status");
         }
-      } catch {
+      } catch (err) {
+        console.error("Lỗi tải dữ liệu đăng ký mentor:", err);
+        setFetchError(
+          "Không thể tải dữ liệu từ máy chủ. Vui lòng kiểm tra kết nối cơ sở dữ liệu."
+        );
         setAvailableSubjects([]);
         setExistingApplication(null);
       } finally {
@@ -333,6 +339,16 @@ export default function BecomeMentorPage() {
       <main className="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-10 xl:px-12 py-8 sm:py-12">
         <MentorHero />
 
+        {fetchError && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-800 rounded-2xl p-4 flex items-start gap-3 animate-fadeIn">
+            <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-bold text-sm">Lỗi tải dữ liệu</h4>
+              <p className="text-xs text-red-700 mt-1">{fetchError}</p>
+            </div>
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="flex border-b border-slate-200 mb-8">
           <button
@@ -402,8 +418,14 @@ export default function BecomeMentorPage() {
             {/* ---------------------------------------------------------- */}
             <div className="flex flex-col items-center pb-10">
               {availableSubjects.length === 0 && (
-                <div className="mb-4 text-emerald-600 bg-emerald-50 px-4 py-2 rounded-lg border border-emerald-200 text-sm text-center max-w-lg">
-                  Bạn đã đăng ký Mentor cho tất cả các môn học hiện có.
+                <div className={`mb-4 px-4 py-2 rounded-lg border text-sm text-center max-w-lg ${
+                  existingApplication
+                    ? "text-emerald-600 bg-emerald-50 border-emerald-200"
+                    : "text-amber-600 bg-amber-50 border-amber-200"
+                }`}>
+                  {existingApplication
+                    ? "Bạn đã đăng ký Mentor cho tất cả các môn học hiện có."
+                    : "Hệ thống hiện tại chưa có môn học nào khả dụng để đăng ký làm Mentor."}
                 </div>
               )}
               {existingApplication?.status === "PENDING" &&
@@ -424,7 +446,7 @@ export default function BecomeMentorPage() {
                 isLoading={isSubmitting}
                 className="min-w-[240px] text-base font-semibold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Gửi đăng ký Mentor
+                Gửi Đơn
               </Button>
             </div>
           </form>

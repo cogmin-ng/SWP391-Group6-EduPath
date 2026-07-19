@@ -185,6 +185,9 @@ exports.createRoadmap = async (data, mentorId) => {
     }
 
     return created.id;
+  }, {
+    maxWait: 15000,
+    timeout: 30000,
   });
 
   return roadmapRepository.findById(roadmapId);
@@ -336,6 +339,9 @@ exports.updateRoadmap = async (roadmapId, data, mentorId) => {
     }
 
     return null;
+  }, {
+    maxWait: 15000,
+    timeout: 30000,
   });
 
   // Re-fetch to include updated nodes in response

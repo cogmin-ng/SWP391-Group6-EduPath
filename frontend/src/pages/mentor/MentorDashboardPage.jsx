@@ -124,7 +124,7 @@ const MentorDashboardPage = () => {
     },
     {
       id: 2,
-      label: 'Đóng Góp Được Duyệt',
+      label: 'Đóng Góp Đã Duyệt',
       value: loadingStats ? '...' : stats.approvedContributions.toString(),
       icon: 'CheckCircle',
       color: 'bg-emerald-500',

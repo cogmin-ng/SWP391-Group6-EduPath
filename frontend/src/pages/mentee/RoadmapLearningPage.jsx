@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, Navigate, useParams, useNavigate } from 'react-router-dom';
-import { ArrowRight, ChevronRight, Loader2 } from 'lucide-react';
+import { Link, Navigate, useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowRight, ChevronRight, Download, Loader2, NotebookPen } from 'lucide-react';
+import toast from 'react-hot-toast';
 import MenteeHeader from '../../components/mentee/MenteeHeader';
 import CertificateEarnedModal from '../../components/mentee/CertificateEarnedModal';
 import Button from '../../components/ui/Button';
@@ -13,9 +14,11 @@ import {
   TipsSection,
   ProgressCard,
   DiscussionSection,
+  PersonalNoteModal,
 } from '../../components/mentee/node';
 import { getRoadmapBySlug } from '../../services/roadmapService';
 import { getNodeDetails, toggleChecklistProgress, updateNodeProgress } from '../../services/nodeService';
+import { exportRoadmapNotesPdf } from '../../services/personalNoteService';
 
 function formatUpdatedAt(value) {
   if (!value) return 'Gần đây';
@@ -37,6 +40,8 @@ function mapMaterialButtonLabel(type) {
 export default function RoadmapLearningPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedNodeId = searchParams.get('nodeId');
   const [roadmap, setRoadmap] = useState(null);
   const [nodeDetails, setNodeDetails] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -45,6 +50,10 @@ export default function RoadmapLearningPage() {
   const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0);
   const [completing, setCompleting] = useState(false);
   const [completionResult, setCompletionResult] = useState(null);
+  const [noteModalOpen, setNoteModalOpen] = useState(
+    () => searchParams.get('note') === 'open'
+  );
+  const [exportingNotes, setExportingNotes] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -55,8 +64,17 @@ export default function RoadmapLearningPage() {
         const data = await getRoadmapBySlug(slug);
         if (!isMounted) return;
         setRoadmap(data);
+        const requestedNodeIndex = data.nodes.findIndex(
+          (node) => node.id === requestedNodeId
+        );
         const firstIncompleteIndex = data.nodes.findIndex((node) => !node.completed);
-        setCurrentPhaseIndex(firstIncompleteIndex >= 0 ? firstIncompleteIndex : 0);
+        setCurrentPhaseIndex(
+          requestedNodeIndex >= 0
+            ? requestedNodeIndex
+            : firstIncompleteIndex >= 0
+              ? firstIncompleteIndex
+              : 0
+        );
         setError('');
       } catch (err) {
         if (!isMounted) return;
@@ -74,7 +92,7 @@ export default function RoadmapLearningPage() {
     return () => {
       isMounted = false;
     };
-  }, [slug]);
+  }, [requestedNodeId, slug]);
 
   const phases = useMemo(() => roadmap?.nodes || [], [roadmap]);
   const currentPhase = phases[currentPhaseIndex] || null;
@@ -253,6 +271,37 @@ export default function RoadmapLearningPage() {
     }
   };
 
+  const handleExportNotes = async () => {
+    if (!roadmap?.id || exportingNotes) return;
+
+    try {
+      setExportingNotes(true);
+      const { blob, filename } = await exportRoadmapNotesPdf(roadmap.id);
+      const objectUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => window.URL.revokeObjectURL(objectUrl), 0);
+      toast.success('Đã xuất ghi chú PDF.');
+    } catch (err) {
+      let message = err?.response?.data?.message;
+      if (!message && err?.response?.data instanceof Blob) {
+        try {
+          const payload = JSON.parse(await err.response.data.text());
+          message = payload.message;
+        } catch {
+          // Keep the user-facing fallback for non-JSON error responses.
+        }
+      }
+      toast.error(message || 'Không thể xuất PDF. Hãy tạo ít nhất một ghi chú.');
+    } finally {
+      setExportingNotes(false);
+    }
+  };
+
   const completedChecklist = checklist.filter((i) => i.completed).length;
   const checklistProgress = checklist.length > 0 ? Math.round((completedChecklist / checklist.length) * 100) : 0;
   const overallProgress = Math.round(roadmap?.enrollment?.progressPercent || 0);
@@ -273,10 +322,22 @@ export default function RoadmapLearningPage() {
       <MenteeHeader />
 
       {/* Breadcrumb */}
-      <div className="mx-auto flex w-full max-w-[1560px] items-center gap-1 px-4 pt-24 text-xs text-slate-500 sm:px-6 lg:px-8">
-        <Link to="/roadmaps" className="hover:text-indigo-600">Lộ trình của tôi</Link>
-        <ChevronRight className="h-3.5 w-3.5" />
-        <span className="font-medium text-slate-700">{roadmap.title}</span>
+      <div className="mx-auto flex w-full max-w-[1560px] items-center justify-between gap-4 px-4 pt-24 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-1 text-xs text-slate-500">
+          <Link to="/roadmaps" className="shrink-0 hover:text-indigo-600">Lộ trình của tôi</Link>
+          <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate font-medium text-slate-700">{roadmap.title}</span>
+        </div>
+        <button
+          type="button"
+          onClick={handleExportNotes}
+          disabled={exportingNotes}
+          className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-indigo-100 bg-white px-3 py-2 text-xs font-semibold text-indigo-600 shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50 disabled:cursor-wait disabled:opacity-60 sm:px-4 sm:text-sm"
+        >
+          {exportingNotes ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+          <span className="hidden sm:inline">{exportingNotes ? 'Đang xuất PDF...' : 'Xuất ghi chú PDF'}</span>
+          <span className="sm:hidden">PDF</span>
+        </button>
       </div>
 
       <main className="mx-auto w-full max-w-[1560px] px-4 py-6 sm:px-6 lg:px-8">
@@ -329,7 +390,7 @@ export default function RoadmapLearningPage() {
 
                 <div className="space-y-6">
                   <div className="rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-violet-50 p-5">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-5">
                       <div>
                         <p className="text-sm font-semibold text-indigo-700">
                           {isLastPhase ? 'Chạm đích lộ trình' : 'Tiếp tục lộ trình'}
@@ -340,25 +401,36 @@ export default function RoadmapLearningPage() {
                             : 'Hoàn thành nội dung này để chuyển sang nội dung tiếp theo và cập nhật tiến độ.'}
                         </p>
                       </div>
-                      <Button
-                        className={`gap-2 shrink-0 ${
-                          isCurrentPhaseCompleted
-                            ? 'bg-emerald-100 text-emerald-700 shadow-none hover:bg-emerald-100 disabled:bg-emerald-100 disabled:text-emerald-700 disabled:opacity-100'
-                            : ''
-                        }`}
-                        onClick={handleContinue}
-                        disabled={isCurrentPhaseCompleted}
-                        isLoading={completing}
-                      >
-                        {isCurrentPhaseCompleted
-                          ? 'Hoàn thành'
-                          : completing
-                            ? 'Đang hoàn thành'
-                            : isLastPhase
-                              ? 'Hoàn thành lộ trình'
-                              : 'Hoàn thành & tiếp tục'}
-                        {!isCurrentPhaseCompleted && !completing ? <ArrowRight className="h-4 w-4" /> : null}
-                      </Button>
+                      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full shrink-0 sm:w-auto"
+                          onClick={() => setNoteModalOpen(true)}
+                        >
+                          <NotebookPen className="h-4 w-4 text-indigo-600" />
+                          Ghi chú Node
+                        </Button>
+                        <Button
+                          className={`w-full gap-2 shrink-0 sm:w-auto ${
+                            isCurrentPhaseCompleted
+                              ? 'bg-emerald-100 text-emerald-700 shadow-none hover:bg-emerald-100 disabled:bg-emerald-100 disabled:text-emerald-700 disabled:opacity-100'
+                              : ''
+                          }`}
+                          onClick={handleContinue}
+                          disabled={isCurrentPhaseCompleted}
+                          isLoading={completing}
+                        >
+                          {isCurrentPhaseCompleted
+                            ? 'Hoàn thành'
+                            : completing
+                              ? 'Đang hoàn thành'
+                              : isLastPhase
+                                ? 'Hoàn thành lộ trình'
+                                : 'Hoàn thành & tiếp tục'}
+                          {!isCurrentPhaseCompleted && !completing ? <ArrowRight className="h-4 w-4" /> : null}
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
@@ -397,6 +469,14 @@ export default function RoadmapLearningPage() {
             setCompletionResult(null);
             navigate(certificateId ? `/my-certificates/${certificateId}` : '/my-certificates');
           }}
+        />
+      )}
+
+      {noteModalOpen && currentPhase?.id && (
+        <PersonalNoteModal
+          nodeId={currentPhase.id}
+          nodeTitle={currentPhase.title}
+          onClose={() => setNoteModalOpen(false)}
         />
       )}
 

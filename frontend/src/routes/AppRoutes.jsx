@@ -39,6 +39,7 @@ import CreateQuizPage from "../pages/mentor/CreateQuizPage";
 import MentorRoadmapLearningPage from "../pages/mentor/MentorRoadmapLearningPage";
 import MentorRoadmapDetailPage from "../pages/mentor/MentorRoadmapDetailPage";
 import QuestionBankPage from "../pages/mentor/QuestionBankPage";
+import PersonalNotesPage from "../pages/mentee/PersonalNotesPage";
 
 import CategoryManagementPage from "../pages/admin/CategoryManagementPage";
 
@@ -151,6 +152,15 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["MENTEE"]}>
             <ContributionHistoryPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/mentee/notes"
+        element={
+          <ProtectedRoute allowedRoles={["MENTEE"]}>
+            <PersonalNotesPage />
           </ProtectedRoute>
         }
       />
@@ -308,4 +318,3 @@ export default function AppRoutes() {
     </Routes>
   );
 }
-

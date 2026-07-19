@@ -101,6 +101,7 @@ export default function PersonalNoteModal({ nodeId, nodeTitle, onClose, onChange
       setInitialContent(savedNote.content);
       onChanged?.(savedNote);
       toast.success(note ? 'Đã cập nhật ghi chú.' : 'Đã tạo ghi chú.');
+      onClose();
     } catch (error) {
       toast.error(error?.response?.data?.message || 'Không thể lưu ghi chú.');
     } finally {

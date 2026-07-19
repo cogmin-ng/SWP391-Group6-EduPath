@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { 
-  Search, 
-  ChevronDown, 
-  Filter, 
-  Clock, 
-  Layers, 
-  BarChart, 
-  CheckCircle2, 
-  XCircle, 
+import {
+  Search,
+  ChevronDown,
+  Filter,
+  Clock,
+  Layers,
+  BarChart,
+  CheckCircle2,
+  XCircle,
   AlertCircle,
   ExternalLink,
   ChevronRight,
@@ -15,7 +15,8 @@ import {
   MoreVertical,
   Bell,
   Eye,
-  Play
+  Play,
+  Calendar
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getPendingRoadmaps, getRoadmapStatsByAdmin, reviewRoadmap } from '../../services/roadmapService';
@@ -24,7 +25,9 @@ import RoadmapDetailModal from '../../components/admin/RoadmapDetailModal';
 const RoadmapApprovalPage = () => {
   const [selectedRoadmap, setSelectedRoadmap] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('PENDING');
+  const [subjectFilter, setSubjectFilter] = useState('ALL');
+  const [uiStatusFilter, setUiStatusFilter] = useState('ALL');
+  const [dateFilter, setDateFilter] = useState('ALL');
   const [roadmaps, setRoadmaps] = useState([]);
   const [statsData, setStatsData] = useState({});
   const [loading, setLoading] = useState(true);
@@ -43,10 +46,11 @@ const RoadmapApprovalPage = () => {
   const fetchRoadmaps = async () => {
     try {
       setLoading(true);
-      const data = await getPendingRoadmaps(0, 50, statusFilter);
-      setRoadmaps(data.roadmaps || []);
-      if (data.roadmaps && data.roadmaps.length > 0) {
-        setSelectedRoadmap(data.roadmaps[0]);
+      const data = await getPendingRoadmaps(0, 50, 'ALL');
+      const filteredData = (data.roadmaps || []).filter(r => r.status?.toUpperCase() !== 'DRAFT');
+      setRoadmaps(filteredData);
+      if (filteredData.length > 0) {
+        setSelectedRoadmap(filteredData[0]);
       } else {
         setSelectedRoadmap(null);
       }
@@ -60,12 +64,34 @@ const RoadmapApprovalPage = () => {
   useEffect(() => {
     fetchStats();
     fetchRoadmaps();
-  }, [statusFilter]);
+  }, []);
 
-  const filteredRoadmaps = roadmaps.filter(r => 
-    r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (r.mentor?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const uniqueSubjects = ['ALL', ...new Set(roadmaps.map(r => r.subject?.name).filter(Boolean))];
+
+  const filteredRoadmaps = roadmaps.filter(r => {
+    const matchSearch = r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (r.mentor?.name || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const matchSubject = subjectFilter === 'ALL' || r.subject?.name === subjectFilter;
+    const normalizedStatus = (status) => {
+      if (!status) return '';
+      const s = status.toUpperCase();
+      if (s === 'PUBLISHED' || s === 'APPROVED') return 'APPROVED';
+      if (s === 'REJECTED') return 'REJECTED';
+      if (s === 'PENDING') return 'PENDING';
+      return s;
+    };
+    const matchStatus = uiStatusFilter === 'ALL' || normalizedStatus(r.status) === uiStatusFilter;
+    
+    let matchDate = true;
+    if (dateFilter !== 'ALL') {
+      const roadmapDate = new Date(r.createdAt);
+      const today = new Date();
+      const diffDays = (today - roadmapDate) / (1000 * 60 * 60 * 24); 
+      matchDate = diffDays <= parseInt(dateFilter, 10);
+    }
+
+    return matchSearch && matchSubject && matchStatus && matchDate;
+  });
 
   const handleReview = async (roadmapId, status, feedback = '') => {
     const isReject = status === 'REJECTED';
@@ -98,6 +124,23 @@ const RoadmapApprovalPage = () => {
     { label: 'Tổng số đã gửi', count: Object.values(statsData).reduce((a, b) => a + b, 0), icon: Layers, color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-200', filterValue: 'ALL' },
   ];
 
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'APPROVED':
+      case 'Approved':
+      case 'PUBLISHED':
+        return 'Đã phê duyệt';
+      case 'REJECTED':
+      case 'Rejected':
+        return 'Từ chối';
+      case 'PENDING':
+      case 'Pending':
+        return 'Chờ phê duyệt';
+      default:
+        return status;
+    }
+  };
+
   const getStatusStyles = (status) => {
     switch (status) {
       case 'APPROVED':
@@ -126,10 +169,9 @@ const RoadmapApprovalPage = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, idx) => (
-          <div 
-            key={idx} 
-            onClick={() => setStatusFilter(stat.filterValue)}
-            className={`bg-white p-6 rounded-3xl border ${stat.border} shadow-sm transition-all hover:shadow-md hover:-translate-y-1 duration-300 cursor-pointer ${statusFilter === stat.filterValue ? 'ring-2 ring-indigo-500 ring-offset-2' : ''}`}
+          <div
+            key={idx}
+            className={`bg-white p-6 rounded-3xl border ${stat.border} shadow-sm transition-all duration-300`}
           >
             <div className="flex justify-between items-start">
               <div>
@@ -144,28 +186,77 @@ const RoadmapApprovalPage = () => {
         ))}
       </div>
 
+
       {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm">
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-4">
+        {/* Search */}
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-          <input 
-            type="text" 
-            placeholder="Tìm kiếm lộ trình theo tiêu đề hoặc mentor..." 
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+          <input
+            type="text"
+            placeholder="Tìm kiếm lộ trình theo tiêu đề hoặc mentor..."
             className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+        {/* Filters */}
+        <div className="flex items-center gap-3 mt-1 flex-wrap">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide mr-2">BỘ LỌC:</span>
+
+          <select
+            value={subjectFilter}
+            onChange={(e) => setSubjectFilter(e.target.value)}
+            className="px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer appearance-none pr-8 relative"
+            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center' }}
+          >
+            <option value="ALL">Môn Học (Tất cả)</option>
+            {uniqueSubjects.filter(s => s !== 'ALL').map(subject => (
+              <option key={subject} value={subject}>{subject}</option>
+            ))}
+          </select>
+
+          <select
+            value={uiStatusFilter}
+            onChange={(e) => setUiStatusFilter(e.target.value)}
+            className="px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer appearance-none pr-8 relative"
+            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center' }}
+          >
+            <option value="ALL">Trạng thái (Tất cả)</option>
+            <option value="PENDING">Chờ phê duyệt</option>
+            <option value="APPROVED">Đã phê duyệt</option>
+            <option value="REJECTED">Bị từ chối</option>
+          </select>
+
+          <div className="relative flex items-center">
+            <span className="absolute left-3">
+              <Calendar className="w-3.5 h-3.5 text-slate-400" />
+            </span>
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="pl-8 pr-8 py-1.5 border border-slate-200 bg-white rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer appearance-none relative min-w-[130px]"
+              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center' }}
+            >
+              <option value="ALL">Lịch (Tất cả)</option>
+              <option value="3">3 ngày qua</option>
+              <option value="7">7 ngày qua</option>
+              <option value="14">14 ngày qua</option>
+              <option value="30">30 ngày qua</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {/* Main Content Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
+
         {/* LEFT SIDE: Roadmap Table */}
-        <div className="lg:col-span-8 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50/50">
+        <div className="lg:col-span-8 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col max-h-[750px]">
+          <div className="overflow-y-auto overflow-x-auto custom-scrollbar flex-1 relative">
+            <table className="w-full text-left border-collapse">
+              <thead className="sticky top-0 z-10 bg-slate-50 shadow-sm">
+                <tr>
                 <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">Tiêu đề</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">Mentor</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-center">Môn học</th>
@@ -175,8 +266,8 @@ const RoadmapApprovalPage = () => {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filteredRoadmaps.map((roadmap) => (
-                <tr 
-                  key={roadmap.id} 
+                <tr
+                  key={roadmap.id}
                   onClick={() => setSelectedRoadmap(roadmap)}
                   className={`cursor-pointer transition-all hover:bg-slate-50/80 ${selectedRoadmap?.id === roadmap.id ? 'bg-indigo-50/50' : ''}`}
                 >
@@ -185,14 +276,14 @@ const RoadmapApprovalPage = () => {
                   </td>
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-2">
-                       <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 font-bold uppercase overflow-hidden">
-                          {roadmap.mentor?.avatar ? (
-                            <img src={roadmap.mentor.avatar} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            roadmap.mentor?.name?.[0] || <User className="w-4 h-4" />
-                          )}
-                       </div>
-                       <p className="text-sm font-medium text-slate-700">{roadmap.mentor?.name || 'Unknown'}</p>
+                      <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 font-bold uppercase overflow-hidden">
+                        {roadmap.mentor?.avatar ? (
+                          <img src={roadmap.mentor.avatar} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          roadmap.mentor?.name?.[0] || <User className="w-4 h-4" />
+                        )}
+                      </div>
+                      <p className="text-sm font-medium text-slate-700">{roadmap.mentor?.name || 'Unknown'}</p>
                     </div>
                   </td>
                   <td className="px-6 py-5 text-center">
@@ -201,11 +292,11 @@ const RoadmapApprovalPage = () => {
                     </span>
                   </td>
                   <td className="px-6 py-5">
-                    <p className="text-sm text-slate-500 font-medium">{new Date(roadmap.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                    <p className="text-sm text-slate-500 font-medium">{new Date(roadmap.createdAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
                   </td>
                   <td className="px-6 py-5 text-right">
-                    <span className={`px-4 py-1.5 rounded-xl text-xs font-bold border ${getStatusStyles(roadmap.status)}`}>
-                      {roadmap.status}
+                    <span className={`inline-block whitespace-nowrap px-4 py-1.5 rounded-xl text-xs font-bold border ${getStatusStyles(roadmap.status)}`}>
+                      {getStatusText(roadmap.status)}
                     </span>
                   </td>
                 </tr>
@@ -214,10 +305,6 @@ const RoadmapApprovalPage = () => {
           </table>
           {loading && <div className="p-8 text-center text-slate-500 font-medium animate-pulse">Đang tải danh sách lộ trình...</div>}
           {!loading && filteredRoadmaps.length === 0 && <div className="p-12 text-center text-slate-400 font-medium italic">Không tìm thấy lộ trình nào.</div>}
-          <div className="p-4 border-t border-slate-50 flex justify-center">
-              <button className="text-sm font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-2">
-                Xem toàn bộ đơn gửi <ChevronRight className="w-4 h-4" />
-              </button>
           </div>
         </div>
 
@@ -227,8 +314,8 @@ const RoadmapApprovalPage = () => {
             <div className="bg-white rounded-[2rem] border border-slate-200 shadow-xl overflow-hidden animate-in zoom-in-95 duration-500">
               {/* Preview Header / Image */}
               <div className="relative aspect-video bg-slate-900 overflow-hidden">
-                <img 
-                  src={selectedRoadmap.thumbnail || "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=800"} 
+                <img
+                  src={selectedRoadmap.thumbnail || "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=800"}
                   alt={selectedRoadmap.title}
                   className="w-full h-full object-cover opacity-80"
                 />
@@ -236,7 +323,7 @@ const RoadmapApprovalPage = () => {
                 <div className="absolute bottom-6 left-6 right-6">
                   <div className="flex justify-between items-end">
                     <div>
-                    <span className="px-3 py-1 bg-indigo-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest mb-2 inline-block">
+                      <span className="px-3 py-1 bg-indigo-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest mb-2 inline-block">
                         {selectedRoadmap.subject?.name || 'N/A'}
                       </span>
                       <h3 className="text-xl font-black text-white leading-tight">
@@ -337,11 +424,11 @@ const RoadmapApprovalPage = () => {
             </div>
           ) : (
             <div className="bg-slate-100 rounded-[2rem] border-2 border-dashed border-slate-300 h-[600px] flex flex-col items-center justify-center text-center p-8">
-               <div className="w-20 h-20 bg-white rounded-3xl shadow-sm flex items-center justify-center mb-6">
-                 <Layers className="w-10 h-10 text-slate-300" />
-               </div>
-               <h3 className="text-lg font-bold text-slate-900">Chưa chọn lộ trình</h3>
-               <p className="text-slate-500 text-sm mt-2 max-w-[240px]">Chọn một lộ trình từ danh sách bên cạnh để xem trước nội dung và bắt đầu đánh giá.</p>
+              <div className="w-20 h-20 bg-white rounded-3xl shadow-sm flex items-center justify-center mb-6">
+                <Layers className="w-10 h-10 text-slate-300" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Chưa chọn lộ trình</h3>
+              <p className="text-slate-500 text-sm mt-2 max-w-[240px]">Chọn một lộ trình từ danh sách bên cạnh để xem trước nội dung và bắt đầu đánh giá.</p>
             </div>
           )}
         </div>

@@ -45,6 +45,23 @@ async function main() {
     },
   });
 
+  // Seed majors / specializations
+  const majorsSeed = [
+    { name: 'Công nghệ thông tin', description: 'Information Technology' },
+    { name: 'Khoa học máy tính', description: 'Computer Science' },
+    { name: 'Công nghệ truyền thông', description: 'Communication Technology' },
+    { name: 'Quản trị kinh doanh', description: 'Business Administration' },
+    { name: 'Ngôn ngữ', description: 'Languages' },
+  ];
+
+  for (const m of majorsSeed) {
+    await prisma.major.upsert({
+      where: { name: m.name },
+      update: { description: m.description, isDeleted: false },
+      create: m,
+    });
+  }
+
   const subjects = [
     {
       name: 'MAS291',

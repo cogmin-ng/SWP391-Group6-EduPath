@@ -12,6 +12,11 @@ export const mentorApplicationService = {
     return data.data;
   },
 
+  async getMajors() {
+    const { data } = await api.get('/majors');
+    return data.data;
+  },
+
   /**
    * Submit a new advisor (mentor) application.
    *

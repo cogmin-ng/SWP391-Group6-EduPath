@@ -13,9 +13,10 @@ import {
  */
 export default function MentorInfoSection({ register, errors, specializationOptions }) {
   const selectCls = (hasError) =>
-    `w-full appearance-none rounded-xl border bg-white text-slate-800 text-sm px-4 py-3 pr-10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer ${hasError
-      ? "border-red-300 focus:ring-red-500/20 focus:border-red-500"
-      : "border-slate-200 hover:border-slate-300"
+    `w-full appearance-none rounded-xl border bg-white text-slate-800 text-sm px-4 py-3 pr-10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer ${
+      hasError
+        ? "border-red-300 focus:ring-red-500/20 focus:border-red-500"
+        : "border-slate-200 hover:border-slate-300"
     }`;
 
   return (
@@ -31,7 +32,6 @@ export default function MentorInfoSection({ register, errors, specializationOpti
       </div>
 
       <div className="space-y-5">
-
         {/* Row: Chuyên ngành + Kỳ học */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {/* Chuyên ngành */}

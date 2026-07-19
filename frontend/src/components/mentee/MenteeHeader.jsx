@@ -181,7 +181,12 @@ export default function MenteeHeader() {
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setNotificationsOpen((prev) => !prev)}
+                onClick={() => {
+                  setNotificationsOpen((prev) => !prev);
+                  if (unreadCount > 0) {
+                    handleMarkAllAsRead();
+                  }
+                }}
                 className="rounded-xl p-2 text-slate-600 transition-colors hover:bg-slate-100"
               >
                 <Bell className="h-5 w-5" />

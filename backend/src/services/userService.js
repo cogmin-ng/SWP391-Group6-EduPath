@@ -15,19 +15,19 @@ const userMessages = {
   cannotUpdateAnotherAvatar: 'Cannot update another user avatar',
 };
 
-exports.getUsers = async ({ skip = 0, take = 10 }) => {
+exports.getUsers = async ({ roleId, skip = 0, take = 10 }) => {
   const [users, total] = await Promise.all([
-    userRepository.findAll({ skip, take }),
-    userRepository.count(),
+    userRepository.findAll({ roleId, skip, take }),
+    userRepository.count({ roleId }),
   ]);
 
   return { users, total };
 };
 
-exports.searchUsers = async ({ query, skip = 0, take = 10 }) => {
+exports.searchUsers = async ({ query, roleId, skip = 0, take = 10 }) => {
   const [users, total] = await Promise.all([
-    userRepository.search({ query, skip, take }),
-    userRepository.searchCount(query),
+    userRepository.search({ query, roleId, skip, take }),
+    userRepository.searchCount({ query, roleId }),
   ]);
 
   return { users, total };

@@ -45,9 +45,13 @@ exports.findByIdWithRoles = async (id) => {
   });
 };
 
-exports.findAll = async ({ skip = 0, take = 10 } = {}) => {
+exports.findAll = async ({ roleId, skip = 0, take = 10 } = {}) => {
+  const where = { ...ACTIVE_USER_FILTER };
+  if (roleId) {
+    where.roleId = roleId;
+  }
   return prisma.user.findMany({
-    where: ACTIVE_USER_FILTER,
+    where,
     include: {
       role: true,
     },
@@ -57,19 +61,27 @@ exports.findAll = async ({ skip = 0, take = 10 } = {}) => {
   });
 };
 
-exports.count = async () => {
-  return prisma.user.count({ where: ACTIVE_USER_FILTER });
+exports.count = async ({ roleId } = {}) => {
+  const where = { ...ACTIVE_USER_FILTER };
+  if (roleId) {
+    where.roleId = roleId;
+  }
+  return prisma.user.count({ where });
 };
 
-exports.search = async ({ query, skip = 0, take = 10 }) => {
+exports.search = async ({ query, roleId, skip = 0, take = 10 }) => {
+  const where = {
+    ...ACTIVE_USER_FILTER,
+    OR: [
+      { email: { contains: query, mode: 'insensitive' } },
+      { name: { contains: query, mode: 'insensitive' } },
+    ],
+  };
+  if (roleId) {
+    where.roleId = roleId;
+  }
   return prisma.user.findMany({
-    where: {
-      ...ACTIVE_USER_FILTER,
-      OR: [
-        { email: { contains: query, mode: 'insensitive' } },
-        { name: { contains: query, mode: 'insensitive' } },
-      ],
-    },
+    where,
     include: {
       role: true,
     },
@@ -79,16 +91,18 @@ exports.search = async ({ query, skip = 0, take = 10 }) => {
   });
 };
 
-exports.searchCount = async (query) => {
-  return prisma.user.count({
-    where: {
-      ...ACTIVE_USER_FILTER,
-      OR: [
-        { email: { contains: query, mode: 'insensitive' } },
-        { name: { contains: query, mode: 'insensitive' } },
-      ],
-    },
-  });
+exports.searchCount = async ({ query, roleId }) => {
+  const where = {
+    ...ACTIVE_USER_FILTER,
+    OR: [
+      { email: { contains: query, mode: 'insensitive' } },
+      { name: { contains: query, mode: 'insensitive' } },
+    ],
+  };
+  if (roleId) {
+    where.roleId = roleId;
+  }
+  return prisma.user.count({ where });
 };
 
 exports.update = async (id, data, tx = prisma) => {

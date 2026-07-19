@@ -54,7 +54,7 @@ export default function BecomeMentorPage() {
 
   useEffect(() => {
     const validRecords = achievements.filter(
-      (a) => a.subjectId && a.grade !== ""
+      (a) => a.subjectId && a.grade !== "",
     );
     if (validRecords.length > 0) {
       setAchievementError(null);
@@ -127,10 +127,12 @@ export default function BecomeMentorPage() {
 
     // Validate academic records
     const validRecords = achievements.filter(
-      (a) => a.subjectId && a.grade !== ""
+      (a) => a.subjectId && a.grade !== "",
     );
     if (validRecords.length === 0) {
-      setAchievementError("Vui lòng nhập thành tích học tập cho ít nhất 1 môn học.");
+      setAchievementError(
+        "Vui lòng nhập thành tích học tập cho ít nhất 1 môn học.",
+      );
       hasError = true;
     } else {
       setAchievementError(null);
@@ -145,7 +147,8 @@ export default function BecomeMentorPage() {
       // 1. Upload transcript file first
       let transcriptUrl = "";
       if (uploadFile) {
-        const uploaded = await mentorApplicationService.uploadTranscript(uploadFile);
+        const uploaded =
+          await mentorApplicationService.uploadTranscript(uploadFile);
         transcriptUrl = uploaded.url;
       }
 
@@ -219,7 +222,8 @@ export default function BecomeMentorPage() {
           icon: Clock,
           label: "Đang chờ duyệt",
           descStatus: "Đang được xem xét",
-          description: "Đơn đăng ký của bạn đang được Admin xem xét. Bạn sẽ nhận được thông báo khi có kết quả.",
+          description:
+            "Đơn đăng ký của bạn đang được Admin xem xét. Bạn sẽ nhận được thông báo khi có kết quả.",
         };
       case "APPROVED":
         return {
@@ -228,7 +232,8 @@ export default function BecomeMentorPage() {
           icon: CheckCircle2,
           label: "Đã được duyệt",
           descStatus: "Đã được duyệt",
-          description: "Chúc mừng! Đơn đăng ký Mentor của bạn đã được phê duyệt. Bạn có thể bắt đầu tạo roadmap và hỗ trợ mentee.",
+          description:
+            "Chúc mừng! Đơn đăng ký Mentor của bạn đã được phê duyệt. Bạn có thể bắt đầu tạo roadmap và hỗ trợ mentee.",
         };
       case "REJECTED":
         return {
@@ -237,7 +242,8 @@ export default function BecomeMentorPage() {
           icon: XCircle,
           label: "Bị từ chối",
           descStatus: "Bị từ chối",
-          description: "Rất tiếc, đơn đăng ký Mentor của bạn chưa được phê duyệt.",
+          description:
+            "Rất tiếc, đơn đăng ký Mentor của bạn chưa được phê duyệt.",
         };
       default:
         return {
@@ -271,10 +277,11 @@ export default function BecomeMentorPage() {
       {/* ---- Toast / Result banner ---- */}
       {submitResult && (
         <div
-          className={`fixed top-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold shadow-xl animate-slideDown ${submitResult.type === "success"
-            ? "border-emerald-300 bg-emerald-600 text-white"
-            : "border-red-300 bg-red-600 text-white"
-            }`}
+          className={`fixed top-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold shadow-xl animate-slideDown ${
+            submitResult.type === "success"
+              ? "border-emerald-300 bg-emerald-600 text-white"
+              : "border-red-300 bg-red-600 text-white"
+          }`}
         >
           <span>{submitResult.message}</span>
           <button
@@ -330,19 +337,21 @@ export default function BecomeMentorPage() {
         <div className="flex border-b border-slate-200 mb-8">
           <button
             onClick={() => setActiveTab("form")}
-            className={`pb-4 px-6 text-sm font-semibold border-b-2 transition-colors ${activeTab === "form"
-              ? "border-indigo-600 text-indigo-600"
-              : "border-transparent text-slate-500 hover:text-slate-800"
-              }`}
+            className={`pb-4 px-6 text-sm font-semibold border-b-2 transition-colors ${
+              activeTab === "form"
+                ? "border-indigo-600 text-indigo-600"
+                : "border-transparent text-slate-500 hover:text-slate-800"
+            }`}
           >
             Đăng ký mentor
           </button>
           <button
             onClick={() => setActiveTab("status")}
-            className={`pb-4 px-6 text-sm font-semibold border-b-2 transition-colors ${activeTab === "status"
-              ? "border-indigo-600 text-indigo-600"
-              : "border-transparent text-slate-500 hover:text-slate-800"
-              }`}
+            className={`pb-4 px-6 text-sm font-semibold border-b-2 transition-colors ${
+              activeTab === "status"
+                ? "border-indigo-600 text-indigo-600"
+                : "border-transparent text-slate-500 hover:text-slate-800"
+            }`}
           >
             Trạng thái đơn
           </button>
@@ -356,7 +365,9 @@ export default function BecomeMentorPage() {
                 <div>
                   <h4 className="font-bold text-sm">Bạn đã là Mentor!</h4>
                   <p className="text-xs text-emerald-700 mt-1">
-                    Bạn đã được phê duyệt làm Mentor trước đó. Bạn vẫn có thể đăng ký bổ sung các môn học hoặc chuyên ngành khác bằng cách điền và gửi đơn bên dưới.
+                    Bạn đã được phê duyệt làm Mentor trước đó. Bạn vẫn có thể
+                    đăng ký bổ sung các môn học hoặc chuyên ngành khác bằng cách
+                    điền và gửi đơn bên dưới.
                   </p>
                 </div>
               </div>
@@ -395,16 +406,21 @@ export default function BecomeMentorPage() {
                   Bạn đã đăng ký Mentor cho tất cả các môn học hiện có.
                 </div>
               )}
-              {existingApplication?.status === "PENDING" && availableSubjects.length > 0 && (
-                <div className="mb-4 text-amber-600 bg-amber-50 px-4 py-2 rounded-lg border border-amber-200 text-sm text-center max-w-lg">
-                  Bạn đang có một đơn đăng ký Mentor đang chờ xét duyệt. Vui lòng chờ kết quả trước khi gửi đơn mới.
-                </div>
-              )}
+              {existingApplication?.status === "PENDING" &&
+                availableSubjects.length > 0 && (
+                  <div className="mb-4 text-amber-600 bg-amber-50 px-4 py-2 rounded-lg border border-amber-200 text-sm text-center max-w-lg">
+                    Bạn đang có một đơn đăng ký Mentor đang chờ xét duyệt. Vui
+                    lòng chờ kết quả trước khi gửi đơn mới.
+                  </div>
+                )}
               <Button
                 type="submit"
                 variant="primary"
                 size="lg"
-                disabled={existingApplication?.status === "PENDING" || availableSubjects.length === 0}
+                disabled={
+                  existingApplication?.status === "PENDING" ||
+                  availableSubjects.length === 0
+                }
                 isLoading={isSubmitting}
                 className="min-w-[240px] text-base font-semibold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -423,11 +439,17 @@ export default function BecomeMentorPage() {
                 {/* Header */}
                 <div className="p-6 sm:p-8 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                   <div>
-                    <h3 className="text-xl font-bold text-slate-900">Đơn đăng ký Mentor</h3>
+                    <h3 className="text-xl font-bold text-slate-900">
+                      Đơn đăng ký Mentor
+                    </h3>
                   </div>
-                  <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full ${getStatusConfig(existingApplication.status).badgeBg} ${getStatusConfig(existingApplication.status).badgeText} text-sm font-medium`}>
+                  <div
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full ${getStatusConfig(existingApplication.status).badgeBg} ${getStatusConfig(existingApplication.status).badgeText} text-sm font-medium`}
+                  >
                     {(() => {
-                      const Icon = getStatusConfig(existingApplication.status).icon;
+                      const Icon = getStatusConfig(
+                        existingApplication.status,
+                      ).icon;
                       return <Icon className="w-4 h-4" />;
                     })()}
                     {getStatusConfig(existingApplication.status).label}
@@ -439,12 +461,20 @@ export default function BecomeMentorPage() {
                 {/* Details */}
                 <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Ngày gửi</p>
-                    <p className="text-sm font-medium text-slate-900">{formatDate(existingApplication.createdAt)}</p>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                      Ngày gửi
+                    </p>
+                    <p className="text-sm font-medium text-slate-900">
+                      {formatDate(existingApplication.createdAt)}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Trạng thái</p>
-                    <p className={`text-sm font-medium ${getStatusConfig(existingApplication.status).badgeText}`}>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                      Trạng thái
+                    </p>
+                    <p
+                      className={`text-sm font-medium ${getStatusConfig(existingApplication.status).badgeText}`}
+                    >
                       {getStatusConfig(existingApplication.status).descStatus}
                     </p>
                   </div>
@@ -457,16 +487,17 @@ export default function BecomeMentorPage() {
                   <p className="text-sm text-slate-600 leading-relaxed">
                     {getStatusConfig(existingApplication.status).description}
                   </p>
-                  {existingApplication.status === "REJECTED" && existingApplication.rejectReason && (
-                    <div className="mt-4 rounded-xl bg-red-50 border border-red-100 p-4 text-left">
-                      <p className="text-sm font-semibold text-red-700 mb-1">
-                        Lý do từ chối:
-                      </p>
-                      <p className="text-sm text-slate-600">
-                        {existingApplication.rejectReason}
-                      </p>
-                    </div>
-                  )}
+                  {existingApplication.status === "REJECTED" &&
+                    existingApplication.rejectReason && (
+                      <div className="mt-4 rounded-xl bg-red-50 border border-red-100 p-4 text-left">
+                        <p className="text-sm font-semibold text-red-700 mb-1">
+                          Lý do từ chối:
+                        </p>
+                        <p className="text-sm text-slate-600">
+                          {existingApplication.rejectReason}
+                        </p>
+                      </div>
+                    )}
                 </div>
               </div>
             )}
@@ -476,4 +507,3 @@ export default function BecomeMentorPage() {
     </div>
   );
 }
-

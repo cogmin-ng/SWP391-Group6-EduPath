@@ -112,16 +112,17 @@ exports.submitRoadmap = asyncHandler(async (req, res) => {
 
 /**
  * GET /api/roadmaps/pending
- * Get all roadmaps pending review (ADMIN only).
+ * Get roadmaps for admin to review or view history (ADMIN only).
  */
 exports.getPendingRoadmaps = asyncHandler(async (req, res) => {
   const skip = parseInt(req.query.skip) || 0;
   const take = parseInt(req.query.take) || 20;
+  const status = req.query.status || 'PENDING';
 
-  const result = await roadmapService.getPendingRoadmaps({ skip, take });
+  const result = await roadmapService.getPendingRoadmaps({ status, skip, take });
 
   return sendSuccess(res, {
-    message: 'Pending roadmaps retrieved successfully',
+    message: 'Roadmaps retrieved successfully',
     data: result,
   });
 });

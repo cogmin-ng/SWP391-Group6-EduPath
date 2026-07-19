@@ -123,7 +123,12 @@ const MentorLayout = () => {
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setIsNotificationOpen((prev) => !prev)}
+                onClick={() => {
+                  setIsNotificationOpen((prev) => !prev);
+                  if (unreadCount > 0) {
+                    handleMarkAllAsRead();
+                  }
+                }}
                 className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 relative"
               >
                 <Bell className="w-5 h-5" />

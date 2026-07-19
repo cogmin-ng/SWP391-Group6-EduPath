@@ -1,4 +1,4 @@
-import api from './api';
+import api from "./api";
 
 export const mentorApplicationService = {
   /**
@@ -8,7 +8,7 @@ export const mentorApplicationService = {
   async getSubjects(categoryId) {
     const params = { availableForMentor: true };
     if (categoryId) params.categoryId = categoryId;
-    const { data } = await api.get('/subjects', { params });
+    const { data } = await api.get("/subjects", { params });
     return data.data;
   },
 
@@ -30,7 +30,7 @@ export const mentorApplicationService = {
    * @param {Array<{ subjectId: string, grade: number }>} payload.academicRecords
    */
   async submit(payload) {
-    const { data } = await api.post('/advisor-applications', payload);
+    const { data } = await api.post("/advisor-applications", payload);
     return data.data;
   },
 
@@ -39,7 +39,7 @@ export const mentorApplicationService = {
    * @returns {Promise<Object|null>}
    */
   async getMyApplication() {
-    const { data } = await api.get('/advisor-applications/me');
+    const { data } = await api.get("/advisor-applications/me");
     return data.data;
   },
 
@@ -48,7 +48,9 @@ export const mentorApplicationService = {
    * @returns {Promise<Array<{ id: string, name: string, categoryId: string }>>}
    */
   async getMyApprovedSubjects() {
-    const { data } = await api.get('/advisor-applications/me/approved-subjects');
+    const { data } = await api.get(
+      "/advisor-applications/me/approved-subjects",
+    );
     return data.data;
   },
 
@@ -59,12 +61,12 @@ export const mentorApplicationService = {
    */
   async uploadTranscript(file) {
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('folder', 'advisor-transcripts');
-    formData.append('resourceType', 'auto');
+    formData.append("file", file);
+    formData.append("folder", "advisor-transcripts");
+    formData.append("resourceType", "auto");
 
-    const { data } = await api.post('/uploads/media', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    const { data } = await api.post("/uploads/media", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
     return data.data;
   },
@@ -73,7 +75,7 @@ export const mentorApplicationService = {
    * Get all advisor applications (Admin only)
    */
   async getAllApplications() {
-    const { data } = await api.get('/advisor-applications/all');
+    const { data } = await api.get("/advisor-applications/all");
     return data.data;
   },
 
@@ -81,7 +83,10 @@ export const mentorApplicationService = {
    * Update the status of an advisor application
    */
   async updateApplicationStatus(id, status, rejectReason = null) {
-    const { data } = await api.put(`/advisor-applications/${id}/status`, { status, rejectReason });
+    const { data } = await api.put(`/advisor-applications/${id}/status`, {
+      status,
+      rejectReason,
+    });
     return data.data;
   },
 };

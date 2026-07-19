@@ -138,8 +138,10 @@ exports.findByMentorId = async (mentorId, { skip = 0, take = 20 } = {}) => {
  * Find roadmaps by status (e.g., PENDING) with pagination.
  */
 exports.findByStatus = async (status, { skip = 0, take = 20 } = {}) => {
+  const where = { ...ACTIVE_FILTER };
+  if (status && status !== 'ALL') where.status = status;
   const result = await prisma.learningPath.findMany({
-    where: { status, ...ACTIVE_FILTER },
+    where,
     include: ROADMAP_INCLUDE,
     orderBy: { updatedAt: 'desc' },
     skip,
@@ -152,8 +154,10 @@ exports.findByStatus = async (status, { skip = 0, take = 20 } = {}) => {
  * Count roadmaps by status.
  */
 exports.countByStatus = async (status) => {
+  const where = { ...ACTIVE_FILTER };
+  if (status && status !== 'ALL') where.status = status;
   return prisma.learningPath.count({
-    where: { status, ...ACTIVE_FILTER },
+    where,
   });
 };
 

@@ -28,6 +28,7 @@ const MentorRequestPage = () => {
   const [dateFilter, setDateFilter] = useState('ALL');
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [availableMajors, setAvailableMajors] = useState([]);
 
   useEffect(() => {
     fetchRequests();
@@ -36,24 +37,33 @@ const MentorRequestPage = () => {
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const data = await mentorApplicationService.getAllApplications();
+      const [data, majorsData] = await Promise.all([
+        mentorApplicationService.getAllApplications(),
+        mentorApplicationService.getMajors(),
+      ]);
 
-      const formattedRequests = data.map(app => ({
-        id: app.id,
-        name: app.user?.name || "Unknown",
-        specialization: app.specialization || "N/A",
-        currentSemester: app.currentSemester || "N/A",
-        bio: app.bio || "No bio provided",
-        experience: app.experience || "No experience provided",
-        transcriptUrl: app.transcriptUrl || null,
-        mentorSubjects: app.mentorSubjects?.map(ms => ms.subject.name) || [],
-        academicRecords: app.academicRecords?.map(ar => ({ subjectName: ar.subject.name, grade: ar.grade })) || [],
-        date: new Date(app.createdAt).toLocaleDateString(),
-        rawDate: app.createdAt,
-        status: app.status === 'APPROVED' ? 'Đã phê duyệt' : app.status === 'REJECTED' ? 'Từ chối' : 'Chờ phê duyệt',
-        rawStatus: app.status
-      }));
+      const formattedRequests = data.map(app => {
+        const matchedMajor = (majorsData || []).find(m => m.id === app.specialization);
+        const specializationName = matchedMajor ? matchedMajor.name : (app.specialization || "N/A");
 
+        return {
+          id: app.id,
+          name: app.user?.name || "Unknown",
+          specialization: specializationName,
+          currentSemester: app.currentSemester || "N/A",
+          bio: app.bio || "No bio provided",
+          experience: app.experience || "No experience provided",
+          transcriptUrl: app.transcriptUrl || null,
+          mentorSubjects: app.mentorSubjects?.map(ms => ms.subject.name) || [],
+          academicRecords: app.academicRecords?.map(ar => ({ subjectName: ar.subject.name, grade: ar.grade })) || [],
+          date: new Date(app.createdAt).toLocaleDateString(),
+          rawDate: app.createdAt,
+          status: app.status === 'APPROVED' ? 'Đã phê duyệt' : app.status === 'REJECTED' ? 'Từ chối' : 'Chờ phê duyệt',
+          rawStatus: app.status
+        };
+      });
+
+      setAvailableMajors(majorsData || []);
       setRequests(formattedRequests);
       if (formattedRequests.length > 0) {
         setSelectedRequest(formattedRequests[0]);
@@ -89,8 +99,6 @@ const MentorRequestPage = () => {
       default: return 'bg-slate-100 text-slate-700 border-slate-200';
     }
   };
-
-  const uniqueSubjects = ['ALL', ...new Set(requests.map(r => r.specialization).filter(Boolean))];
 
   const filteredRequests = requests.filter(r => {
     const matchSearch = r.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -171,8 +179,8 @@ const MentorRequestPage = () => {
             style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center' }}
           >
             <option value="ALL">Chuyên ngành (Tất cả)</option>
-            {uniqueSubjects.filter(s => s !== 'ALL').map(subject => (
-              <option key={subject} value={subject}>{subject}</option>
+            {availableMajors.map(major => (
+              <option key={major.id} value={major.name}>{major.name}</option>
             ))}
           </select>
 

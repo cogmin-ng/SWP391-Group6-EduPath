@@ -628,58 +628,8 @@ exports.submitRoadmap = async (roadmapId, mentorId) => {
  */
 exports.getPendingRoadmaps = async ({ status = 'PENDING', skip = 0, take = 20 } = {}) => {
   const [roadmaps, total] = await Promise.all([
-<<<<<<< HEAD
     roadmapRepository.findByStatus(status, { skip, take }),
     roadmapRepository.countByStatus(status),
-=======
-    prisma.learningPath.findMany({
-      where: {
-        status: { in: ['PENDING', 'PENDING_DELETE'] },
-        isDeleted: false,
-      },
-      include: {
-        subject: {
-          select: { id: true, name: true, description: true },
-        },
-        mentor: {
-          select: { id: true, name: true, email: true, avatar: true },
-        },
-        nodes: {
-          where: { isDeleted: false },
-          orderBy: { orderIndex: 'asc' },
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            orderIndex: true,
-            createdAt: true,
-            updatedAt: true,
-            duration: true,
-            checklists: { where: { isDeleted: false }, orderBy: { orderIndex: 'asc' } },
-            materials: { where: { isDeleted: false }, orderBy: { createdAt: 'asc' } },
-            quizzes: {
-              where: { isDeleted: false },
-              select: {
-                id: true,
-                title: true,
-                passingScore: true,
-                xpReward: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: { updatedAt: 'desc' },
-      skip: parseInt(skip),
-      take: parseInt(take),
-    }),
-    prisma.learningPath.count({
-      where: {
-        status: { in: ['PENDING', 'PENDING_DELETE'] },
-        isDeleted: false,
-      },
-    }),
->>>>>>> dev
   ]);
 
   // Map the roadmap node tips manually to be consistent with ROADMAP_INCLUDE mapping logic
@@ -726,9 +676,8 @@ exports.reviewRoadmap = async (roadmapId, { status, feedback }) => {
       const message =
         updatedStatus === 'ARCHIVED'
           ? `Yêu cầu xóa lộ trình "${roadmap.title}" đã được phê duyệt. Lộ trình đã chuyển sang trạng thái lưu trữ.`
-          : `Yêu cầu xóa lộ trình "${roadmap.title}" của bạn đã bị từ chối.${
-              feedback ? ` Lý do: ${feedback}` : ''
-            }`;
+          : `Yêu cầu xóa lộ trình "${roadmap.title}" của bạn đã bị từ chối.${feedback ? ` Lý do: ${feedback}` : ''
+          }`;
 
       await notificationService.createNotification(
         roadmap.mentorId,

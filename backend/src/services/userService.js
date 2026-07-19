@@ -128,9 +128,9 @@ exports.getMenteeProfile = async (userId) => {
   ).length;
   const averageProgress = enrollments.length
     ? enrollments.reduce(
-        (total, item) => total + Number(item.progressPercent || 0),
-        0
-      ) / enrollments.length
+      (total, item) => total + Number(item.progressPercent || 0),
+      0
+    ) / enrollments.length
     : 0;
   const levelInfo = getLevelInfo(user.xp);
 
@@ -342,14 +342,14 @@ exports.deleteUser = async (id, currentUserId) => {
 
 exports.getDashboardStats = async () => {
   const prisma = require('../lib/prisma');
-  
+
   const [totalUsers, totalMentors, totalMentees, totalRoadmaps] = await Promise.all([
     prisma.user.count({ where: { isDeleted: false } }),
     prisma.user.count({ where: { isDeleted: false, role: { name: 'MENTOR' } } }),
     prisma.user.count({ where: { isDeleted: false, role: { name: 'MENTEE' } } }),
     prisma.learningPath.count({ where: { isDeleted: false } })
   ]);
-  
+
   // Fetch latest activities for dashboard
   const [latestUsers, latestApps, latestRoadmaps] = await Promise.all([
     prisma.user.findMany({ take: 20, orderBy: { createdAt: 'desc' }, select: { id: true, name: true, createdAt: true, status: true } }),
@@ -358,7 +358,7 @@ exports.getDashboardStats = async () => {
   ]);
 
   const activities = [];
-  
+
   latestUsers.forEach(u => {
     activities.push({
       id: `u_${u.id}`,
@@ -368,7 +368,7 @@ exports.getDashboardStats = async () => {
       status: u.status === 'ACTIVE' ? 'Thành công' : 'Đang chờ'
     });
   });
-  
+
   latestApps.forEach(a => {
     activities.push({
       id: `a_${a.id}`,
@@ -378,7 +378,7 @@ exports.getDashboardStats = async () => {
       status: a.status === 'APPROVED' ? 'Đã duyệt' : a.status === 'REJECTED' ? 'Từ chối' : 'Đang chờ'
     });
   });
-  
+
   latestRoadmaps.forEach(r => {
     activities.push({
       id: `r_${r.id}`,
@@ -388,7 +388,7 @@ exports.getDashboardStats = async () => {
       status: r.status === 'APPROVED' ? 'Đã duyệt' : r.status === 'PUBLISHED' ? 'Thành công' : r.status === 'REJECTED' ? 'Từ chối' : 'Đang chờ'
     });
   });
-  
+
   // Sort activities and take top 20
   activities.sort((a, b) => new Date(b.date) - new Date(a.date));
   const recentActivities = activities.slice(0, 20);
@@ -404,7 +404,7 @@ exports.getDashboardStats = async () => {
 
 exports.getHotMentors = async ({ page = 1, limit = 9 } = {}) => {
   const result = await userRepository.getHotMentors({ page, limit });
-  
+
   // Map to the response format, removing the score field
   return {
     mentors: result.mentors.map((mentor) => ({

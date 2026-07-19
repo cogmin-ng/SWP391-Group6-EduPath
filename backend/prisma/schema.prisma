@@ -242,7 +242,7 @@ model LearningPath {
   xpReward Int @default(0)
 
   mentorId String
-  mentor   User   @relation("MentorLearningPaths", fields: [mentorId], references: [id])
+  mentor   User   @relation("MentorLearningPaths", fields: [mentorId], references: [id], onDelete: Cascade)
 
   subjectId String
   subject   Subject @relation(fields: [subjectId], references: [id])
@@ -440,11 +440,11 @@ model Tip {
 
   // Tip gốc của mentor
   createdById String
-  createdBy   User   @relation("TipCreator", fields: [createdById], references: [id])
+  createdBy   User   @relation("TipCreator", fields: [createdById], references: [id], onDelete: Cascade)
 
   // Contributor (mentee)
   contributorId String?
-  contributor   User?   @relation("TipContributor", fields: [contributorId], references: [id])
+  contributor   User?   @relation("TipContributor", fields: [contributorId], references: [id], onDelete: SetNull)
 
   title   String?
   content String  @db.Text
@@ -659,7 +659,7 @@ model BankQuestion {
   subject     Subject            @relation(fields: [subjectId], references: [id])
 
   creatorId   String
-  creator     User               @relation("BankQuestionCreator", fields: [creatorId], references: [id])
+  creator     User               @relation("BankQuestionCreator", fields: [creatorId], references: [id], onDelete: Cascade)
 
   isDeleted   Boolean            @default(false)
   createdAt   DateTime           @default(now())

@@ -21,6 +21,7 @@ import MenteeBadgesPage from "../pages/mentee/MenteeBadgesPage";
 import MentorLayout from "../layouts/MentorLayout";
 import MentorDashboardPage from "../pages/mentor/MentorDashboardPage";
 import MentorRoadmapsPage from "../pages/mentor/MentorRoadmapsPage";
+import MentorLearnersPage from "../pages/mentor/MentorLearnersPage";
 import CreateRoadmapPage from "../pages/mentor/CreateRoadmapPage";
 import EditRoadmapPage from "../pages/mentor/EditRoadmapPage";
 import NodeEditorPage from "../pages/mentor/NodeEditorPage";
@@ -214,6 +215,7 @@ export default function AppRoutes() {
       >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<MentorDashboardPage />} />
+        <Route path="learners" element={<MentorLearnersPage />} />
         <Route path="create-roadmap" element={<CreateRoadmapPage />} />
         <Route path="roadmaps/:roadmapId" element={<MentorRoadmapDetailPage />} />
         <Route path="roadmaps/:roadmapId/learn" element={<MentorRoadmapLearningPage />} />

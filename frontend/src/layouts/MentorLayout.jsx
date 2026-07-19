@@ -6,15 +6,13 @@ import {
   Home,
   Layers,
   ClipboardList,
-  BarChart3,
   Bell,
-  Search,
   User,
   ChevronDown,
   Plus,
-  Award,
   GraduationCap,
   HelpCircle,
+  Users,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { notificationService } from '../services/notificationService';
@@ -82,20 +80,6 @@ const MentorLayout = () => {
     navigate(route);
   };
 
-  const handleMarkAsRead = async (notificationId, alreadyRead) => {
-    if (alreadyRead) return;
-
-    try {
-      await notificationService.markAsRead(notificationId);
-      setNotifications((prev) =>
-        prev.map((item) => (item.id === notificationId ? { ...item, isRead: true } : item))
-      );
-      setUnreadCount((prev) => Math.max(prev - 1, 0));
-    } catch (error) {
-      console.error('Failed to mark mentor notification as read:', error);
-    }
-  };
-
   const handleMarkAllAsRead = async () => {
     try {
       await notificationService.markAllAsRead();
@@ -109,6 +93,7 @@ const MentorLayout = () => {
   const menuItems = [
     { title: 'Trang chủ', icon: Home, path: '/mentor/dashboard' },
     { title: 'Lộ trình của tôi', icon: Layers, path: '/mentor/roadmaps' },
+    { title: 'Quản lý học viên', icon: Users, path: '/mentor/learners' },
     { title: 'Đánh giá chờ', icon: ClipboardList, path: '/mentor/reviews' },
     { title: 'Tạo lộ trình', icon: Plus, path: '/mentor/create-roadmap' },
     { title: 'Ngân hàng câu hỏi', icon: HelpCircle, path: '/mentor/question-bank' },

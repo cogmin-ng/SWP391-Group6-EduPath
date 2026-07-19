@@ -1,5 +1,6 @@
 const prisma = require('../lib/prisma');
 const ApiError = require('../utils/ApiError');
+const enrollmentActivityService = require('./enrollmentActivityService');
 
 const ACTIVE_QUIZ_FILTER = { isDeleted: false };
 
@@ -165,14 +166,20 @@ exports.submitQuizAttempt = async (quizId, answers, userId, roles = []) => {
     },
   });
 
-  const attempt = await prisma.quizAttempt.create({
-    data: {
-      quizId,
-      userId,
-      score,
-      status: score >= quiz.passingScore ? 'PASS' : 'FAIL',
-      attemptCount: previousAttempts + 1,
-    },
+  const attempt = await prisma.$transaction(async (tx) => {
+    const createdAttempt = await tx.quizAttempt.create({
+      data: {
+        quizId,
+        userId,
+        score,
+        status: score >= quiz.passingScore ? 'PASS' : 'FAIL',
+        attemptCount: previousAttempts + 1,
+      },
+    });
+
+    await enrollmentActivityService.touch(userId, quiz.node.learningPathId, tx);
+
+    return createdAttempt;
   });
 
   // Run automatic badge checks

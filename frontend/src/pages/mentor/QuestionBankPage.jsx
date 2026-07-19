@@ -151,7 +151,7 @@ export default function QuestionBankPage() {
     // Validate options
     const nonBlankOptions = modalForm.options.filter(opt => opt.content.trim() !== '');
     if (nonBlankOptions.length < 2) return toast.error('Vui lòng nhập ít nhất 2 đáp án');
-    
+
     const correctOptions = nonBlankOptions.filter(opt => opt.isCorrect);
     if (correctOptions.length !== 1) return toast.error('Vui lòng chọn đúng 1 đáp án đúng');
 
@@ -328,11 +328,11 @@ export default function QuestionBankPage() {
                     </button>
                   </div>
                 </div>
-                
+
                 {/* Question Body */}
                 <div className="space-y-4">
                   <h3 className="font-bold text-slate-800 text-lg leading-relaxed">{q.question}</h3>
-                  
+
                   {/* Options List */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {q.options.map((opt, idx) => {
@@ -509,7 +509,7 @@ export default function QuestionBankPage() {
                       }`}>
                         {String.fromCharCode(65 + idx)}
                       </span>
-                      
+
                       {/* Input content */}
                       <input
                         type="text"

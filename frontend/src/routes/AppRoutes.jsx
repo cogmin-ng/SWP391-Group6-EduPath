@@ -21,6 +21,7 @@ import MenteeBadgesPage from "../pages/mentee/MenteeBadgesPage";
 import MentorLayout from "../layouts/MentorLayout";
 import MentorDashboardPage from "../pages/mentor/MentorDashboardPage";
 import MentorRoadmapsPage from "../pages/mentor/MentorRoadmapsPage";
+import MentorLearnersPage from "../pages/mentor/MentorLearnersPage";
 import CreateRoadmapPage from "../pages/mentor/CreateRoadmapPage";
 import EditRoadmapPage from "../pages/mentor/EditRoadmapPage";
 import NodeEditorPage from "../pages/mentor/NodeEditorPage";
@@ -39,6 +40,7 @@ import CreateQuizPage from "../pages/mentor/CreateQuizPage";
 import MentorRoadmapLearningPage from "../pages/mentor/MentorRoadmapLearningPage";
 import MentorRoadmapDetailPage from "../pages/mentor/MentorRoadmapDetailPage";
 import QuestionBankPage from "../pages/mentor/QuestionBankPage";
+import PersonalNotesPage from "../pages/mentee/PersonalNotesPage";
 
 import CategoryManagementPage from "../pages/admin/CategoryManagementPage";
 
@@ -155,6 +157,15 @@ export default function AppRoutes() {
         }
       />
 
+      <Route
+        path="/mentee/notes"
+        element={
+          <ProtectedRoute allowedRoles={["MENTEE"]}>
+            <PersonalNotesPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Mentee Certificates */}
       <Route
         path="/my-certificates"
@@ -204,6 +215,7 @@ export default function AppRoutes() {
       >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<MentorDashboardPage />} />
+        <Route path="learners" element={<MentorLearnersPage />} />
         <Route path="create-roadmap" element={<CreateRoadmapPage />} />
         <Route path="roadmaps/:roadmapId" element={<MentorRoadmapDetailPage />} />
         <Route path="roadmaps/:roadmapId/learn" element={<MentorRoadmapLearningPage />} />
@@ -308,4 +320,3 @@ export default function AppRoutes() {
     </Routes>
   );
 }
-

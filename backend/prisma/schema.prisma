@@ -88,6 +88,7 @@ model User {
   userBadges   UserBadge[]
   xpEvents     UserXpEvent[]
   nodeComments NodeComment[]
+  personalLearningNotes PersonalLearningNote[]
   reviews      Review[]
   createdBankQuestions BankQuestion[] @relation("BankQuestionCreator")
 }
@@ -275,6 +276,27 @@ model Node {
   comments NodeComment[]
 
   nodeProgresses NodeProgress[]
+  personalLearningNotes PersonalLearningNote[]
+}
+
+model PersonalLearningNote {
+  id String @id @default(cuid())
+
+  userId String
+  nodeId String
+
+  content String @db.Text
+
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  node Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, nodeId])
+  @@index([userId, isDeleted])
+  @@index([nodeId, isDeleted])
 }
 
 model Checklist {
@@ -444,7 +466,8 @@ model Enrollment {
 
   status EnrollmentStatus @default(ACTIVE)
 
-  enrolledAt DateTime @default(now())
+  enrolledAt     DateTime @default(now())
+  lastActivityAt DateTime @default(now())
 
   isDeleted Boolean @default(false)
 
@@ -453,6 +476,7 @@ model Enrollment {
   learningPath LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
 
   @@unique([userId, learningPathId])
+  @@index([learningPathId, status, lastActivityAt])
 }
 
 model NodeProgress {

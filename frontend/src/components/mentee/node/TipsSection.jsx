@@ -10,8 +10,8 @@ import TipContributionModal from '../../ui/TipContributionModal';
  * - onRefresh: callback to refresh tips after submission
  */
 export default function TipsSection({ tips: initialTips, nodeId, onRefresh }) {
-  const [tips, setTips] = useState(initialTips || []);
   const [open, setOpen] = useState(false);
+  const tips = initialTips || [];
 
   const tipCount = tips?.length || 0;
 
@@ -46,14 +46,18 @@ export default function TipsSection({ tips: initialTips, nodeId, onRefresh }) {
                 key={tip.id}
                 className="bg-slate-50 rounded-lg px-4 py-3 text-sm text-slate-700 leading-relaxed border border-slate-100 hover:border-indigo-200 transition-colors"
               >
-                {tip.title ? (
-                  <>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    {tip.title ? (
+                      <>
                     <div className="font-semibold text-slate-900 mb-1">{tip.title}</div>
                     <div className="text-slate-600">{tip.content}</div>
-                  </>
-                ) : (
-                  <div>{tip.content}</div>
-                )}
+                      </>
+                    ) : (
+                      <div>{tip.content}</div>
+                    )}
+                  </div>
+                </div>
               </li>
             ))}
           </ul>

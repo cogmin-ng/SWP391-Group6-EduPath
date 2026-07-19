@@ -14,7 +14,7 @@ import {
   LogOut,
   Map,
   Menu,
-  Settings,
+  NotebookPen,
   User,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
@@ -31,7 +31,7 @@ const accountMenuItems = [
   { label: 'Đóng góp', icon: Lightbulb, to: '/mentee/contributions' },
   { label: 'Huy hiệu', icon: Award, to: '/mentee/badges' },
   { label: 'Chứng chỉ của tôi', icon: FileText, to: '/my-certificates' },
-  { label: 'Cài đặt', icon: Settings, action: 'placeholder' },
+  { label: 'Ghi chú của tôi', icon: NotebookPen, to: '/mentee/notes' },
   { label: 'Đăng xuất', icon: LogOut, action: 'logout' },
 ];
 

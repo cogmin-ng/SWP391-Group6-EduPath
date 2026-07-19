@@ -21,6 +21,7 @@ const nodeCommentRoutes = require('./nodeComment');
 const menteeDashboardRoutes = require('./menteeDashboard');
 const badgeRoutes = require('./badge');
 const questionBankRoutes = require('./questionBank');
+const personalNoteRoutes = require('./personalNote');
 const quizController = require('../controllers/quizController');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
@@ -48,6 +49,7 @@ router.use('/node-comments', nodeCommentRoutes);
 router.use('/mentee-dashboard', menteeDashboardRoutes);
 router.use('/badges', badgeRoutes);
 router.use('/question-bank', questionBankRoutes);
+router.use('/personal-notes', personalNoteRoutes);
 
 // Node-scoped quiz endpoint
 router.get(

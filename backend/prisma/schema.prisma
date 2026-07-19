@@ -21,6 +21,7 @@ enum RoadmapStatus {
   REJECTED
   PUBLISHED
   ARCHIVED
+  PENDING_DELETE
 }
 
 enum EnrollmentStatus {
@@ -87,6 +88,7 @@ model User {
   userBadges   UserBadge[]
   xpEvents     UserXpEvent[]
   nodeComments NodeComment[]
+  personalLearningNotes PersonalLearningNote[]
   reviews      Review[]
   createdBankQuestions BankQuestion[] @relation("BankQuestionCreator")
 }
@@ -239,6 +241,10 @@ model LearningPath {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  parentLearningPathId String?
+  parentLearningPath   LearningPath?  @relation("LearningPathVersions", fields: [parentLearningPathId], references: [id], onDelete: SetNull)
+  childVersions        LearningPath[] @relation("LearningPathVersions")
+
   nodes Node[]
 
   enrollments  Enrollment[]
@@ -270,6 +276,27 @@ model Node {
   comments NodeComment[]
 
   nodeProgresses NodeProgress[]
+  personalLearningNotes PersonalLearningNote[]
+}
+
+model PersonalLearningNote {
+  id String @id @default(cuid())
+
+  userId String
+  nodeId String
+
+  content String @db.Text
+
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  node Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, nodeId])
+  @@index([userId, isDeleted])
+  @@index([nodeId, isDeleted])
 }
 
 model Checklist {
@@ -439,7 +466,8 @@ model Enrollment {
 
   status EnrollmentStatus @default(ACTIVE)
 
-  enrolledAt DateTime @default(now())
+  enrolledAt     DateTime @default(now())
+  lastActivityAt DateTime @default(now())
 
   isDeleted Boolean @default(false)
 
@@ -448,6 +476,7 @@ model Enrollment {
   learningPath LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
 
   @@unique([userId, learningPathId])
+  @@index([learningPathId, status, lastActivityAt])
 }
 
 model NodeProgress {
@@ -602,20 +631,6 @@ model UserBadge {
   @@unique([userId, badgeId])
 }
 
-model UserXpEvent {
-  id         String   @id @default(cuid())
-  userId     String
-  type       String
-  sourceType String?
-  sourceId   String?
-  eventKey   String   @unique
-  xpAmount   Int
-  createdAt  DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, createdAt])
-  @@index([type, createdAt])
 enum QuestionDifficulty {
   DE
   TRUNG_BINH
@@ -653,4 +668,20 @@ model BankQuestionOption {
   content     String       @db.Text
   isCorrect   Boolean      @default(false)
   isDeleted   Boolean      @default(false)
+}
+
+model UserXpEvent {
+  id         String   @id @default(cuid())
+  userId     String
+  type       String
+  sourceType String?
+  sourceId   String?
+  eventKey   String   @unique
+  xpAmount   Int
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
 }

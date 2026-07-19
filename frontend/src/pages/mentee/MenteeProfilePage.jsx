@@ -304,7 +304,7 @@ export default function MenteeProfilePage() {
           <MetricCard icon={TrendingUp} label="Tiến độ trung bình" value={`${Math.round(stats.averageProgress)}%`} description={`Tính trên ${stats.enrolledRoadmapCount} lộ trình`} colorClasses="bg-violet-50 text-violet-600" />
           <MetricCard icon={BookOpen} label="Lộ trình đang học" value={stats.activeRoadmapCount} description="Các lộ trình chưa hoàn thành" colorClasses="bg-blue-50 text-blue-600" />
           <MetricCard icon={FileQuestion} label="Quiz đã vượt qua" value={stats.passedQuizCount} description="Số bài quiz khác nhau đã đạt" colorClasses="bg-emerald-50 text-emerald-600" />
-          <MetricCard icon={Lightbulb} label="Đóng góp được duyệt" value={stats.approvedContributionCount} description={`${stats.totalContributionCount} đóng góp đã gửi`} colorClasses="bg-amber-50 text-amber-600" />
+          <MetricCard icon={Lightbulb} label="Đóng góp đã duyệt" value={stats.approvedContributionCount} description={`${stats.totalContributionCount} đóng góp đã gửi`} colorClasses="bg-amber-50 text-amber-600" />
         </section>
 
         <section className="grid gap-4 xl:grid-cols-12">

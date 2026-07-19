@@ -83,15 +83,14 @@ exports.updateRoadmap = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * DELETE /api/roadmaps/:id
- * Soft-delete a roadmap (MENTOR owner only; cannot delete PUBLISHED).
- */
 exports.deleteRoadmap = asyncHandler(async (req, res) => {
-  await roadmapService.deleteRoadmap(req.params.id, req.user.id);
+  const result = await roadmapService.deleteRoadmap(req.params.id, req.user.id);
 
   return sendSuccess(res, {
-    message: 'Roadmap deleted successfully',
+    message: result.action === 'PENDING_DELETE'
+      ? 'Deletion request sent for admin approval since students are enrolled.'
+      : 'Roadmap deleted successfully',
+    data: result,
   });
 });
 

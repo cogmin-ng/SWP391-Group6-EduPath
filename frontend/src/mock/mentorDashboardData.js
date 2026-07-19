@@ -9,7 +9,7 @@ export const mentorStats = [
   },
   {
     id: 2,
-    label: 'Đóng Góp Được Duyệt',
+    label: 'Đóng Góp Đã Duyệt',
     value: '32',
     icon: 'CheckCircle',
     color: 'bg-emerald-500',

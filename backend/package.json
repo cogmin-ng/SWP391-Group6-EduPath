@@ -17,6 +17,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@expo-google-fonts/noto-sans": "^0.4.2",
     "@prisma/client": "^5.8.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.10.0",
@@ -27,12 +28,13 @@
     "express-rate-limit": "^6.7.0",
     "helmet": "^6.0.1",
     "joi": "^17.13.3",
-    "resend": "^1.0.0",
     "jsonwebtoken": "^9.0.0",
     "morgan": "^1.10.0",
     "multer": "^2.1.1",
+    "pdfkit": "^0.19.1",
     "pg": "^8.10.0",
     "pino": "^8.13.0",
+    "resend": "^1.0.0",
     "swagger-jsdoc": "^6.3.0"
   },
   "optionalDependencies": {

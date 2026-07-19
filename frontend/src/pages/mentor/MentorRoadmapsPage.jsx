@@ -50,9 +50,9 @@ export default function MentorRoadmapsPage() {
       if (action === 'ARCHIVED') {
         toast((t) => (
           <span className="flex flex-col gap-1 text-slate-800">
-            <span className="font-semibold text-amber-700">Lộ trình đã được Lưu trữ!</span>
+            <span className="font-semibold text-amber-700">Yêu cầu xóa đã được gửi!</span>
             <span className="text-xs">
-              Lộ trình này đã có học viên đăng ký học. Hệ thống đã chuyển trạng thái sang <strong>Lưu trữ (Archived)</strong> và ẩn khỏi trang khám phá thay vì xóa hoàn toàn để tránh ảnh hưởng tiến độ học tập.
+              Lộ trình này đã có học viên tham gia học. Yêu cầu xóa đã được gửi đến Ban quản trị (Admin) phê duyệt. Học viên cũ vẫn tiếp tục học bình thường, nhưng lộ trình sẽ ẩn khỏi trang khám phá đối với người dùng mới.
             </span>
           </span>
         ), {

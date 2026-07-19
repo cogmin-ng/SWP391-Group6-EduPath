@@ -1,31 +1,56 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Heart, Map, User } from 'lucide-react';
+import { ArrowRight, Heart, Map as MapIcon, User } from 'lucide-react';
 import MenteeHeader from '../../components/mentee/MenteeHeader';
 import { getMyEnrollments } from '../../services/enrollmentService';
+import { getRoadmapBySlug } from '../../services/roadmapService';
 import { getFavorites, toggleFavorite } from './features/enrollments/favorites';
 import toast from 'react-hot-toast';
 
 export default function MyRoadmapsPage() {
   const [activeTab, setActiveTab] = useState('ongoing');
-  const [favVersion, setFavVersion] = useState(0);
+  const [favoriteSlugs, setFavoriteSlugs] = useState(() => getFavorites());
   const [enrollments, setEnrollments] = useState([]);
+  const [favoriteRoadmaps, setFavoriteRoadmaps] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchEnrollments = async () => {
-      try {
-        setLoading(true);
-        const data = await getMyEnrollments();
-        setEnrollments(data || []);
-      } catch (err) {
-        console.error('Failed to fetch enrollments:', err);
+    let isMounted = true;
+
+    const fetchRoadmaps = async () => {
+      setLoading(true);
+
+      const favoriteSlugs = getFavorites();
+      const [enrollmentResult, favoriteResults] = await Promise.all([
+        getMyEnrollments().then(
+          (data) => ({ data }),
+          (error) => ({ error }),
+        ),
+        Promise.allSettled(favoriteSlugs.map((slug) => getRoadmapBySlug(slug))),
+      ]);
+
+      if (!isMounted) return;
+
+      if (enrollmentResult.error) {
+        console.error('Failed to fetch enrollments:', enrollmentResult.error);
         toast.error('Không thể tải danh sách lộ trình của bạn');
-      } finally {
-        setLoading(false);
+      } else {
+        setEnrollments(enrollmentResult.data || []);
       }
+
+      setFavoriteRoadmaps(
+        favoriteResults
+          .filter((result) => result.status === 'fulfilled')
+          .map((result) => result.value),
+      );
+      setLoading(false);
     };
-    fetchEnrollments();
+
+    fetchRoadmaps();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const enrolledRoadmaps = enrollments;
@@ -39,8 +64,25 @@ export default function MyRoadmapsPage() {
     return status === 'COMPLETED' || r.progressPercent >= 100;
   });
   
-  const favoriteSlugs = useMemo(() => getFavorites(), [favVersion]);
-  const favorite = enrolledRoadmaps.filter((r) => favoriteSlugs.includes(r.slug));
+  const favorite = useMemo(() => {
+    const enrollmentBySlug = new Map(
+      enrolledRoadmaps.map((enrollment) => [enrollment.slug, enrollment]),
+    );
+
+    return favoriteRoadmaps
+      .filter((roadmap) => favoriteSlugs.includes(roadmap.slug))
+      .map((roadmap) => {
+        const enrollment = enrollmentBySlug.get(roadmap.slug);
+        if (enrollment) return { ...enrollment, isEnrolled: true };
+
+        return {
+          ...roadmap,
+          mentorName: roadmap.mentor?.name || 'Mentor EduPath',
+          progressPercent: 0,
+          isEnrolled: false,
+        };
+      });
+  }, [enrolledRoadmaps, favoriteRoadmaps, favoriteSlugs]);
 
   const tabItems = [
     { key: 'ongoing', label: 'Đang học', count: ongoing.length },
@@ -104,7 +146,7 @@ export default function MyRoadmapsPage() {
         {activeList.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-slate-100">
-              <Map className="h-12 w-12 text-slate-400" />
+              <MapIcon className="h-12 w-12 text-slate-400" />
             </div>
             <h3 className="mb-2 text-xl font-semibold text-slate-900">
               {activeTab === 'ongoing' ? 'Bạn chưa ghi danh lộ trình nào' : 
@@ -129,7 +171,7 @@ export default function MyRoadmapsPage() {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
             {activeList.map((enrollment) => (
               <article
-                key={enrollment.id}
+                key={enrollment.slug || enrollment.id}
                 className="group flex flex-col overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm transition-all duration-300 hover:border-indigo-400/50"
               >
                 <div className="relative h-48 overflow-hidden">
@@ -141,9 +183,13 @@ export default function MyRoadmapsPage() {
                   {activeTab === 'favorite' && (
                     <button
                       onClick={() => {
-                        toggleFavorite(enrollment.slug);
-                        setFavVersion((v) => v + 1);
+                        const nextFavorites = toggleFavorite(enrollment.slug);
+                        setFavoriteSlugs(nextFavorites);
+                        setFavoriteRoadmaps((items) =>
+                          items.filter((item) => item.slug !== enrollment.slug),
+                        );
                       }}
+                      aria-label={`Bỏ yêu thích ${enrollment.title}`}
                       className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 shadow-sm backdrop-blur-sm transition-all hover:bg-white active:scale-90"
                     >
                       <Heart className="h-4 w-4 fill-rose-500 text-rose-500" />
@@ -158,27 +204,35 @@ export default function MyRoadmapsPage() {
 
                   <div className="mb-6 mt-2 flex items-center gap-2">
                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-bold text-indigo-600">
-                      {enrollment.mentorName.charAt(0)}
+                      {(enrollment.mentorName || 'M').charAt(0)}
                     </div>
-                    <span className="text-sm text-slate-500">{enrollment.mentorName}</span>
+                    <span className="text-sm text-slate-500">{enrollment.mentorName || 'Mentor EduPath'}</span>
                   </div>
 
                   <div className="mt-auto">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-xs text-slate-500">Tiến độ</span>
-                      <span className="text-xs font-bold text-indigo-600">{Math.round(enrollment.progressPercent)}%</span>
-                    </div>
-                    <div className="mb-6 h-2 overflow-hidden rounded-full bg-slate-100">
-                      <div
-                        className="h-full rounded-full bg-indigo-600 transition-all duration-1000"
-                        style={{ width: `${enrollment.progressPercent}%` }}
-                      />
-                    </div>
+                    {(activeTab !== 'favorite' || enrollment.isEnrolled) && (
+                      <>
+                        <div className="mb-2 flex items-center justify-between">
+                          <span className="text-xs text-slate-500">Tiến độ</span>
+                          <span className="text-xs font-bold text-indigo-600">{Math.round(enrollment.progressPercent)}%</span>
+                        </div>
+                        <div className="mb-6 h-2 overflow-hidden rounded-full bg-slate-100">
+                          <div
+                            className="h-full rounded-full bg-indigo-600 transition-all duration-1000"
+                            style={{ width: `${enrollment.progressPercent}%` }}
+                          />
+                        </div>
+                      </>
+                    )}
                     <Link
-                      to={`/roadmaps/${enrollment.slug}/learn`}
+                      to={activeTab === 'favorite' && !enrollment.isEnrolled
+                        ? `/explore/${enrollment.slug}`
+                        : `/roadmaps/${enrollment.slug}/learn`}
                       className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 py-3 text-sm font-medium text-white transition-all active:scale-95"
                     >
-                      Tiếp tục học
+                      {activeTab === 'favorite' && !enrollment.isEnrolled
+                        ? 'Xem lộ trình'
+                        : 'Tiếp tục học'}
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Link>
                   </div>
@@ -191,15 +245,15 @@ export default function MyRoadmapsPage() {
 
       <nav className="fixed bottom-0 left-0 z-50 flex h-16 w-full items-center justify-around border-t border-slate-200 bg-white px-4 shadow-lg md:hidden">
         <button className="flex flex-col items-center text-slate-500">
-          <Map className="h-5 w-5" />
+          <MapIcon className="h-5 w-5" />
           <span className="text-[10px]">Lộ trình</span>
         </button>
         <button className="flex flex-col items-center font-bold text-indigo-600">
-          <Map className="h-5 w-5" />
+          <MapIcon className="h-5 w-5" />
           <span className="text-[10px]">Roadmaps</span>
         </button>
         <button className="flex flex-col items-center text-slate-500">
-          <Map className="h-5 w-5" />
+          <MapIcon className="h-5 w-5" />
           <span className="text-[10px]">Khám phá</span>
         </button>
         <button className="flex flex-col items-center text-slate-500">

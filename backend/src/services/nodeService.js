@@ -2,6 +2,7 @@ const prisma = require('../lib/prisma');
 const ApiError = require('../utils/ApiError');
 const nodeRepository = require('../repositories/nodeRepository');
 const certificateService = require('./certificateService');
+const enrollmentActivityService = require('./enrollmentActivityService');
 const {
   awardXp,
   buildEventKey,
@@ -199,8 +200,11 @@ exports.getNodeDetails = async (nodeId, userId, roles = []) => {
 exports.syncNodeDetails = async (nodeId, data, mentorId, roles = []) => {
   const node = await assertOwnership(nodeId, mentorId, roles);
 
-  // If roadmap has already been published, prevent editing node details
-  if (node.learningPath?.status === 'PUBLISHED') {
+  // If roadmap is already live (APPROVED or PUBLISHED), prevent direct editing of node details
+  if (
+    node.learningPath?.status === 'PUBLISHED' ||
+    node.learningPath?.status === 'APPROVED'
+  ) {
     throw new ApiError(400, MSG.cannotEditPublished);
   }
 
@@ -226,7 +230,7 @@ exports.toggleChecklistProgress = async (
   roles = []
 ) => {
   await assertReadAccess(nodeId, userId, roles);
-  await assertEnrollment(nodeId, userId);
+  const { node } = await assertEnrollment(nodeId, userId);
 
   const checklist = await prisma.checklist.findFirst({
     where: {
@@ -240,24 +244,28 @@ exports.toggleChecklistProgress = async (
     throw new ApiError(404, 'Checklist item not found');
   }
 
-  await prisma.checklistProgress.upsert({
-    where: {
-      checklistId_userId: {
+  await prisma.$transaction(async (tx) => {
+    await tx.checklistProgress.upsert({
+      where: {
+        checklistId_userId: {
+          checklistId,
+          userId,
+        },
+      },
+      create: {
         checklistId,
         userId,
+        completed: Boolean(completed),
+        completedAt: completed ? new Date() : null,
       },
-    },
-    create: {
-      checklistId,
-      userId,
-      completed: Boolean(completed),
-      completedAt: completed ? new Date() : null,
-    },
-    update: {
-      completed: Boolean(completed),
-      completedAt: completed ? new Date() : null,
-      isDeleted: false,
-    },
+      update: {
+        completed: Boolean(completed),
+        completedAt: completed ? new Date() : null,
+        isDeleted: false,
+      },
+    });
+
+    await enrollmentActivityService.touch(userId, node.learningPathId, tx);
   });
 
   // Run automatic badge checks
@@ -265,7 +273,10 @@ exports.toggleChecklistProgress = async (
     const badgeService = require('./badgeService');
     await badgeService.runBadgeChecks(userId);
   } catch (badgeError) {
-    console.error('Error running badge checks on checklist toggle:', badgeError);
+    console.error(
+      'Error running badge checks on checklist toggle:',
+      badgeError
+    );
   }
 
   return exports.getNodeDetails(nodeId, userId, roles);
@@ -273,7 +284,10 @@ exports.toggleChecklistProgress = async (
 
 exports.updateNodeProgress = async (nodeId, completed, userId, roles = []) => {
   await assertReadAccess(nodeId, userId, roles);
-  const { node, enrollment: currentEnrollment } = await assertEnrollment(nodeId, userId);
+  const { node, enrollment: currentEnrollment } = await assertEnrollment(
+    nodeId,
+    userId
+  );
 
   const existingNodeProgress = await prisma.nodeProgress.findUnique({
     where: {
@@ -314,6 +328,7 @@ exports.updateNodeProgress = async (nodeId, completed, userId, roles = []) => {
     });
 
     await recalculateEnrollmentProgress(node.learningPathId, userId, tx);
+    await enrollmentActivityService.touch(userId, node.learningPathId, tx);
   });
 
   const [nodeProgress, enrollment] = await Promise.all([
@@ -356,7 +371,8 @@ exports.updateNodeProgress = async (nodeId, completed, userId, roles = []) => {
   }
 
   const isRoadmapCompleted =
-    enrollment?.status === 'COMPLETED' || Number(enrollment?.progressPercent || 0) >= 100;
+    enrollment?.status === 'COMPLETED' ||
+    Number(enrollment?.progressPercent || 0) >= 100;
 
   if (isRoadmapCompleted && !wasRoadmapCompleted) {
     await awardXp({
@@ -378,7 +394,10 @@ exports.updateNodeProgress = async (nodeId, completed, userId, roles = []) => {
     const badgeService = require('./badgeService');
     await badgeService.runBadgeChecks(userId);
   } catch (badgeError) {
-    console.error('Error running badge checks on node progress update:', badgeError);
+    console.error(
+      'Error running badge checks on node progress update:',
+      badgeError
+    );
   }
 
   return {

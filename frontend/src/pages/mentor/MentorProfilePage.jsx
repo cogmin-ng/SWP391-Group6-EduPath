@@ -402,7 +402,7 @@ export default function MentorProfilePage() {
             <InfoCard
               icon={Award}
               iconBg="bg-emerald-50 text-emerald-600"
-              label="Đóng Góp Được Duyệt"
+              label="Đóng Góp Đã Duyệt"
               value={stats.approvedContributions ?? 32}
               meta="Đóng góp"
             />

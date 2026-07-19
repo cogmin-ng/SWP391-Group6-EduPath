@@ -102,22 +102,22 @@ function CompactMaterialCard({ material }) {
     </>
   );
 
-  if (hasUrl) {
-    return (
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-2 transition-all duration-200 hover:border-indigo-100 hover:bg-slate-50">
+      {hasUrl ? (
       <a
         href={material.url}
         target="_blank"
         rel="noreferrer"
-        className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 transition-all duration-200 hover:border-indigo-100 hover:bg-slate-50"
+          className="flex items-center gap-3 rounded-xl px-2 py-1.5"
       >
         {content}
       </a>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 opacity-70">
-      {content}
+      ) : (
+        <div className="flex items-center gap-3 rounded-xl bg-slate-50 px-2 py-1.5 opacity-70">
+          {content}
+        </div>
+      )}
     </div>
   );
 }

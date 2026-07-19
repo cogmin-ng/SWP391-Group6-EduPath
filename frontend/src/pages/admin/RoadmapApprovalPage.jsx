@@ -24,6 +24,7 @@ import RoadmapDetailModal from '../../components/admin/RoadmapDetailModal';
 const RoadmapApprovalPage = () => {
   const [selectedRoadmap, setSelectedRoadmap] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('PENDING');
   const [roadmaps, setRoadmaps] = useState([]);
   const [statsData, setStatsData] = useState({});
   const [loading, setLoading] = useState(true);
@@ -42,7 +43,7 @@ const RoadmapApprovalPage = () => {
   const fetchRoadmaps = async () => {
     try {
       setLoading(true);
-      const data = await getPendingRoadmaps(0, 50);
+      const data = await getPendingRoadmaps(0, 50, statusFilter);
       setRoadmaps(data.roadmaps || []);
       if (data.roadmaps && data.roadmaps.length > 0) {
         setSelectedRoadmap(data.roadmaps[0]);
@@ -59,7 +60,12 @@ const RoadmapApprovalPage = () => {
   useEffect(() => {
     fetchStats();
     fetchRoadmaps();
-  }, []);
+  }, [statusFilter]);
+
+  const filteredRoadmaps = roadmaps.filter(r => 
+    r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (r.mentor?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleReview = async (roadmapId, status, feedback = '') => {
     const isReject = status === 'REJECTED';
@@ -86,10 +92,10 @@ const RoadmapApprovalPage = () => {
   };
 
   const stats = [
-    { label: 'Chờ phê duyệt', count: statsData.PENDING || 0, icon: AlertCircle, color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
-    { label: 'Đã phê duyệt', count: statsData.APPROVED || 0, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
-    { label: 'Bị từ chối', count: statsData.REJECTED || 0, icon: XCircle, color: 'text-rose-600', bg: 'bg-rose-50', border: 'border-rose-200' },
-    { label: 'Tổng số đã gửi', count: Object.values(statsData).reduce((a, b) => a + b, 0), icon: Layers, color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-200' },
+    { label: 'Chờ phê duyệt', count: statsData.PENDING || 0, icon: AlertCircle, color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', filterValue: 'PENDING' },
+    { label: 'Đã phê duyệt', count: statsData.APPROVED || 0, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200', filterValue: 'APPROVED' },
+    { label: 'Bị từ chối', count: statsData.REJECTED || 0, icon: XCircle, color: 'text-rose-600', bg: 'bg-rose-50', border: 'border-rose-200', filterValue: 'REJECTED' },
+    { label: 'Tổng số đã gửi', count: Object.values(statsData).reduce((a, b) => a + b, 0), icon: Layers, color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-200', filterValue: 'ALL' },
   ];
 
   const getStatusStyles = (status) => {
@@ -120,7 +126,11 @@ const RoadmapApprovalPage = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, idx) => (
-          <div key={idx} className={`bg-white p-6 rounded-3xl border ${stat.border} shadow-sm transition-all hover:shadow-md hover:-translate-y-1 duration-300`}>
+          <div 
+            key={idx} 
+            onClick={() => setStatusFilter(stat.filterValue)}
+            className={`bg-white p-6 rounded-3xl border ${stat.border} shadow-sm transition-all hover:shadow-md hover:-translate-y-1 duration-300 cursor-pointer ${statusFilter === stat.filterValue ? 'ring-2 ring-indigo-500 ring-offset-2' : ''}`}
+          >
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">{stat.label}</p>
@@ -135,8 +145,8 @@ const RoadmapApprovalPage = () => {
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm flex flex-wrap items-center gap-4">
-        <div className="relative flex-1 min-w-[300px]">
+      <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm">
+        <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
           <input 
             type="text" 
@@ -145,21 +155,6 @@ const RoadmapApprovalPage = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all">
-            <Filter className="w-4 h-4 text-slate-400" />
-            Thể loại
-            <ChevronDown className="w-4 h-4 text-slate-400" />
-          </button>
-          <button className="flex items-center gap-2 px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all">
-            Mentor
-            <ChevronDown className="w-4 h-4 text-slate-400" />
-          </button>
-          <button className="flex items-center gap-2 px-4 py-3 bg-slate-900 text-white rounded-2xl text-sm font-semibold hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">
-            Xuất báo cáo
-          </button>
         </div>
       </div>
 
@@ -179,7 +174,7 @@ const RoadmapApprovalPage = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {roadmaps.map((roadmap) => (
+              {filteredRoadmaps.map((roadmap) => (
                 <tr 
                   key={roadmap.id} 
                   onClick={() => setSelectedRoadmap(roadmap)}
@@ -218,7 +213,7 @@ const RoadmapApprovalPage = () => {
             </tbody>
           </table>
           {loading && <div className="p-8 text-center text-slate-500 font-medium animate-pulse">Đang tải danh sách lộ trình...</div>}
-          {!loading && roadmaps.length === 0 && <div className="p-12 text-center text-slate-400 font-medium italic">Không có lộ trình nào đang chờ phê duyệt.</div>}
+          {!loading && filteredRoadmaps.length === 0 && <div className="p-12 text-center text-slate-400 font-medium italic">Không tìm thấy lộ trình nào.</div>}
           <div className="p-4 border-t border-slate-50 flex justify-center">
               <button className="text-sm font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-2">
                 Xem toàn bộ đơn gửi <ChevronRight className="w-4 h-4" />
@@ -318,22 +313,26 @@ const RoadmapApprovalPage = () => {
                   <Eye className="w-4 h-4 group-hover:scale-110 transition-transform" />
                   Xem chi tiết
                 </button>
-                <button
-                  onClick={() => handleReview(selectedRoadmap.id, 'APPROVED')}
-                  disabled={processing}
-                  className="w-full py-4 bg-emerald-600 text-white rounded-[1.25rem] text-sm font-black flex items-center justify-center gap-3 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl shadow-emerald-200 group"
-                >
-                  <CheckCircle2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                  {processing ? 'Đang xử lý...' : 'Phê duyệt Lộ trình'}
-                </button>
-                <button
-                  onClick={() => handleReview(selectedRoadmap.id, 'REJECTED')}
-                  disabled={processing}
-                  className="w-full py-4 bg-white text-rose-600 border-2 border-rose-600 rounded-[1.25rem] text-sm font-black flex items-center justify-center gap-3 hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all group"
-                >
-                  <XCircle className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                  Từ chối Lộ trình
-                </button>
+                {selectedRoadmap.status === 'PENDING' && (
+                  <>
+                    <button
+                      onClick={() => handleReview(selectedRoadmap.id, 'APPROVED')}
+                      disabled={processing}
+                      className="w-full py-4 bg-emerald-600 text-white rounded-[1.25rem] text-sm font-black flex items-center justify-center gap-3 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl shadow-emerald-200 group"
+                    >
+                      <CheckCircle2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                      {processing ? 'Đang xử lý...' : 'Phê duyệt Lộ trình'}
+                    </button>
+                    <button
+                      onClick={() => handleReview(selectedRoadmap.id, 'REJECTED')}
+                      disabled={processing}
+                      className="w-full py-4 bg-white text-rose-600 border-2 border-rose-600 rounded-[1.25rem] text-sm font-black flex items-center justify-center gap-3 hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all group"
+                    >
+                      <XCircle className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                      Từ chối Lộ trình
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ) : (

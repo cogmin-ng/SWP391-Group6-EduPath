@@ -388,12 +388,12 @@ exports.submitRoadmap = async (roadmapId, mentorId) => {
 };
 
 /**
- * Get roadmaps pending review (ADMIN only).
+ * Get roadmaps by status for admin (ADMIN only).
  */
-exports.getPendingRoadmaps = async ({ skip = 0, take = 20 } = {}) => {
+exports.getPendingRoadmaps = async ({ status = 'PENDING', skip = 0, take = 20 } = {}) => {
   const [roadmaps, total] = await Promise.all([
-    roadmapRepository.findByStatus('PENDING', { skip, take }),
-    roadmapRepository.countByStatus('PENDING'),
+    roadmapRepository.findByStatus(status, { skip, take }),
+    roadmapRepository.countByStatus(status),
   ]);
   return { roadmaps, total };
 };

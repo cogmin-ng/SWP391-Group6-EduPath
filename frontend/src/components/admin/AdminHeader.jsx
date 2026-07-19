@@ -154,7 +154,12 @@ export default function AdminHeader() {
             {/* Notifications Dropdown (Hover Group) */}
             <div className="relative group">
               <button 
-                onClick={fetchNotifications}
+                onClick={() => {
+                  fetchNotifications();
+                  if (unreadCount > 0) {
+                    handleMarkAllAsRead();
+                  }
+                }}
                 className="p-2 hover:bg-slate-100 rounded-xl text-slate-600 relative transition-colors"
               >
                 <Bell className="w-5 h-5" />

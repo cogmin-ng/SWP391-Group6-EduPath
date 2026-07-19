@@ -1,6 +1,7 @@
 const ApiError = require('../utils/ApiError');
 const personalNoteRepository = require('../repositories/personalNoteRepository');
 const { toRoadmapSlug } = require('../utils/roadmapSlug');
+const enrollmentActivityService = require('./enrollmentActivityService');
 
 const MSG = {
   nodeNotFound: 'Node not found',
@@ -49,12 +50,14 @@ exports.getNote = async (nodeId, userId) => {
 };
 
 exports.saveNote = async (nodeId, userId, content) => {
-  await assertNodeEnrollment(nodeId, userId);
-  return personalNoteRepository.upsert({
+  const node = await assertNodeEnrollment(nodeId, userId);
+  const note = await personalNoteRepository.upsert({
     nodeId,
     userId,
     content: content.trim(),
   });
+  await enrollmentActivityService.touch(userId, node.learningPathId);
+  return note;
 };
 
 exports.deleteNote = async (nodeId, userId) => {

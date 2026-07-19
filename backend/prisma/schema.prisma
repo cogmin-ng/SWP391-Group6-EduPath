@@ -461,7 +461,8 @@ model Enrollment {
 
   status EnrollmentStatus @default(ACTIVE)
 
-  enrolledAt DateTime @default(now())
+  enrolledAt     DateTime @default(now())
+  lastActivityAt DateTime @default(now())
 
   isDeleted Boolean @default(false)
 
@@ -470,6 +471,7 @@ model Enrollment {
   learningPath LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
 
   @@unique([userId, learningPathId])
+  @@index([learningPathId, status, lastActivityAt])
 }
 
 model NodeProgress {

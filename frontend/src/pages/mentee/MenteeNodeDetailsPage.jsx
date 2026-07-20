@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import {
@@ -19,8 +19,8 @@ import {
   getMaterials,
   getQuiz,
   getTips,
-  submitTip,
 } from '../../services/roadmapService';
+import { getMyEnrollments } from '../../services/enrollmentService';
 
 /**
  * Mentee Node Details Page
@@ -39,10 +39,11 @@ export default function MenteeNodeDetailsPage() {
   const [materials, setMaterials] = useState([]);
   const [quiz, setQuiz] = useState(null);
   const [tips, setTips] = useState([]);
+  const [enrollment, setEnrollment] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // ─── Data fetching ──────────────────────────────────────
-  const fetchTips = async () => {
+  const fetchTips = useCallback(async () => {
     try {
       const tipsData = await getTips(nodeId);
       setTips(tipsData || []);
@@ -50,19 +51,27 @@ export default function MenteeNodeDetailsPage() {
       console.error('Failed to fetch tips:', err);
       setTips([]);
     }
-  };
+  }, [nodeId]);
 
   useEffect(() => {
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const [roadmapData, nodeData, checklistData, materialsData, quizData] =
+        const [
+          roadmapData,
+          nodeData,
+          checklistData,
+          materialsData,
+          quizData,
+          enrollmentData,
+        ] =
           await Promise.all([
             getRoadmapById(roadmapId),
             getNodeDetails(roadmapId, nodeId),
             getChecklist(nodeId),
             getMaterials(nodeId),
             getQuiz(nodeId),
+            getMyEnrollments(),
           ]);
 
         setRoadmap(roadmapData);
@@ -70,6 +79,11 @@ export default function MenteeNodeDetailsPage() {
         setChecklist(checklistData);
         setMaterials(materialsData);
         setQuiz(quizData);
+        setEnrollment(
+          enrollmentData.find(
+            (item) => item.learningPathId === roadmapId
+          ) || null
+        );
 
         // fetch tips separately to allow refresh
         await fetchTips();
@@ -81,7 +95,7 @@ export default function MenteeNodeDetailsPage() {
     };
 
     fetchAll();
-  }, [roadmapId, nodeId]);
+  }, [fetchTips, roadmapId, nodeId]);
 
   // ─── Handlers ───────────────────────────────────────────
   const handleChecklistToggle = (itemId) => {
@@ -97,16 +111,6 @@ export default function MenteeNodeDetailsPage() {
     console.log(`Navigate to node: ${clickedNodeId}`);
   };
 
-  const handleSubmitTip = async (content) => {
-    try {
-      await submitTip(nodeId, content);
-      // Refresh tips list after submission
-      await fetchTips();
-    } catch (err) {
-      console.error('Failed to submit tip:', err);
-    }
-  };
-
   // ─── Derived values ─────────────────────────────────────
   const completedChecklist = checklist.filter((i) => i.completed).length;
   const checklistProgress =
@@ -118,6 +122,9 @@ export default function MenteeNodeDetailsPage() {
   const overallProgress = Math.round(
     (checklistProgress * 0.5 + materialsRead * 0.3 + 0 * 0.2)
   ); // Weighted mock formula
+  const canContribute =
+    enrollment?.status === 'ACTIVE' &&
+    Number(enrollment?.progressPercent || 0) < 100;
 
   // ─── Loading skeleton ───────────────────────────────────
   if (loading) {
@@ -158,7 +165,12 @@ export default function MenteeNodeDetailsPage() {
                 />
                 <MaterialsSection materials={materials} />
                 <QuizSection quiz={quiz} roadmapId={roadmapId} nodeId={nodeId} />
-                <TipsSection tips={tips} onSubmitTip={handleSubmitTip} />
+                <TipsSection
+                  tips={tips}
+                  nodeId={nodeId}
+                  onRefresh={fetchTips}
+                  canContribute={canContribute}
+                />
                 <DiscussionSection nodeId={nodeId} />
               </div>
 

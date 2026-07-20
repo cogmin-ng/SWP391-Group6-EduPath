@@ -234,14 +234,16 @@ exports.getMyApprovedSubjects = async (userId) => {
     },
     include: {
       mentorSubjects: {
-        include: { subject: { select: { id: true, name: true, categoryId: true } } },
+        include: {
+          subject: { select: { id: true, name: true, categoryId: true } },
+        },
       },
     },
   });
 
   const subjectMap = new Map();
-  applications.forEach(app => {
-    app.mentorSubjects.forEach(ms => {
+  applications.forEach((app) => {
+    app.mentorSubjects.forEach((ms) => {
       if (ms.subject && !subjectMap.has(ms.subject.id)) {
         subjectMap.set(ms.subject.id, ms.subject);
       }
@@ -327,6 +329,20 @@ exports.updateApplicationStatus = async (
         await tx.user.update({
           where: { id: application.userId },
           data: { roleId: mentorRole.id },
+        });
+
+        // A mentor no longer participates as a learner. Remove every active
+        // enrollment in the same transaction so they disappear from mentor
+        // learner-management pages as soon as the role change succeeds.
+        await tx.enrollment.updateMany({
+          where: {
+            userId: application.userId,
+            isDeleted: false,
+          },
+          data: {
+            status: 'DROPPED',
+            isDeleted: true,
+          },
         });
       }
     }

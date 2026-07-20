@@ -305,6 +305,9 @@ export default function RoadmapLearningPage() {
   const completedChecklist = checklist.filter((i) => i.completed).length;
   const checklistProgress = checklist.length > 0 ? Math.round((completedChecklist / checklist.length) * 100) : 0;
   const overallProgress = Math.round(roadmap?.enrollment?.progressPercent || 0);
+  const canContribute =
+    roadmap?.enrollment?.status === 'ACTIVE' &&
+    Number(roadmap?.enrollment?.progressPercent || 0) < 100;
   const isCurrentPhaseCompleted = Boolean(currentPhase?.completed);
   const isLastPhase =
     phases.length > 0 && currentPhaseIndex === phases.length - 1;
@@ -435,7 +438,12 @@ export default function RoadmapLearningPage() {
                   </div>
 
                   <ChecklistSection items={checklist} onToggle={handleChecklistToggle} />
-                  <TipsSection tips={nodeDetails?.tips || []} nodeId={currentPhase?.id} onRefresh={handleTipsRefresh} />
+                  <TipsSection
+                    tips={nodeDetails?.tips || []}
+                    nodeId={currentPhase?.id}
+                    onRefresh={handleTipsRefresh}
+                    canContribute={canContribute}
+                  />
                   <DiscussionSection nodeId={currentPhase?.id} />
                 </div>
               </>

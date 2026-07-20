@@ -125,7 +125,15 @@ exports.findByMentorId = async (mentorId, { skip = 0, take = 20 } = {}) => {
         orderBy: { orderIndex: 'asc' },
       },
       _count: {
-        select: { enrollments: true, reviews: true },
+        select: {
+          enrollments: {
+            where: {
+              isDeleted: false,
+              user: { role: { name: 'MENTEE' } },
+            },
+          },
+          reviews: true,
+        },
       },
     },
     orderBy: { updatedAt: 'desc' },

@@ -45,6 +45,23 @@ async function main() {
     },
   });
 
+  // Seed majors / specializations
+  const majorsSeed = [
+    { name: 'Công nghệ thông tin', code: 'IT', description: 'Information Technology' },
+    { name: 'Khoa học máy tính', code: 'CS', description: 'Computer Science' },
+    { name: 'Công nghệ truyền thông', code: 'MC', description: 'Communication Technology' },
+    { name: 'Quản trị kinh doanh', code: 'BA', description: 'Business Administration' },
+    { name: 'Ngôn ngữ', code: 'LANG', description: 'Languages' },
+  ];
+
+  for (const m of majorsSeed) {
+    await prisma.major.upsert({
+      where: { name: m.name },
+      update: { code: m.code, description: m.description, isDeleted: false },
+      create: m,
+    });
+  }
+
   const subjects = [
     {
       name: 'MAS291',
@@ -100,6 +117,108 @@ async function main() {
           connect: { id: roles[name].id },
         },
       },
+    });
+  }
+
+  const defaultBadges = [
+    {
+      id: 'badge-xp-beginner',
+      title: 'Beginner',
+      description: 'Đạt mốc 100 XP đầu tiên trên hành trình học tập.',
+      xpReward: 0,
+      iconName: 'zap',
+      badgeType: 'XP',
+      unlockThreshold: 100,
+    },
+    {
+      id: 'badge-xp-fast-learner',
+      title: 'Fast Learner',
+      description: 'Đạt 300 XP và duy trì nhịp học đều đặn.',
+      xpReward: 0,
+      iconName: 'award',
+      badgeType: 'XP',
+      unlockThreshold: 300,
+    },
+    {
+      id: 'badge-xp-dedicated-learner',
+      title: 'Dedicated Learner',
+      description: 'Đạt 500 XP và thể hiện sự kiên trì trong học tập.',
+      xpReward: 0,
+      iconName: 'star',
+      badgeType: 'XP',
+      unlockThreshold: 500,
+    },
+    {
+      id: 'badge-xp-master',
+      title: 'XP Master',
+      description: 'Đạt 1000 XP và trở thành người học bền bỉ nổi bật.',
+      xpReward: 0,
+      iconName: 'shield',
+      badgeType: 'XP',
+      unlockThreshold: 1000,
+    },
+    {
+      id: 'badge-first-step',
+      title: 'First Step',
+      description: 'Hoàn thành node đầu tiên của bạn.',
+      xpReward: 0,
+      iconName: 'zap',
+      badgeType: 'ACHIEVEMENT',
+      unlockThreshold: null,
+    },
+    {
+      id: 'badge-path-finisher',
+      title: 'Path Finisher',
+      description: 'Hoàn thành learning path đầu tiên.',
+      xpReward: 0,
+      iconName: 'shield',
+      badgeType: 'ACHIEVEMENT',
+      unlockThreshold: null,
+    },
+    {
+      id: 'badge-contributor',
+      title: 'Contributor',
+      description: 'Có ít nhất 1 tip được mentor duyệt.',
+      xpReward: 0,
+      iconName: 'star',
+      badgeType: 'ACHIEVEMENT',
+      unlockThreshold: null,
+    },
+    {
+      id: 'badge-quiz-ace',
+      title: 'Quiz Ace',
+      description: 'Đạt 100% điểm quiz ngay ở lần thử đầu tiên.',
+      xpReward: 0,
+      iconName: 'award',
+      badgeType: 'ACHIEVEMENT',
+      unlockThreshold: null,
+    },
+  ];
+
+  await prisma.badge.updateMany({
+    where: {
+      id: {
+        notIn: defaultBadges.map((badge) => badge.id),
+      },
+    },
+    data: {
+      isDeleted: true,
+    },
+  });
+
+  for (const badge of defaultBadges) {
+    await prisma.badge.upsert({
+      where: { id: badge.id },
+      update: {
+        title: badge.title,
+        description: badge.description,
+        xpReward: badge.xpReward,
+        iconName: badge.iconName,
+        badgeType: badge.badgeType,
+        unlockThreshold: badge.unlockThreshold,
+        isDeleted: false,
+      },
+      create: badge,
     });
   }
 

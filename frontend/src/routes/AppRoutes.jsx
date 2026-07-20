@@ -17,9 +17,11 @@ import ProtectedRoute from "./ProtectedRoute";
 import MentorRequestPage from "../pages/admin/MentorRequestPage";
 import MenteeLayout from "../layouts/MenteeLayout";
 import MenteeProfilePage from "../pages/mentee/MenteeProfilePage";
+import MenteeBadgesPage from "../pages/mentee/MenteeBadgesPage";
 import MentorLayout from "../layouts/MentorLayout";
 import MentorDashboardPage from "../pages/mentor/MentorDashboardPage";
 import MentorRoadmapsPage from "../pages/mentor/MentorRoadmapsPage";
+import MentorLearnersPage from "../pages/mentor/MentorLearnersPage";
 import CreateRoadmapPage from "../pages/mentor/CreateRoadmapPage";
 import EditRoadmapPage from "../pages/mentor/EditRoadmapPage";
 import NodeEditorPage from "../pages/mentor/NodeEditorPage";
@@ -37,6 +39,8 @@ import UploadMaterialsPage from "../pages/mentor/UploadMaterialsPage";
 import CreateQuizPage from "../pages/mentor/CreateQuizPage";
 import MentorRoadmapLearningPage from "../pages/mentor/MentorRoadmapLearningPage";
 import MentorRoadmapDetailPage from "../pages/mentor/MentorRoadmapDetailPage";
+import QuestionBankPage from "../pages/mentor/QuestionBankPage";
+import PersonalNotesPage from "../pages/mentee/PersonalNotesPage";
 
 import CategoryManagementPage from "../pages/admin/CategoryManagementPage";
 
@@ -136,10 +140,28 @@ export default function AppRoutes() {
       />
 
       <Route
+        path="/mentee/badges"
+        element={
+          <ProtectedRoute allowedRoles={["MENTEE"]}>
+            <MenteeBadgesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/mentee/contributions"
         element={
           <ProtectedRoute allowedRoles={["MENTEE"]}>
             <ContributionHistoryPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/mentee/notes"
+        element={
+          <ProtectedRoute allowedRoles={["MENTEE"]}>
+            <PersonalNotesPage />
           </ProtectedRoute>
         }
       />
@@ -193,6 +215,7 @@ export default function AppRoutes() {
       >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<MentorDashboardPage />} />
+        <Route path="learners" element={<MentorLearnersPage />} />
         <Route path="create-roadmap" element={<CreateRoadmapPage />} />
         <Route path="roadmaps/:roadmapId" element={<MentorRoadmapDetailPage />} />
         <Route path="roadmaps/:roadmapId/learn" element={<MentorRoadmapLearningPage />} />
@@ -218,6 +241,10 @@ export default function AppRoutes() {
         <Route
           path="roadmaps"
           element={<MentorRoadmapsPage />}
+        />
+        <Route
+          path="question-bank"
+          element={<QuestionBankPage />}
         />
         <Route
           path="reviews"

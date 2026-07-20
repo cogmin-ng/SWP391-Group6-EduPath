@@ -20,6 +20,8 @@ enum RoadmapStatus {
   APPROVED
   REJECTED
   PUBLISHED
+  ARCHIVED
+  PENDING_DELETE
 }
 
 enum EnrollmentStatus {
@@ -83,8 +85,12 @@ model User {
   contributionTips    Tip[]                @relation("TipContributor")
   notifications       Notification[]
 
-  reviews Review[]
-  userBadges UserBadge[]
+  userBadges   UserBadge[]
+  xpEvents     UserXpEvent[]
+  nodeComments NodeComment[]
+  personalLearningNotes PersonalLearningNote[]
+  reviews      Review[]
+  createdBankQuestions BankQuestion[] @relation("BankQuestionCreator")
 }
 
 model RefreshToken {
@@ -129,6 +135,18 @@ model SubjectCategory {
   subjects Subject[]
 }
 
+model Major {
+  id String @id @default(cuid())
+
+  name        String  @unique
+  code        String? @unique
+  description String?
+
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Subject {
   id String @id @default(cuid())
 
@@ -148,6 +166,7 @@ model Subject {
   advisorSubjects AdvisorSubject[]
 
   academicRecords AdvisorAcademicRecord[]
+  bankQuestions BankQuestion[]
 }
 
 model AdvisorApplication {
@@ -223,7 +242,7 @@ model LearningPath {
   xpReward Int @default(0)
 
   mentorId String
-  mentor   User   @relation("MentorLearningPaths", fields: [mentorId], references: [id])
+  mentor   User   @relation("MentorLearningPaths", fields: [mentorId], references: [id], onDelete: Cascade)
 
   subjectId String
   subject   Subject @relation(fields: [subjectId], references: [id])
@@ -233,6 +252,10 @@ model LearningPath {
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  parentLearningPathId String?
+  parentLearningPath   LearningPath?  @relation("LearningPathVersions", fields: [parentLearningPathId], references: [id], onDelete: SetNull)
+  childVersions        LearningPath[] @relation("LearningPathVersions")
 
   nodes Node[]
 
@@ -262,7 +285,30 @@ model Node {
   quizzes    Quiz[]
   tips       Tip[]
 
+  comments NodeComment[]
+
   nodeProgresses NodeProgress[]
+  personalLearningNotes PersonalLearningNote[]
+}
+
+model PersonalLearningNote {
+  id String @id @default(cuid())
+
+  userId String
+  nodeId String
+
+  content String @db.Text
+
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  node Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, nodeId])
+  @@index([userId, isDeleted])
+  @@index([nodeId, isDeleted])
 }
 
 model Checklist {
@@ -347,6 +393,9 @@ model QuizQuestion {
   question    String
   explanation String?
 
+  bankQuestionId String?
+  bankQuestion   BankQuestion? @relation(fields: [bankQuestionId], references: [id], onDelete: SetNull)
+
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
 
@@ -391,11 +440,11 @@ model Tip {
 
   // Tip gốc của mentor
   createdById String
-  createdBy   User   @relation("TipCreator", fields: [createdById], references: [id])
+  createdBy   User   @relation("TipCreator", fields: [createdById], references: [id], onDelete: Cascade)
 
   // Contributor (mentee)
   contributorId String?
-  contributor   User?   @relation("TipContributor", fields: [contributorId], references: [id])
+  contributor   User?   @relation("TipContributor", fields: [contributorId], references: [id], onDelete: SetNull)
 
   title   String?
   content String  @db.Text
@@ -429,7 +478,8 @@ model Enrollment {
 
   status EnrollmentStatus @default(ACTIVE)
 
-  enrolledAt DateTime @default(now())
+  enrolledAt     DateTime @default(now())
+  lastActivityAt DateTime @default(now())
 
   isDeleted Boolean @default(false)
 
@@ -438,6 +488,7 @@ model Enrollment {
   learningPath LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
 
   @@unique([userId, learningPathId])
+  @@index([learningPathId, status, lastActivityAt])
 }
 
 model NodeProgress {
@@ -457,6 +508,32 @@ model NodeProgress {
   node Node @relation(fields: [nodeId], references: [id], onDelete: Cascade)
 
   @@unique([userId, nodeId])
+}
+
+model NodeComment {
+  id String @id @default(cuid())
+
+  nodeId String
+  node   Node   @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  content String @db.Text
+
+  // Reply
+  parentId String?
+  parent   NodeComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  NodeComment[] @relation("CommentReplies")
+
+  isDeleted Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([nodeId])
+  @@index([userId])
+  @@index([parentId])
 }
 
 model Certificate {
@@ -546,6 +623,8 @@ model Badge {
   description String
   xpReward    Int         @default(100)
   iconName    String      @default("award")
+  badgeType   String      @default("ACHIEVEMENT")
+  unlockThreshold Int?
   isDeleted   Boolean     @default(false)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -553,13 +632,68 @@ model Badge {
 }
 
 model UserBadge {
-  id          String   @id @default(cuid())
-  userId      String
-  badgeId     String
-  unlockedAt  DateTime @default(now())
-  isDeleted   Boolean  @default(false)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  badge       Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  userId     String
+  badgeId    String
+  unlockedAt DateTime @default(now())
+  isDeleted  Boolean  @default(false)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge      Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
 
   @@unique([userId, badgeId])
+}
+
+enum QuestionDifficulty {
+  DE
+  TRUNG_BINH
+  KHO
+}
+
+model BankQuestion {
+  id          String             @id @default(cuid())
+  question    String             @db.Text
+  explanation String?            @db.Text
+  difficulty  QuestionDifficulty @default(TRUNG_BINH)
+
+  subjectId   String
+  subject     Subject            @relation(fields: [subjectId], references: [id])
+
+  creatorId   String
+  creator     User               @relation("BankQuestionCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+
+  isDeleted   Boolean            @default(false)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  options     BankQuestionOption[]
+  quizQuestions QuizQuestion[]
+
+  @@index([subjectId])
+  @@index([creatorId])
+}
+
+model BankQuestionOption {
+  id          String       @id @default(cuid())
+  questionId  String
+  question    BankQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  content     String       @db.Text
+  isCorrect   Boolean      @default(false)
+  isDeleted   Boolean      @default(false)
+}
+
+model UserXpEvent {
+  id         String   @id @default(cuid())
+  userId     String
+  type       String
+  sourceType String?
+  sourceId   String?
+  eventKey   String   @unique
+  xpAmount   Int
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
 }

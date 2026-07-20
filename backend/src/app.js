@@ -24,6 +24,7 @@ const corsOptions = {
           callback(allowed ? null : new Error('Not allowed by CORS'), allowed);
         },
   credentials: true,
+  exposedHeaders: ['Content-Disposition'],
 };
 
 // Swagger UI uses inline scripts, so keep it outside Helmet's default CSP.

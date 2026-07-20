@@ -1,27 +1,45 @@
 import api from './api';
 
+const publicRequestConfig = { skipAuth: true };
+
 export const authService = {
   async login(email, password) {
-    const { data } = await api.post('/auth/login', { email, password });
+    const { data } = await api.post(
+      '/auth/login',
+      { email, password },
+      publicRequestConfig
+    );
     return data;
   },
 
   async register(name, email, password) {
-    const { data } = await api.post('/auth/register', { name, email, password });
+    const { data } = await api.post(
+      '/auth/register',
+      { name, email, password },
+      publicRequestConfig
+    );
     return data;
   },
 
   async forgotPassword(email) {
-    const { data } = await api.post('/auth/forgot-password', { email });
+    const { data } = await api.post(
+      '/auth/forgot-password',
+      { email },
+      publicRequestConfig
+    );
     return data;
   },
 
   async resetPassword(email, otp, newPassword) {
-    const { data } = await api.post('/auth/reset-password', {
-      email,
-      otp,
-      newPassword,
-    });
+    const { data } = await api.post(
+      '/auth/reset-password',
+      {
+        email,
+        otp,
+        newPassword,
+      },
+      publicRequestConfig
+    );
     return data;
   },
 
@@ -29,14 +47,22 @@ export const authService = {
   async resendOtp(email, otpType) {
     const body = { email };
     if (otpType) body.otpType = otpType;
-    const { data } = await api.post('/otp/resend-otp', body);
+    const { data } = await api.post(
+      '/otp/resend-otp',
+      body,
+      publicRequestConfig
+    );
     return data;
   },
 
   async verifyOtp(email, otp, otpType) {
     const body = { email, otp };
     if (otpType) body.otpType = otpType;
-    const { data } = await api.post('/otp/verify-otp', body);
+    const { data } = await api.post(
+      '/otp/verify-otp',
+      body,
+      publicRequestConfig
+    );
     return data;
   },
 

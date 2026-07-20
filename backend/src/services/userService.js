@@ -3,6 +3,7 @@ const roleRepository = require('../repositories/roleRepository');
 const ApiError = require('../utils/ApiError');
 const cloudinaryService = require('./externalService/cloudinary/cloudinaryService');
 const prisma = require('../lib/prisma');
+const { getLevelInfo } = require('../utils/level');
 
 const userMessages = {
   notFound: 'User not found',
@@ -14,19 +15,19 @@ const userMessages = {
   cannotUpdateAnotherAvatar: 'Cannot update another user avatar',
 };
 
-exports.getUsers = async ({ skip = 0, take = 10 }) => {
+exports.getUsers = async ({ roleId, skip = 0, take = 10 }) => {
   const [users, total] = await Promise.all([
-    userRepository.findAll({ skip, take }),
-    userRepository.count(),
+    userRepository.findAll({ roleId, skip, take }),
+    userRepository.count({ roleId }),
   ]);
 
   return { users, total };
 };
 
-exports.searchUsers = async ({ query, skip = 0, take = 10 }) => {
+exports.searchUsers = async ({ query, roleId, skip = 0, take = 10 }) => {
   const [users, total] = await Promise.all([
-    userRepository.search({ query, skip, take }),
-    userRepository.searchCount(query),
+    userRepository.search({ query, roleId, skip, take }),
+    userRepository.searchCount({ query, roleId }),
   ]);
 
   return { users, total };
@@ -127,10 +128,11 @@ exports.getMenteeProfile = async (userId) => {
   ).length;
   const averageProgress = enrollments.length
     ? enrollments.reduce(
-        (total, item) => total + Number(item.progressPercent || 0),
-        0
-      ) / enrollments.length
+      (total, item) => total + Number(item.progressPercent || 0),
+      0
+    ) / enrollments.length
     : 0;
+  const levelInfo = getLevelInfo(user.xp);
 
   return {
     user: {
@@ -140,6 +142,7 @@ exports.getMenteeProfile = async (userId) => {
       avatarUrl: user.avatar,
       bio: user.bio,
       xp: user.xp,
+      ...levelInfo,
       status: user.status,
       role: user.role?.name || 'MENTEE',
       createdAt: user.createdAt,
@@ -339,14 +342,14 @@ exports.deleteUser = async (id, currentUserId) => {
 
 exports.getDashboardStats = async () => {
   const prisma = require('../lib/prisma');
-  
+
   const [totalUsers, totalMentors, totalMentees, totalRoadmaps] = await Promise.all([
     prisma.user.count({ where: { isDeleted: false } }),
     prisma.user.count({ where: { isDeleted: false, role: { name: 'MENTOR' } } }),
     prisma.user.count({ where: { isDeleted: false, role: { name: 'MENTEE' } } }),
     prisma.learningPath.count({ where: { isDeleted: false } })
   ]);
-  
+
   // Fetch latest activities for dashboard
   const [latestUsers, latestApps, latestRoadmaps] = await Promise.all([
     prisma.user.findMany({ take: 20, orderBy: { createdAt: 'desc' }, select: { id: true, name: true, createdAt: true, status: true } }),
@@ -355,7 +358,7 @@ exports.getDashboardStats = async () => {
   ]);
 
   const activities = [];
-  
+
   latestUsers.forEach(u => {
     activities.push({
       id: `u_${u.id}`,
@@ -365,7 +368,7 @@ exports.getDashboardStats = async () => {
       status: u.status === 'ACTIVE' ? 'Thành công' : 'Đang chờ'
     });
   });
-  
+
   latestApps.forEach(a => {
     activities.push({
       id: `a_${a.id}`,
@@ -375,7 +378,7 @@ exports.getDashboardStats = async () => {
       status: a.status === 'APPROVED' ? 'Đã duyệt' : a.status === 'REJECTED' ? 'Từ chối' : 'Đang chờ'
     });
   });
-  
+
   latestRoadmaps.forEach(r => {
     activities.push({
       id: `r_${r.id}`,
@@ -385,7 +388,7 @@ exports.getDashboardStats = async () => {
       status: r.status === 'APPROVED' ? 'Đã duyệt' : r.status === 'PUBLISHED' ? 'Thành công' : r.status === 'REJECTED' ? 'Từ chối' : 'Đang chờ'
     });
   });
-  
+
   // Sort activities and take top 20
   activities.sort((a, b) => new Date(b.date) - new Date(a.date));
   const recentActivities = activities.slice(0, 20);
@@ -396,5 +399,26 @@ exports.getDashboardStats = async () => {
     totalMentees,
     totalRoadmaps,
     recentActivities
+  };
+};
+
+exports.getHotMentors = async ({ page = 1, limit = 9 } = {}) => {
+  const result = await userRepository.getHotMentors({ page, limit });
+
+  // Map to the response format, removing the score field
+  return {
+    mentors: result.mentors.map((mentor) => ({
+      id: mentor.id,
+      fullName: mentor.fullName,
+      avatar: mentor.avatar,
+      bio: mentor.bio,
+      averageRating: mentor.averageRating,
+      totalLearners: mentor.totalLearners,
+      totalLearningPaths: mentor.totalLearningPaths,
+      totalReviews: mentor.totalReviews,
+      subjects: mentor.subjects,
+      createdAt: mentor.createdAt,
+    })),
+    pagination: result.pagination,
   };
 };

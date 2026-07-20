@@ -65,12 +65,13 @@ export const submitRoadmap = async (roadmapId) => {
 };
 
 /**
- * Delete a roadmap (soft delete).
+ * Delete a roadmap (soft delete or archive).
  * @param {string} roadmapId 
- * @returns {Promise<void>}
+ * @returns {Promise<Object>}
  */
 export const deleteRoadmap = async (roadmapId) => {
-  await api.delete(`/roadmaps/${roadmapId}`);
+  const res = await api.delete(`/roadmaps/${roadmapId}`);
+  return res.data.data;
 };
 
 /**
@@ -235,11 +236,11 @@ export const getTipById = async (tipId) => {
 };
 
 /**
- * Fetch all roadmaps pending review (Admin only).
+ * Fetch all roadmaps (Admin only). Optionally filter by status.
  * @returns {Promise<Object>} { roadmaps: Array, total: number }
  */
-export const getPendingRoadmaps = async (skip = 0, take = 20) => {
-  const res = await api.get(`/roadmaps/pending?skip=${skip}&take=${take}`);
+export const getPendingRoadmaps = async (skip = 0, take = 20, status = 'PENDING') => {
+  const res = await api.get(`/roadmaps/pending?skip=${skip}&take=${take}&status=${status}`);
   return res.data.data;
 };
 

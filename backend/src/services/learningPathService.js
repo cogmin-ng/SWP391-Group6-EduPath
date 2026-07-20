@@ -8,6 +8,110 @@ function toSlug(value) {
     .replace(/^-+|-+$/g, '');
 }
 
+exports.getHotLearningPaths = async ({ page = 1, limit = 9 } = {}) => {
+  const learningPaths = await prisma.learningPath.findMany({
+    where: {
+      isDeleted: false,
+      OR: [{ status: 'APPROVED' }, { status: 'PUBLISHED' }, { isPublic: true }],
+    },
+    include: {
+      mentor: {
+        select: {
+          id: true,
+          name: true,
+          avatar: true,
+        },
+      },
+      subject: {
+        select: {
+          name: true,
+          category: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+      nodes: {
+        where: { isDeleted: false },
+        select: { id: true },
+      },
+      reviews: {
+        where: { isDeleted: false },
+        select: { rating: true },
+      },
+      enrollments: {
+        where: { isDeleted: false },
+        select: { status: true },
+      },
+    },
+  });
+
+  // Compute popularity score and map data — skip any record with missing required relations
+  const scored = learningPaths
+    .filter((lp) => lp.mentor && lp.subject && lp.title)
+    .map((lp) => {
+      const ratings = lp.reviews
+        .map((r) => Number(r.rating))
+        .filter((r) => Number.isFinite(r));
+
+      const averageRating = ratings.length
+        ? Number((ratings.reduce((sum, v) => sum + v, 0) / ratings.length).toFixed(1))
+        : 0;
+
+      const totalLearners = lp.enrollments.length;
+      const completedCount = lp.enrollments.filter((e) => e.status === 'COMPLETED').length;
+      const totalReviews = lp.reviews.length;
+      const totalNodes = lp.nodes.length;
+
+      // Popularity score: enrollment weight 3, rating weight 2, completion weight 1
+      const score = totalLearners * 3 + averageRating * 2 + completedCount;
+
+      return {
+        id: lp.id,
+        slug: toSlug(lp.title),
+        title: lp.title,
+        thumbnail: lp.thumbnail || null,
+        description: lp.description || null,
+        mentor: {
+          id: lp.mentor.id,
+          name: lp.mentor.name || '',
+          avatar: lp.mentor.avatar || null,
+        },
+        category: lp.subject.category?.name || 'Uncategorized',
+        averageRating: averageRating || null,
+        totalLearners,
+        totalReviews,
+        totalNodes,
+        completedCount,
+        score,
+      };
+    });
+
+  // Sort by popularity score descending
+  scored.sort((a, b) => b.score - a.score);
+
+  // Paginate
+  const total = scored.length;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const safePage = Math.max(1, Math.min(page, totalPages));
+  const start = (safePage - 1) * limit;
+  const paginated = scored.slice(start, start + limit);
+
+  // Remove internal score from response
+  const learningPathsResult = paginated.map(({ score, ...rest }) => rest);
+
+  return {
+    learningPaths: learningPathsResult,
+    pagination: {
+      page: safePage,
+      limit,
+      total,
+      totalPages,
+    },
+  };
+};
+
 exports.getExploreLearningPaths = async () => {
   const learningPaths = await prisma.learningPath.findMany({
     where: {
@@ -55,10 +159,10 @@ exports.getExploreLearningPaths = async () => {
 
     const rating = ratings.length
       ? Number(
-          (
-            ratings.reduce((sum, value) => sum + value, 0) / ratings.length
-          ).toFixed(1)
-        )
+        (
+          ratings.reduce((sum, value) => sum + value, 0) / ratings.length
+        ).toFixed(1)
+      )
       : null;
 
     const duration = summarizeDuration(
@@ -87,3 +191,5 @@ exports.getExploreLearningPaths = async () => {
     };
   });
 };
+
+

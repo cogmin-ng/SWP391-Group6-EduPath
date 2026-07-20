@@ -16,7 +16,8 @@ const MSG = {
   notFound: 'Roadmap not found',
   forbidden: 'You do not have permission to perform this action',
   subjectNotFound: 'Subject not found',
-  cannotSubmit: 'Only DRAFT or REJECTED roadmaps can be submitted for review',
+  cannotSubmit:
+    'Only DRAFT, REJECTED, APPROVED or PUBLISHED roadmaps can be submitted for review',
   cannotDelete:
     'Cannot delete a PUBLISHED roadmap. Archive it first or contact admin.',
 };
@@ -26,6 +27,163 @@ const ACTIVE = { isDeleted: false };
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
+
+function hasMajorChanges(existing, incoming) {
+  if (!incoming.nodes) return false;
+
+  const existingNodes = existing.nodes || [];
+  const incomingNodes = incoming.nodes;
+  if (existingNodes.length !== incomingNodes.length) return true;
+
+  for (let i = 0; i < incomingNodes.length; i++) {
+    const incNode = incomingNodes[i];
+    const extNode = existingNodes[i];
+    if (!extNode) return true;
+
+    if (!incNode.id || incNode.id !== extNode.id) return true;
+    if (incNode.title !== extNode.title) return true;
+    if ((incNode.description || '') !== (extNode.description || '')) return true;
+
+    const durationParts = normalizeDurationParts(incNode.durationParts || incNode.duration);
+    const incDuration = serializeDuration(durationParts);
+    if ((incDuration || '') !== (extNode.duration || '')) return true;
+
+    const incChecklists = incNode.checklists || [];
+    const extChecklists = extNode.checklists || [];
+    if (incChecklists.length !== extChecklists.length) return true;
+    for (let j = 0; j < incChecklists.length; j++) {
+      if (incChecklists[j].title !== extChecklists[j].title) return true;
+      if ((incChecklists[j].description || '') !== (extChecklists[j].description || '')) return true;
+      if ((incChecklists[j].xpReward ?? 10) !== extChecklists[j].xpReward) return true;
+    }
+
+    const incMaterials = incNode.materials || [];
+    const extMaterials = extNode.materials || [];
+    if (incMaterials.length !== extMaterials.length) return true;
+    for (let j = 0; j < incMaterials.length; j++) {
+      if (incMaterials[j].title !== extMaterials[j].title) return true;
+      if ((incMaterials[j].description || '') !== (extMaterials[j].description || '')) return true;
+      if (incMaterials[j].url !== extMaterials[j].url) return true;
+      if ((incMaterials[j].type || 'LINK') !== extMaterials[j].type) return true;
+    }
+
+    const incQuizzes = incNode.quizzes || [];
+    const extQuizzes = extNode.quizzes || [];
+    if (incQuizzes.length !== extQuizzes.length) return true;
+    for (let j = 0; j < incQuizzes.length; j++) {
+      if (incQuizzes[j].title !== extQuizzes[j].title) return true;
+      if ((incQuizzes[j].description || '') !== (extQuizzes[j].description || '')) return true;
+      if ((incQuizzes[j].passingScore ?? 70) !== extQuizzes[j].passingScore) return true;
+
+      const incQuestions = incQuizzes[j].questions || [];
+      const extQuestions = extQuizzes[j].questions || [];
+      if (incQuestions.length !== extQuestions.length) return true;
+      for (let k = 0; k < incQuestions.length; k++) {
+        if (incQuestions[k].question !== extQuestions[k].question) return true;
+        if ((incQuestions[k].explanation || '') !== (extQuestions[k].explanation || '')) return true;
+
+        const incOptions = incQuestions[k].options || [];
+        const extOptions = extQuestions[k].options || [];
+        if (incOptions.length !== extOptions.length) return true;
+        for (let l = 0; l < incOptions.length; l++) {
+          if (incOptions[l].content !== extOptions[l].content) return true;
+          if (incOptions[l].isCorrect !== extOptions[l].isCorrect) return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+async function cloneRoadmap(originalRoadmapId, mentorId, tx = prisma) {
+  const original = await tx.learningPath.findUnique({
+    where: { id: originalRoadmapId },
+    include: {
+      nodes: {
+        where: { isDeleted: false },
+        include: {
+          checklists: { where: { isDeleted: false } },
+          materials: { where: { isDeleted: false } },
+          quizzes: {
+            where: { isDeleted: false },
+            include: {
+              questions: {
+                where: { isDeleted: false },
+                include: {
+                  options: { where: { isDeleted: false } },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!original) throw new ApiError(404, 'Original roadmap not found');
+
+  const clone = await tx.learningPath.create({
+    data: {
+      title: original.title,
+      description: original.description,
+      thumbnail: original.thumbnail,
+      studyTips: original.studyTips,
+      status: 'DRAFT',
+      xpReward: original.xpReward,
+      isPublic: false,
+      mentorId: original.mentorId,
+      subjectId: original.subjectId,
+      parentLearningPathId: original.id,
+      nodes: {
+        create: original.nodes.map((node) => ({
+          title: node.title,
+          description: node.description,
+          duration: node.duration,
+          orderIndex: node.orderIndex,
+          checklists: {
+            create: node.checklists.map((c) => ({
+              title: c.title,
+              description: c.description,
+              orderIndex: c.orderIndex,
+              xpReward: c.xpReward,
+            })),
+          },
+          materials: {
+            create: node.materials.map((m) => ({
+              title: m.title,
+              description: m.description,
+              url: m.url,
+              type: m.type,
+            })),
+          },
+          quizzes: {
+            create: node.quizzes.map((q) => ({
+              title: q.title,
+              description: q.description,
+              passingScore: q.passingScore,
+              xpReward: q.xpReward,
+              questions: {
+                create: q.questions.map((question) => ({
+                  question: question.question,
+                  explanation: question.explanation,
+                  options: {
+                    create: question.options.map((opt) => ({
+                      content: opt.content,
+                      isCorrect: opt.isCorrect,
+                    })),
+                  },
+                })),
+              },
+            })),
+          },
+        })),
+      },
+    },
+  });
+
+  return clone.id;
+}
 
 /**
  * Resolve the subjectId to use when creating / updating a roadmap.
@@ -93,9 +251,8 @@ async function notifyMentorAboutRoadmapReview(tx, roadmap, status, feedback) {
   const message =
     status === 'APPROVED'
       ? `Lộ trình "${roadmap.title}" của bạn đã được phê duyệt.`
-      : `Lộ trình "${roadmap.title}" của bạn đã bị từ chối.${
-          feedback ? ` Lý do: ${feedback}` : ''
-        }`;
+      : `Lộ trình "${roadmap.title}" của bạn đã bị từ chối.${feedback ? ` Lý do: ${feedback}` : ''
+      }`;
 
   await notificationService.createNotification(
     roadmap.mentorId,
@@ -186,6 +343,9 @@ exports.createRoadmap = async (data, mentorId) => {
     }
 
     return created.id;
+  }, {
+    maxWait: 15000,
+    timeout: 30000,
   });
 
   return roadmapRepository.findById(roadmapId);
@@ -291,7 +451,33 @@ exports.getMentorRoadmaps = async (mentorId, { skip = 0, take = 20 } = {}) => {
 exports.updateRoadmap = async (roadmapId, data, mentorId) => {
   const existing = await assertOwnership(roadmapId, mentorId);
 
-  const resolvedTitle = data.title || data.name || existing.title;
+  const isLive = existing.status === 'APPROVED' || existing.status === 'PUBLISHED';
+  const majorChanges = hasMajorChanges(existing, data);
+
+  let targetRoadmapId = roadmapId;
+
+  if (isLive && majorChanges) {
+    // Check if a DRAFT child version already exists for this parent
+    const existingDraft = await prisma.learningPath.findFirst({
+      where: {
+        parentLearningPathId: roadmapId,
+        status: 'DRAFT',
+        isDeleted: false,
+      },
+      select: { id: true },
+    });
+
+    if (existingDraft) {
+      targetRoadmapId = existingDraft.id;
+    } else {
+      // Clone it to create a new DRAFT version
+      targetRoadmapId = await prisma.$transaction(async (tx) => {
+        return cloneRoadmap(roadmapId, mentorId, tx);
+      });
+    }
+  }
+
+  const resolvedTitle = data.title || data.name || (targetRoadmapId === roadmapId ? existing.title : data.title);
   const resolvedSubjectId = data.subjectId
     ? await resolveSubjectId(data.subjectId)
     : existing.subjectId;
@@ -309,12 +495,12 @@ exports.updateRoadmap = async (roadmapId, data, mentorId) => {
     updatedAt: new Date(),
   };
 
-  if (data.status) {
+  if (data.status && targetRoadmapId === roadmapId) {
     updatePayload.status = data.status;
   }
 
   await prisma.$transaction(async (tx) => {
-    await roadmapRepository.update(roadmapId, updatePayload, tx);
+    await roadmapRepository.update(targetRoadmapId, updatePayload, tx);
 
     // Sync nodes if provided
     if (Array.isArray(data.nodes)) {
@@ -330,30 +516,78 @@ exports.updateRoadmap = async (roadmapId, data, mentorId) => {
         };
       });
       await roadmapRepository.syncNodes(
-        roadmapId,
+        targetRoadmapId,
         normalizedNodesForUpdate,
         tx
       );
     }
 
     return null;
+  }, {
+    maxWait: 15000,
+    timeout: 30000,
   });
 
   // Re-fetch to include updated nodes in response
-  return roadmapRepository.findById(roadmapId);
+  return roadmapRepository.findById(targetRoadmapId);
 };
 
-/**
- * Soft-delete a roadmap (must belong to the mentor; cannot delete PUBLISHED).
- */
 exports.deleteRoadmap = async (roadmapId, mentorId) => {
   const existing = await assertOwnership(roadmapId, mentorId);
 
-  if (existing.status === 'PUBLISHED') {
-    throw new ApiError(400, MSG.cannotDelete);
+  if (existing.status === 'PENDING_DELETE') {
+    throw new ApiError(400, 'Yêu cầu xóa lộ trình này đang chờ duyệt.');
   }
 
-  await roadmapRepository.softDelete(roadmapId);
+  // Count active student enrollments
+  const studentCount = await prisma.enrollment.count({
+    where: {
+      learningPathId: roadmapId,
+      status: 'ACTIVE',
+      isDeleted: false,
+    },
+  });
+
+  if (studentCount > 0) {
+    // If students are enrolled, transition to PENDING_DELETE status for admin approval
+    await prisma.$transaction(async (tx) => {
+      await tx.learningPath.update({
+        where: { id: roadmapId },
+        data: {
+          status: 'PENDING_DELETE',
+          updatedAt: new Date(),
+        },
+      });
+
+      // Notify admins about the deletion request
+      const admins = await tx.user.findMany({
+        where: {
+          role: { name: 'ADMIN' },
+          isDeleted: false,
+          status: 'ACTIVE',
+        },
+        select: { id: true },
+      });
+
+      if (admins.length > 0) {
+        await notificationService.createNotifications(
+          admins.map((admin) => admin.id),
+          {
+            type: 'ROADMAP',
+            title: 'Yêu cầu xóa lộ trình',
+            content: `Mentor vừa gửi yêu cầu xóa lộ trình "${existing.title}" đã có học viên tham gia.`,
+          },
+          tx
+        );
+      }
+    });
+
+    return { action: 'ARCHIVED', status: 'PENDING_DELETE', studentCount };
+  } else {
+    // No students enrolled -> directly soft delete
+    await roadmapRepository.softDelete(roadmapId);
+    return { action: 'DELETED', status: 'DELETED', studentCount };
+  }
 };
 
 /**
@@ -365,7 +599,8 @@ exports.submitRoadmap = async (roadmapId, mentorId) => {
   if (
     existing.status !== 'DRAFT' &&
     existing.status !== 'REJECTED' &&
-    existing.status !== 'PUBLISHED'
+    existing.status !== 'PUBLISHED' &&
+    existing.status !== 'APPROVED'
   ) {
     throw new ApiError(400, MSG.cannotSubmit);
   }
@@ -389,14 +624,26 @@ exports.submitRoadmap = async (roadmapId, mentorId) => {
 };
 
 /**
- * Get roadmaps pending review (ADMIN only).
+ * Get roadmaps by status for admin (ADMIN only).
  */
-exports.getPendingRoadmaps = async ({ skip = 0, take = 20 } = {}) => {
+exports.getPendingRoadmaps = async ({ status = 'PENDING', skip = 0, take = 20 } = {}) => {
   const [roadmaps, total] = await Promise.all([
-    roadmapRepository.findByStatus('PENDING', { skip, take }),
-    roadmapRepository.countByStatus('PENDING'),
+    roadmapRepository.findByStatus(status, { skip, take }),
+    roadmapRepository.countByStatus(status),
   ]);
-  return { roadmaps, total };
+
+  // Map the roadmap node tips manually to be consistent with ROADMAP_INCLUDE mapping logic
+  const mappedRoadmaps = roadmaps.map((roadmap) => {
+    if (Array.isArray(roadmap.nodes)) {
+      roadmap.nodes = roadmap.nodes.map((node) => ({
+        ...node,
+        studyTips: '',
+      }));
+    }
+    return roadmap;
+  });
+
+  return { roadmaps: mappedRoadmaps, total };
 };
 
 /**
@@ -406,11 +653,155 @@ exports.reviewRoadmap = async (roadmapId, { status, feedback }) => {
   const roadmap = await roadmapRepository.findById(roadmapId);
   if (!roadmap) throw new ApiError(404, MSG.notFound);
 
-  if (roadmap.status !== 'PENDING') {
-    throw new ApiError(400, 'Only PENDING roadmaps can be reviewed');
+  if (roadmap.status !== 'PENDING' && roadmap.status !== 'PENDING_DELETE') {
+    throw new ApiError(400, 'Only PENDING or PENDING_DELETE roadmaps can be reviewed');
+  }
+
+  // Handle deletion request review
+  if (roadmap.status === 'PENDING_DELETE') {
+    const updatedStatus =
+      status === 'APPROVED' || status === 'PUBLISHED' ? 'ARCHIVED' : 'APPROVED';
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const reviewed = await roadmapRepository.update(
+        roadmapId,
+        {
+          status: updatedStatus,
+          updatedAt: new Date(),
+        },
+        tx
+      );
+
+      // Notify mentor about deletion review outcome
+      const message =
+        updatedStatus === 'ARCHIVED'
+          ? `Yêu cầu xóa lộ trình "${roadmap.title}" đã được phê duyệt. Lộ trình đã chuyển sang trạng thái lưu trữ.`
+          : `Yêu cầu xóa lộ trình "${roadmap.title}" của bạn đã bị từ chối.${feedback ? ` Lý do: ${feedback}` : ''
+          }`;
+
+      await notificationService.createNotification(
+        roadmap.mentorId,
+        {
+          type: 'ROADMAP',
+          title:
+            updatedStatus === 'ARCHIVED'
+              ? 'Yêu cầu xóa được duyệt'
+              : 'Yêu cầu xóa bị từ chối',
+          content: message,
+        },
+        tx
+      );
+
+      return reviewed;
+    });
+
+    return updated;
   }
 
   const updated = await prisma.$transaction(async (tx) => {
+    // If approving a draft version, merge its changes into the parent roadmap:
+    const parentId = roadmap.parentLearningPathId;
+    if ((status === 'APPROVED' || status === 'PUBLISHED') && parentId) {
+      // 1. Delete all existing nodes of the parent roadmap
+      await tx.node.deleteMany({
+        where: { learningPathId: parentId },
+      });
+
+      // 2. Retrieve all nodes of the draft roadmap
+      const draftNodes = await tx.node.findMany({
+        where: { learningPathId: roadmap.id, isDeleted: false },
+        include: {
+          checklists: { where: { isDeleted: false } },
+          materials: { where: { isDeleted: false } },
+          quizzes: {
+            where: { isDeleted: false },
+            include: {
+              questions: {
+                where: { isDeleted: false },
+                include: {
+                  options: { where: { isDeleted: false } },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // 3. Create nodes for the parent roadmap
+      for (const node of draftNodes) {
+        await tx.node.create({
+          data: {
+            learningPathId: parentId,
+            title: node.title,
+            description: node.description,
+            duration: node.duration,
+            orderIndex: node.orderIndex,
+            checklists: {
+              create: node.checklists.map((c) => ({
+                title: c.title,
+                description: c.description,
+                orderIndex: c.orderIndex,
+                xpReward: c.xpReward,
+              })),
+            },
+            materials: {
+              create: node.materials.map((m) => ({
+                title: m.title,
+                description: m.description,
+                url: m.url,
+                type: m.type,
+              })),
+            },
+            quizzes: {
+              create: node.quizzes.map((q) => ({
+                title: q.title,
+                description: q.description,
+                passingScore: q.passingScore,
+                xpReward: q.xpReward,
+                questions: {
+                  create: q.questions.map((question) => ({
+                    question: question.question,
+                    explanation: question.explanation,
+                    options: {
+                      create: question.options.map((opt) => ({
+                        content: opt.content,
+                        isCorrect: opt.isCorrect,
+                      })),
+                    },
+                  })),
+                },
+              })),
+            },
+          },
+        });
+      }
+
+      // 4. Update the parent roadmap's metadata and set status to APPROVED
+      const parentReviewed = await roadmapRepository.update(
+        parentId,
+        {
+          title: roadmap.title,
+          description: roadmap.description,
+          thumbnail: roadmap.thumbnail,
+          studyTips: roadmap.studyTips,
+          xpReward: roadmap.xpReward,
+          subject: { connect: { id: roadmap.subjectId } },
+          status: 'APPROVED',
+          updatedAt: new Date(),
+        },
+        tx
+      );
+
+      // 5. Hard delete the draft roadmap to clean up
+      await tx.learningPath.delete({
+        where: { id: roadmap.id },
+      });
+
+      await notifyMentorAboutRoadmapReview(tx, parentReviewed, 'APPROVED', feedback);
+
+      return parentReviewed;
+    }
+
     const reviewed = await roadmapRepository.update(
       roadmapId,
       {

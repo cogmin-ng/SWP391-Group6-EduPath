@@ -21,10 +21,10 @@ const UserManagementPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
-  // Pagination and Search State
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [selectedRoleFilter, setSelectedRoleFilter] = useState("");
   const take = 10;
 
   // Edit/Delete State
@@ -62,14 +62,16 @@ const UserManagementPage = () => {
     try {
       const skip = (page - 1) * take;
       let data;
+      const roleId = selectedRoleFilter || undefined;
       if (debouncedQuery.trim()) {
         data = await adminService.searchUsers({
           q: debouncedQuery,
+          roleId,
           skip,
           take,
         });
       } else {
-        data = await adminService.getUsers({ skip, take });
+        data = await adminService.getUsers({ roleId, skip, take });
       }
       setUsers(data.users || []);
       setTotal(data.total || 0);
@@ -83,7 +85,7 @@ const UserManagementPage = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, [debouncedQuery, page]);
+  }, [debouncedQuery, page, selectedRoleFilter]);
 
   const handleUpdateRole = async (userId) => {
     if (!selectedRoleId) return;
@@ -194,15 +196,32 @@ const UserManagementPage = () => {
           </p>
         </div>
 
-        <div className="relative w-full sm:w-72">
-          <input
-            type="text"
-            placeholder="Tìm kiếm người dùng..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-sm"
-          />
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <select
+            value={selectedRoleFilter}
+            onChange={(e) => {
+              setSelectedRoleFilter(e.target.value);
+              setPage(1);
+            }}
+            className="w-full sm:w-48 px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm"
+          >
+            <option value="">Tất cả vai trò</option>
+            {roles.map((role) => (
+              <option key={role.id} value={role.id}>
+                {role.name}
+              </option>
+            ))}
+          </select>
+          <div className="relative w-full sm:w-72">
+            <input
+              type="text"
+              placeholder="Tìm kiếm người dùng..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm"
+            />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          </div>
         </div>
       </div>
 

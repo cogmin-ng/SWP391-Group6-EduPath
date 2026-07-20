@@ -120,21 +120,30 @@ export default function MentorProfilePage() {
     location: profileData.location || baseProfile.location,
     major: application?.specialization || profileData.major || baseProfile.major,
     termStatus: application?.currentSemester || profileData.termStatus || baseProfile.termStatus,
-    specialties: application?.mentorSubjects && application.mentorSubjects.length > 0 
-      ? application.mentorSubjects.map(ms => ({ label: ms.subject.name, color: 'bg-indigo-50 text-indigo-700 border-indigo-200/50' }))
-      : baseProfile.specialties,
+    specialties: application?.approvedSubjects && application.approvedSubjects.length > 0
+      ? application.approvedSubjects.map(sub => ({ label: sub.name, color: 'bg-indigo-50 text-indigo-700 border-indigo-200/50' }))
+      : application?.mentorSubjects && application.mentorSubjects.length > 0 
+        ? application.mentorSubjects.map(ms => ({ label: ms.subject.name, color: 'bg-indigo-50 text-indigo-700 border-indigo-200/50' }))
+        : baseProfile.specialties,
   };
 
-  const mentorCategories = application?.mentorSubjects
-    ? Array.from(new Set(application.mentorSubjects
-        .map(ms => ms.subject?.category?.name)
+  const mentorCategories = application?.approvedSubjects && application.approvedSubjects.length > 0
+    ? Array.from(new Set(application.approvedSubjects
+        .map(sub => sub.category?.name)
         .filter(Boolean)
       ))
-    : [];
+    : application?.mentorSubjects
+      ? Array.from(new Set(application.mentorSubjects
+          .map(ms => ms.subject?.category?.name)
+          .filter(Boolean)
+        ))
+      : [];
 
-  const mentorSubjectsList = application?.mentorSubjects
-    ? application.mentorSubjects.map(ms => ms.subject?.name).filter(Boolean)
-    : [];
+  const mentorSubjectsList = application?.approvedSubjects && application.approvedSubjects.length > 0
+    ? application.approvedSubjects.map(sub => sub.name).filter(Boolean)
+    : application?.mentorSubjects
+      ? application.mentorSubjects.map(ms => ms.subject?.name).filter(Boolean)
+      : [];
 
   // Fetch stats, roadmaps, and advisor application dynamically on load
   useEffect(() => {
@@ -361,8 +370,15 @@ export default function MentorProfilePage() {
                 </div>
               </div>
 
-              {/* Edit button */}
-              <div className="flex-shrink-0 flex justify-center">
+              {/* Edit button & Register again button */}
+              <div className="flex-shrink-0 flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  onClick={() => navigate('/profile/become-mentor')}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 px-6 py-3.5 text-sm font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-950/10 cursor-pointer"
+                >
+                  <Plus className="h-4 w-4" />
+                  Đăng ký mentor
+                </button>
                 <button
                   onClick={handleEditClick}
                   className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white hover:bg-slate-50 px-6 py-3.5 text-sm font-bold text-indigo-600 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-950/10 cursor-pointer"
@@ -386,7 +402,7 @@ export default function MentorProfilePage() {
             <InfoCard
               icon={Award}
               iconBg="bg-emerald-50 text-emerald-600"
-              label="Đóng Góp Được Duyệt"
+              label="Đóng Góp Đã Duyệt"
               value={stats.approvedContributions ?? 32}
               meta="Đóng góp"
             />

@@ -16,6 +16,7 @@ export default function AcademicAchievementSection({
   achievements,
   setAchievements,
   subjects = [],
+  error = null,
 }) {
   const updateRow = (index, field, value) => {
     setAchievements((prev) =>
@@ -35,7 +36,9 @@ export default function AcademicAchievementSection({
     "w-full rounded-xl border border-slate-200 bg-white text-slate-800 text-sm placeholder:text-slate-400 px-4 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 hover:border-slate-300";
 
   return (
-    <section className="rounded-3xl border border-slate-100 bg-white p-6 sm:p-8 shadow-sm mb-6 animate-fadeIn">
+    <section className={`rounded-3xl border bg-white p-6 sm:p-8 shadow-sm mb-6 animate-fadeIn ${
+      error ? "border-red-300" : "border-slate-100"
+    }`}>
       {/* Header */}
       <div className="flex items-center gap-3 mb-5">
         <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-amber-50 text-amber-600">
@@ -120,6 +123,8 @@ export default function AcademicAchievementSection({
         <Plus className="w-4 h-4" />
         Thêm môn học
       </button>
+
+      {error && <p className="mt-1.5 text-xs text-red-500">{error}</p>}
     </section>
   );
 }

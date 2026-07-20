@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useParams, useNavigate } from 'react-router-dom';
-import { ArrowRight, Clock3, Heart, Loader2, Star, StarHalf, User } from 'lucide-react';
+import { ArrowRight, Clock3, Heart, Loader2, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 import MenteeHeader from '../components/mentee/MenteeHeader';
 import Navbar from '../components/landing/Navbar';
@@ -31,6 +31,7 @@ export default function RoadmapDetailPage() {
         if (!isMounted) return;
         setRoadmap(data);
         setEnrolled(Boolean(data.enrollment));
+        setFavorited(isFavorited(slug));
       } catch (error) {
         if (!isMounted) return;
         console.error('Failed to load roadmap detail:', error);

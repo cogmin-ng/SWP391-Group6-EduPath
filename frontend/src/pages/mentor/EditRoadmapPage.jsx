@@ -139,6 +139,13 @@ const EditRoadmapPage = () => {
       if (!formData.name) return alert('Vui lòng nhập tên lộ trình');
       const payload = { ...buildPayload(), status: 'DRAFT' };
       const updated = await updateRoadmap(roadmapId, payload);
+      
+      if (updated && updated.id !== roadmapId) {
+        toast.success('Đã tạo bản nháp mới cho các thay đổi lớn.');
+        navigate(`/mentor/roadmaps/${updated.id}/edit`, { replace: true });
+        return;
+      }
+
       setNodes(updated.nodes || []);
       setFormData(prev => ({ ...prev, status: 'DRAFT' }));
       toast.success('Cập nhật lộ trình thành công');
@@ -154,10 +161,16 @@ const EditRoadmapPage = () => {
       if (nodes.length === 0) return alert('Lộ trình cần ít nhất 1 Node');
       
       const payload = buildPayload();
-      await updateRoadmap(roadmapId, payload);
-      await submitRoadmap(roadmapId);
+      const updated = await updateRoadmap(roadmapId, payload);
       
-      toast.success('Đã gửi lộ trình để chờ duyệt');
+      const targetId = updated?.id || roadmapId;
+      await submitRoadmap(targetId);
+      
+      if (targetId !== roadmapId) {
+        toast.success('Đã tạo bản nháp mới cho thay đổi lớn và gửi duyệt.');
+      } else {
+        toast.success('Đã gửi lộ trình để chờ duyệt');
+      }
       navigate('/mentor/reviews');
     } catch (err) {
       console.error(err);

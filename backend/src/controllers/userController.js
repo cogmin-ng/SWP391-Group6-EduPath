@@ -12,8 +12,9 @@ exports.getAdminDashboardStats = asyncHandler(async (req, res) => {
 });
 
 exports.getUsers = asyncHandler(async (req, res) => {
-  const { skip, take } = req.query;
+  const { skip, take, roleId } = req.query;
   const { users, total } = await userService.getUsers({
+    roleId,
     skip: Number(skip) || 0,
     take: Number(take) || 10,
   });
@@ -25,9 +26,10 @@ exports.getUsers = asyncHandler(async (req, res) => {
 });
 
 exports.searchUsers = asyncHandler(async (req, res) => {
-  const { q, skip, take } = req.query;
+  const { q, skip, take, roleId } = req.query;
   const { users, total } = await userService.searchUsers({
     query: q || '',
+    roleId,
     skip: Number(skip) || 0,
     take: Number(take) || 10,
   });
@@ -98,5 +100,17 @@ exports.deleteUser = asyncHandler(async (req, res) => {
 
   return sendSuccess(res, {
     message: 'User deleted successfully',
+  });
+});
+
+exports.getHotMentors = asyncHandler(async (req, res) => {
+  const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+  const limit = Math.max(1, Math.min(Number.parseInt(req.query.limit, 10) || 9, 50));
+
+  const result = await userService.getHotMentors({ page, limit });
+
+  return sendSuccess(res, {
+    message: 'Hot mentors retrieved successfully',
+    data: result,
   });
 });

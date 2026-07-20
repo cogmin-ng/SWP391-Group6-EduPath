@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getMentorRoadmaps } from '../../services/roadmapService';
+import { getMentorRoadmaps, deleteRoadmap } from '../../services/roadmapService';
+import { Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function MentorRoadmapsPage() {
   const navigate = useNavigate();
@@ -35,6 +37,39 @@ export default function MentorRoadmapsPage() {
 
   const handleLearnRoadmap = (roadmapId) => {
     navigate(`/mentor/roadmaps/${roadmapId}/learn`);
+  };
+
+  const handleDeleteRoadmap = async (roadmap) => {
+    const confirmMessage = `Bạn có chắc chắn muốn xóa lộ trình "${roadmap.title}" không?`;
+    if (!window.confirm(confirmMessage)) return;
+
+    try {
+      const result = await deleteRoadmap(roadmap.id);
+      const action = result?.action;
+
+      if (action === 'ARCHIVED') {
+        toast((t) => (
+          <span className="flex flex-col gap-1 text-slate-800">
+            <span className="font-semibold text-amber-700">Yêu cầu xóa đã được gửi!</span>
+            <span className="text-xs">
+              Lộ trình này đã có học viên tham gia học. Yêu cầu xóa đã được gửi đến Ban quản trị (Admin) phê duyệt. Học viên cũ vẫn tiếp tục học bình thường, nhưng lộ trình sẽ ẩn khỏi trang khám phá đối với người dùng mới.
+            </span>
+          </span>
+        ), {
+          duration: 8000,
+          icon: '📦',
+        });
+      } else {
+        toast.success('Xóa lộ trình thành công!');
+      }
+
+      // Refresh roadmap list
+      const data = await getMentorRoadmaps();
+      setRoadmaps(data.roadmaps || []);
+    } catch (err) {
+      console.error('Failed to delete roadmap:', err);
+      toast.error(err.response?.data?.message || 'Không thể xóa lộ trình này');
+    }
   };
 
   if (loading) {
@@ -148,7 +183,7 @@ export default function MentorRoadmapsPage() {
               <div className="p-3 bg-slate-50 border-t border-slate-100 flex gap-2">
                 <button
                   onClick={() => handleViewRoadmap(roadmap.id)}
-                  className={`flex-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 py-1.5 text-xs rounded-xl font-semibold transition cursor-pointer text-center ${roadmap.status === 'PENDING' ? 'basis-full' : ''}`}
+                  className="flex-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 py-1.5 text-xs rounded-xl font-semibold transition cursor-pointer text-center"
                 >
                   Xem
                 </button>
@@ -160,6 +195,13 @@ export default function MentorRoadmapsPage() {
                     Chỉnh sửa
                   </button>
                 )}
+                <button
+                  onClick={() => handleDeleteRoadmap(roadmap)}
+                  className="px-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 py-1.5 rounded-xl font-semibold transition cursor-pointer flex items-center justify-center animate-in fade-in zoom-in-95 duration-200"
+                  title="Xóa lộ trình"
+                >
+                  <Trash2 size={14} />
+                </button>
               </div>
             </div>
             ))}

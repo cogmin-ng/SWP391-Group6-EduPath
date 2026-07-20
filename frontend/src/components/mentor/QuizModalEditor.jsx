@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Save, PlusCircle, AlertCircle } from 'lucide-react';
 import QuizForm from './quiz/QuizForm';
 import QuestionCard from './quiz/QuestionCard';
 import AddQuestionButton from './quiz/AddQuestionButton';
+import { getRoadmapById } from '../../services/roadmapService';
+import ImportQuestionsModal from './ImportQuestionsModal';
 
-const QuizModalEditor = ({ isOpen, onClose, onSave, initialData }) => {
+const QuizModalEditor = ({ isOpen, onClose, onSave, initialData, roadmapId, subjectId }) => {
   const [quizData, setQuizData] = useState(initialData || {
     title: '',
     description: '',
@@ -25,6 +27,24 @@ const QuizModalEditor = ({ isOpen, onClose, onSave, initialData }) => {
   });
 
   const [error, setError] = useState(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [finalSubjectId, setFinalSubjectId] = useState(subjectId || '');
+
+  useEffect(() => {
+    if (subjectId) {
+      setFinalSubjectId(subjectId);
+    } else if (roadmapId) {
+      const fetchRoadmap = async () => {
+        try {
+          const roadmap = await getRoadmapById(roadmapId);
+          setFinalSubjectId(roadmap.subjectId || '');
+        } catch (err) {
+          console.error('Failed to load roadmap details for subjectId in modal:', err);
+        }
+      };
+      fetchRoadmap();
+    }
+  }, [subjectId, roadmapId, isOpen]);
 
   if (!isOpen) return null;
 
@@ -61,6 +81,30 @@ const QuizModalEditor = ({ isOpen, onClose, onSave, initialData }) => {
       const newQuestions = [...prev.questions];
       newQuestions.splice(index, 1);
       return { ...prev, questions: newQuestions };
+    });
+  };
+
+  const handleImportQuestions = (importedQuestions) => {
+    const formatted = importedQuestions.map(bq => ({
+      question: bq.question,
+      explanation: bq.explanation || '',
+      bankQuestionId: bq.id,
+      options: bq.options.map(opt => ({
+        content: opt.content,
+        isCorrect: opt.isCorrect
+      }))
+    }));
+
+    setQuizData(prev => {
+      // If we only have 1 initial blank question, replace it. Otherwise append.
+      const isInitialBlank = prev.questions.length === 1 && 
+                             !prev.questions[0].question.trim() && 
+                             prev.questions[0].options.every(opt => !opt.content.trim());
+      
+      return {
+        ...prev,
+        questions: isInitialBlank ? formatted : [...prev.questions, ...formatted]
+      };
     });
   };
 
@@ -124,9 +168,18 @@ const QuizModalEditor = ({ isOpen, onClose, onSave, initialData }) => {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-slate-900">Danh sách câu hỏi</h3>
-              <span className="px-3 py-1 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-full">
-                {quizData.questions.length} Câu hỏi
-              </span>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsImportModalOpen(true)}
+                  className="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg font-semibold transition"
+                >
+                  Chọn từ ngân hàng
+                </button>
+                <span className="px-3 py-1 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-full">
+                  {quizData.questions.length} Câu hỏi
+                </span>
+              </div>
             </div>
 
             {quizData.questions.map((question, index) => (
@@ -160,6 +213,14 @@ const QuizModalEditor = ({ isOpen, onClose, onSave, initialData }) => {
           </button>
         </div>
       </div>
+
+      <ImportQuestionsModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImport={handleImportQuestions}
+        subjectId={finalSubjectId}
+        excludeBankQuestionIds={quizData.questions.map(q => q.bankQuestionId).filter(Boolean)}
+      />
     </div>
   );
 };

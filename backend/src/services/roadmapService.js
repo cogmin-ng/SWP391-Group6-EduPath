@@ -884,6 +884,7 @@ exports.getMentorDashboardStats = async (mentorId) => {
     where: {
       learningPath: { mentorId, isDeleted: false },
       isDeleted: false,
+      user: { role: { name: 'MENTEE' }, isDeleted: false },
     },
   });
   const totalStudents = totalStudentsAggr.length;
@@ -893,6 +894,7 @@ exports.getMentorDashboardStats = async (mentorId) => {
     where: {
       learningPath: { mentorId, isDeleted: false },
       isDeleted: false,
+      user: { role: { name: 'MENTEE' }, isDeleted: false },
       enrolledAt: { gte: startOfMonth },
     },
   });
@@ -903,6 +905,7 @@ exports.getMentorDashboardStats = async (mentorId) => {
     where: {
       learningPath: { mentorId, isDeleted: false },
       isDeleted: false,
+      user: { role: { name: 'MENTEE' }, isDeleted: false },
       enrolledAt: { gte: startOfLastMonth, lt: startOfMonth },
     },
   });

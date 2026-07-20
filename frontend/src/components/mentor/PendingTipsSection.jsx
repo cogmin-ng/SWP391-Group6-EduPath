@@ -1,33 +1,58 @@
 import { useState } from 'react';
-import { AlertCircle, Clock, User } from 'lucide-react';
+import {
+  ArrowRight,
+  CheckCircle2,
+  Clock3,
+  Lightbulb,
+  Map,
+} from 'lucide-react';
 import TipReviewModal from '../ui/TipReviewModal';
 import { approveTip, rejectTip } from '../../services/roadmapService';
-import toast from 'react-hot-toast';
 
-const PendingTipsSection = ({ tips, onRefresh, isLoading }) => {
+function formatDate(value) {
+  if (!value) return 'Gần đây';
+  return new Intl.DateTimeFormat('vi-VN', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(value));
+}
+
+function ContributorAvatar({ contributor }) {
+  const name = contributor?.name || contributor?.email || '?';
+  if (contributor?.avatar) {
+    return (
+      <img
+        src={contributor.avatar}
+        alt={name}
+        className="h-9 w-9 rounded-xl object-cover"
+      />
+    );
+  }
+
+  return (
+    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-sm font-bold text-indigo-700">
+      {name.trim().charAt(0).toUpperCase()}
+    </span>
+  );
+}
+
+export default function PendingTipsSection({
+  tips,
+  onRefresh,
+  isLoading,
+  compact = false,
+}) {
   const [selectedTip, setSelectedTip] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-
-  const handleSelectTip = (tip) => {
-    setSelectedTip(tip);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseTip = () => {
-    setIsModalOpen(false);
-    setSelectedTip(null);
-  };
 
   const handleApproveTip = async (tipId) => {
     setIsProcessing(true);
     try {
       await approveTip(tipId);
-      if (onRefresh) onRefresh();
-      handleCloseTip();
-    } catch (err) {
-      console.error('Error approving tip:', err);
-      throw err;
+      await onRefresh?.();
+    } catch (error) {
+      console.error('Error approving tip:', error);
+      throw error;
     } finally {
       setIsProcessing(false);
     }
@@ -37,128 +62,128 @@ const PendingTipsSection = ({ tips, onRefresh, isLoading }) => {
     setIsProcessing(true);
     try {
       await rejectTip(tipId, reason);
-      if (onRefresh) onRefresh();
-      handleCloseTip();
-    } catch (err) {
-      console.error('Error rejecting tip:', err);
-      throw err;
+      await onRefresh?.();
+    } catch (error) {
+      console.error('Error rejecting tip:', error);
+      throw error;
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-        </div>
+      <div className={`grid gap-4 ${compact ? '' : 'md:grid-cols-2'}`}>
+        {Array.from({ length: compact ? 2 : 4 }, (_, index) => (
+          <div
+            key={index}
+            className="h-48 animate-pulse rounded-2xl border border-slate-100 bg-white shadow-sm"
+          />
+        ))}
       </div>
     );
   }
 
-  if (!tips || tips.length === 0) {
+  if (!tips?.length) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-        <div className="flex items-center justify-center py-12 flex-col">
-          <div className="inline-block mb-3 p-3 bg-emerald-100 rounded-full">
-            <AlertCircle className="w-6 h-6 text-emerald-600" />
-          </div>
-          <p className="text-slate-700 font-medium">Không có Tips chờ duyệt</p>
-          <p className="text-sm text-slate-500 mt-1">Mọi Tips đã được xử lý!</p>
-        </div>
+      <div className="rounded-3xl border border-dashed border-emerald-200 bg-white px-6 py-12 text-center shadow-sm">
+        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+          <CheckCircle2 className="h-6 w-6" />
+        </span>
+        <h3 className="mt-4 font-bold text-slate-900">
+          Không có đóng góp chờ duyệt
+        </h3>
+        <p className="mt-1 text-sm text-slate-500">
+          Mọi đóng góp đã được xử lý. Danh sách mới sẽ xuất hiện tại đây.
+        </p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        {/* Header */}
-        <div className="p-6 border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-slate-50">
-          <h3 className="text-lg font-semibold text-slate-900">
-            Tips Chờ Duyệt ({tips.length})
-          </h3>
-          <p className="text-sm text-slate-600 mt-1">
-            Duyệt các Tips được đóng góp từ Mentees
-          </p>
-        </div>
+      <div
+        className={
+          compact
+            ? 'divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm'
+            : 'grid gap-4 md:grid-cols-2'
+        }
+      >
+        {tips.map((tip) => {
+          const contributorName = tip.contributor?.name || 'Học viên ẩn danh';
+          const roadmapTitle = tip.node?.learningPath?.title;
 
-        {/* Tips List */}
-        <div className="divide-y divide-slate-200">
-          {tips.map((tip) => (
-            <div
+          return (
+            <button
               key={tip.id}
-              className="p-6 hover:bg-slate-50 transition-colors duration-200 cursor-pointer group"
-              onClick={() => handleSelectTip(tip)}
+              type="button"
+              onClick={() => setSelectedTip(tip)}
+              className={`group text-left transition ${
+                compact
+                  ? 'w-full p-4 hover:bg-slate-50 sm:p-5'
+                  : 'rounded-2xl border border-slate-100 bg-white p-5 shadow-sm hover:-translate-y-0.5 hover:border-indigo-100 hover:shadow-md'
+              }`}
             >
-              {/* Title & Node */}
-              <div className="mb-3 flex items-start justify-between">
-                <div>
-                  <h4 className="text-base font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                    {tip.title || '(Không có tiêu đề)'}
-                  </h4>
-                  <p className="text-sm text-slate-600 mt-1">
-                    Node: <span className="font-medium">{tip.node?.title || 'N/A'}</span>
-                  </p>
-                </div>
+              <div className="flex items-start justify-between gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                  <Lightbulb className="h-5 w-5" />
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-700">
+                  <Clock3 className="h-3 w-3" />
+                  Chờ duyệt
+                </span>
               </div>
 
-              {/* Content Preview */}
-              <p className="text-slate-700 text-sm mb-4 line-clamp-2">
+              <h3 className="mt-4 line-clamp-1 text-sm font-bold text-slate-900 transition group-hover:text-indigo-600">
+                {tip.title || 'Đóng góp chưa có tiêu đề'}
+              </h3>
+              <p
+                className={`mt-2 line-clamp-2 leading-relaxed text-slate-500 ${
+                  compact ? 'text-xs' : 'min-h-10 text-sm'
+                }`}
+              >
                 {tip.content}
               </p>
 
-              {/* Metadata */}
-              <div className="flex flex-wrap gap-4 text-sm">
-                {/* Contributor */}
-                <div className="flex items-center gap-2 text-slate-600">
-                  <User className="w-4 h-4 text-slate-500" />
-                  <span>
-                    {tip.contributor?.name || 'Unknown'}
-                    <span className="text-slate-500 ml-1">({tip.contributor?.email})</span>
+              <div className="mt-4 flex items-start gap-2 rounded-xl bg-slate-50 px-3 py-2.5">
+                <Map className="mt-0.5 h-3.5 w-3.5 shrink-0 text-indigo-500" />
+                <span className="min-w-0 text-xs text-slate-500">
+                  {roadmapTitle ? (
+                    <span className="block truncate font-medium text-slate-700">
+                      {roadmapTitle}
+                    </span>
+                  ) : null}
+                  <span className="block truncate">
+                    {tip.node?.title || 'Nội dung chưa xác định'}
                   </span>
-                </div>
-
-                {/* Submitted Date */}
-                <div className="flex items-center gap-2 text-slate-600">
-                  <Clock className="w-4 h-4 text-slate-500" />
-                  <span>{formatDate(tip.createdAt)}</span>
-                </div>
-              </div>
-
-              {/* Action Hint */}
-              <div className="mt-4 flex items-center justify-end">
-                <span className="text-xs text-slate-500 group-hover:text-indigo-600 transition-colors">
-                  Nhấn để xem chi tiết →
                 </span>
               </div>
-            </div>
-          ))}
-        </div>
+
+              <div className="mt-4 flex items-center gap-3 border-t border-slate-100 pt-4">
+                <ContributorAvatar contributor={tip.contributor} />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-xs font-semibold text-slate-800">
+                    {contributorName}
+                  </span>
+                  <span className="block truncate text-[10px] text-slate-400">
+                    {formatDate(tip.createdAt)}
+                  </span>
+                </span>
+                <ArrowRight className="h-4 w-4 text-slate-300 transition group-hover:translate-x-1 group-hover:text-indigo-500" />
+              </div>
+            </button>
+          );
+        })}
       </div>
 
-      {/* Tip Review Modal */}
       <TipReviewModal
         tip={selectedTip}
-        isOpen={isModalOpen}
-        onClose={handleCloseTip}
+        isOpen={Boolean(selectedTip)}
+        onClose={() => setSelectedTip(null)}
         onApprove={handleApproveTip}
         onReject={handleRejectTip}
         isLoading={isProcessing}
       />
     </>
   );
-};
-
-export default PendingTipsSection;
+}

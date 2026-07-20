@@ -1,145 +1,298 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../../hooks/useAuth';
-import { getPendingTips } from '../../services/roadmapService';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  Layers,
+  Lightbulb,
+  RefreshCw,
+  Search,
+  Users,
+} from 'lucide-react';
 import PendingTipsSection from '../../components/mentor/PendingTipsSection';
-import { ChevronRight, AlertCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { getPendingTips } from '../../services/roadmapService';
 
-const PendingTipsPage = () => {
-  const { user } = useAuth();
-  const [tips, setTips] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({ skip: 0, take: 10 });
-  const [total, setTotal] = useState(0);
+const PAGE_SIZE = 10;
 
-  // ─── Fetch pending tips ─────────────────────────────────
-  useEffect(() => {
-    const fetchPendingTips = async () => {
-      setLoading(true);
-      try {
-        const result = await getPendingTips(pagination.skip, pagination.take);
-        setTips(result.tips || []);
-        setTotal(result.total || 0);
-      } catch (err) {
-        toast.error('Không thể tải danh sách Tips chờ duyệt');
-        console.error('Failed to fetch pending tips:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+const fetchTipsPage = (skip) => getPendingTips(skip, PAGE_SIZE);
 
-    fetchPendingTips();
-  }, [pagination]);
-
-  // ─── Pagination handlers ────────────────────────────────
-  const handleNextPage = () => {
-    setPagination((prev) => ({
-      ...prev,
-      skip: prev.skip + prev.take,
-    }));
+function SummaryCard({ icon: Icon, label, value, hint, tone }) {
+  const tones = {
+    indigo: 'bg-indigo-50 text-indigo-600',
+    amber: 'bg-amber-50 text-amber-600',
+    emerald: 'bg-emerald-50 text-emerald-600',
   };
-
-  const handlePrevPage = () => {
-    setPagination((prev) => ({
-      ...prev,
-      skip: Math.max(0, prev.skip - prev.take),
-    }));
-  };
-
-  const handleRefresh = () => {
-    setPagination({ skip: 0, take: 10 });
-  };
-
-  const currentPage = Math.floor(pagination.skip / pagination.take) + 1;
-  const totalPages = Math.ceil(total / pagination.take);
-  const hasNextPage = pagination.skip + pagination.take < total;
-  const hasPrevPage = pagination.skip > 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            Quản lý Tips - Duyệt Đóng góp
-          </h1>
-          <p className="text-slate-600">
-            Xem xét và duyệt các Tips được Mentees đóng góp cho lộ trình của bạn
-          </p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
-            <p className="text-xs text-slate-600 uppercase tracking-wide mb-1">Tổng cộng</p>
-            <p className="text-2xl font-bold text-slate-900">{total}</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
-            <p className="text-xs text-slate-600 uppercase tracking-wide mb-1">Chờ duyệt</p>
-            <p className="text-2xl font-bold text-amber-600">{tips.length}</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
-            <p className="text-xs text-slate-600 uppercase tracking-wide mb-1">Trang</p>
-            <p className="text-2xl font-bold text-indigo-600">
-              {totalPages > 0 ? currentPage : 0} / {totalPages}
-            </p>
-          </div>
-          <div className="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
-            <p className="text-xs text-slate-600 uppercase tracking-wide mb-1">Mentor</p>
-            <p className="text-lg font-bold text-slate-900">{user?.name || 'N/A'}</p>
-          </div>
-        </div>
-
-        {/* Pending Tips Section */}
-        <div className="mb-6">
-          <PendingTipsSection
-            tips={tips}
-            isLoading={loading}
-            onRefresh={handleRefresh}
-          />
-        </div>
-
-        {/* Pagination Controls */}
-        {tips.length > 0 && totalPages > 1 && (
-          <div className="bg-white rounded-lg border border-slate-200 shadow-sm px-6 py-4 flex items-center justify-between">
-            <button
-              onClick={handlePrevPage}
-              disabled={!hasPrevPage}
-              className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              ← Trước
-            </button>
-            <div className="text-center">
-              <p className="text-sm text-slate-600">
-                Đang hiển thị {Math.min(pagination.skip + 1, total)} đến{' '}
-                {Math.min(pagination.skip + pagination.take, total)} của {total} Tips
-              </p>
-            </div>
-            <button
-              onClick={handleNextPage}
-              disabled={!hasNextPage}
-              className="px-4 py-2 rounded-lg border border-indigo-600 text-indigo-600 font-medium hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
-            >
-              Tiếp <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
-        {/* Empty State with No Tips */}
-        {!loading && tips.length === 0 && total === 0 && (
-          <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-12 text-center">
-            <div className="inline-block mb-4 p-3 bg-emerald-100 rounded-full">
-              <AlertCircle className="w-6 h-6 text-emerald-600" />
-            </div>
-            <p className="text-slate-700 font-medium">Không có Tips chờ duyệt</p>
-            <p className="text-sm text-slate-600 mt-2">
-              Mọi Tips đã được xử lý. Quay lại sau để xem các đóng góp mới!
-            </p>
-          </div>
-        )}
-      </div>
+    <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+      <span
+        className={`flex h-10 w-10 items-center justify-center rounded-xl ${tones[tone]}`}
+      >
+        <Icon className="h-5 w-5" />
+      </span>
+      <p className="mt-4 text-xs font-medium text-slate-500">{label}</p>
+      <p className="mt-1 text-2xl font-bold text-slate-900">{value}</p>
+      <p className="mt-2 text-[11px] text-slate-400">{hint}</p>
     </div>
   );
-};
+}
 
-export default PendingTipsPage;
+export default function PendingTipsPage() {
+  const [tips, setTips] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [skip, setSkip] = useState(0);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let active = true;
+
+    fetchTipsPage(skip)
+      .then((result) => {
+        if (!active) return;
+        setTips(result.tips || []);
+        setTotal(result.total || 0);
+        setError('');
+      })
+      .catch((requestError) => {
+        if (!active) return;
+        console.error('Failed to fetch pending tips:', requestError);
+        setError(
+          requestError?.message ||
+            'Không thể tải danh sách đóng góp. Vui lòng thử lại.'
+        );
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [skip]);
+
+  const refresh = async () => {
+    let changingPage = false;
+    setLoading(true);
+    setError('');
+    try {
+      const result = await fetchTipsPage(skip);
+      if (!result.tips?.length && skip > 0) {
+        changingPage = true;
+        setSkip(Math.max(0, skip - PAGE_SIZE));
+        return;
+      }
+      setTips(result.tips || []);
+      setTotal(result.total || 0);
+    } catch (requestError) {
+      console.error('Failed to refresh pending tips:', requestError);
+      setError(
+        requestError?.message ||
+          'Không thể cập nhật danh sách đóng góp. Vui lòng thử lại.'
+      );
+    } finally {
+      if (!changingPage) setLoading(false);
+    }
+  };
+
+  const normalizedSearch = search.trim().toLowerCase();
+  const visibleTips = useMemo(() => {
+    if (!normalizedSearch) return tips;
+
+    return tips.filter((tip) =>
+      [
+        tip.title,
+        tip.content,
+        tip.contributor?.name,
+        tip.contributor?.email,
+        tip.node?.title,
+        tip.node?.learningPath?.title,
+      ]
+        .filter(Boolean)
+        .some((value) => value.toLowerCase().includes(normalizedSearch))
+    );
+  }, [normalizedSearch, tips]);
+
+  const contributorCount = useMemo(
+    () =>
+      new Set(tips.map((tip) => tip.contributor?.id).filter(Boolean)).size,
+    [tips]
+  );
+  const roadmapCount = useMemo(
+    () =>
+      new Set(
+        tips.map((tip) => tip.node?.learningPath?.id).filter(Boolean)
+      ).size,
+    [tips]
+  );
+
+  const currentPage = total ? Math.floor(skip / PAGE_SIZE) + 1 : 0;
+  const totalPages = total ? Math.ceil(total / PAGE_SIZE) : 0;
+  const hasPrevious = skip > 0;
+  const hasNext = skip + PAGE_SIZE < total;
+
+  const goToPreviousPage = () => {
+    if (!hasPrevious) return;
+    setLoading(true);
+    setError('');
+    setSearch('');
+    setSkip((current) => Math.max(0, current - PAGE_SIZE));
+  };
+
+  const goToNextPage = () => {
+    if (!hasNext) return;
+    setLoading(true);
+    setError('');
+    setSearch('');
+    setSkip((current) => current + PAGE_SIZE);
+  };
+
+  return (
+    <div className="space-y-8 text-slate-800">
+      <section className="relative overflow-hidden rounded-3xl bg-linear-to-br from-indigo-600 via-indigo-600 to-violet-600 p-6 text-white shadow-xl sm:p-8">
+        <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+        <div className="relative flex flex-col justify-between gap-6 md:flex-row md:items-end">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-semibold backdrop-blur">
+              <Lightbulb className="h-3.5 w-3.5 text-yellow-300" />
+              Trung tâm đóng góp
+            </span>
+            <h1 className="mt-5 text-3xl font-bold tracking-tight md:text-4xl">
+              Quản lý đóng góp
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-indigo-100 md:text-base">
+              Xem xét những kinh nghiệm do học viên chia sẻ và lựa chọn nội dung hữu ích cho cộng đồng.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/15 bg-white/10 px-5 py-4 backdrop-blur">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-indigo-100">
+              Đang chờ bạn xử lý
+            </p>
+            <p className="mt-1 text-3xl font-bold text-white">{total}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-3">
+        <SummaryCard
+          icon={Clock3}
+          label="Tổng chờ duyệt"
+          value={total}
+          hint="Tất cả đóng góp chưa xử lý"
+          tone="amber"
+        />
+        <SummaryCard
+          icon={Users}
+          label="Học viên đóng góp"
+          value={contributorCount}
+          hint="Trong trang đang hiển thị"
+          tone="emerald"
+        />
+        <SummaryCard
+          icon={Layers}
+          label="Lộ trình liên quan"
+          value={roadmapCount}
+          hint={`Trang ${currentPage}/${totalPages || 0}`}
+          tone="indigo"
+        />
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">
+              Danh sách chờ duyệt
+            </h2>
+            <p className="mt-1 text-xs text-slate-500">
+              Chọn một đóng góp để xem đầy đủ và đưa ra quyết định.
+            </p>
+          </div>
+          <div className="flex w-full gap-2 sm:w-auto">
+            <label className="relative min-w-0 flex-1 sm:w-72">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                type="search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Tìm trong trang hiện tại..."
+                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-700 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+              />
+            </label>
+            <button
+              type="button"
+              aria-label="Làm mới danh sách"
+              onClick={refresh}
+              disabled={loading}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:border-indigo-200 hover:text-indigo-600 disabled:cursor-wait disabled:opacity-50"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+        </div>
+
+        {error ? (
+          <div className="rounded-2xl border border-rose-100 bg-rose-50 p-5 text-center">
+            <AlertCircle className="mx-auto h-7 w-7 text-rose-500" />
+            <p className="mt-2 text-sm font-semibold text-rose-700">{error}</p>
+            <button
+              type="button"
+              onClick={refresh}
+              className="mt-3 rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white"
+            >
+              Thử lại
+            </button>
+          </div>
+        ) : search && !visibleTips.length && !loading ? (
+          <div className="rounded-3xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center">
+            <Search className="mx-auto h-9 w-9 text-slate-300" />
+            <h3 className="mt-3 font-bold text-slate-900">
+              Không tìm thấy đóng góp phù hợp
+            </h3>
+            <p className="mt-1 text-sm text-slate-500">
+              Hãy thử từ khóa khác trong trang hiện tại.
+            </p>
+          </div>
+        ) : (
+          <PendingTipsSection
+            tips={visibleTips}
+            isLoading={loading}
+            onRefresh={refresh}
+          />
+        )}
+      </section>
+
+      {totalPages > 1 ? (
+        <nav className="flex flex-col items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm sm:flex-row">
+          <p className="text-xs text-slate-500">
+            Hiển thị {Math.min(skip + 1, total)}–{Math.min(skip + PAGE_SIZE, total)} trong {total} đóng góp
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={goToPreviousPage}
+              disabled={!hasPrevious || loading}
+              className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Trước
+            </button>
+            <span className="rounded-xl bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700">
+              {currentPage}/{totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={goToNextPage}
+              disabled={!hasNext || loading}
+              className="inline-flex items-center gap-1 rounded-xl border border-indigo-200 px-3 py-2 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Tiếp
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </nav>
+      ) : null}
+    </div>
+  );
+}

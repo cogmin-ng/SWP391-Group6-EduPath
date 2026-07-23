@@ -14,6 +14,8 @@ const tipMessages = {
   nodeNotFound: 'Node not found',
   invalidId: 'Invalid tip id',
   notEnrolled: 'You are not enrolled in this learning path',
+  contributionClosed:
+    'Bạn chỉ có thể đóng góp tip trong khi đang học lộ trình này',
   permissionDenied: 'You do not have permission to perform this action',
   alreadyApproved: 'This tip is already approved',
   alreadyRejected: 'This tip is already rejected',
@@ -34,17 +36,27 @@ exports.submitTip = async (nodeId, { title, content }, contributorId) => {
     throw new ApiError(404, tipMessages.nodeNotFound);
   }
 
-  // Verify contributor is enrolled in this learning path
+  // Only an active, unfinished enrollment may contribute. Check both status
+  // and progress so stale/inconsistent enrollment data cannot reopen the flow.
   const enrollment = await prisma.enrollment.findFirst({
     where: {
       userId: contributorId,
       learningPathId: node.learningPathId,
-      status: 'ACTIVE',
+      isDeleted: false,
     },
+    select: { status: true, progressPercent: true },
   });
 
   if (!enrollment) {
     throw new ApiError(403, tipMessages.notEnrolled);
+  }
+
+  const hasFinishedLearningPath =
+    enrollment.status === 'COMPLETED' ||
+    Number(enrollment.progressPercent || 0) >= 100;
+
+  if (hasFinishedLearningPath || enrollment.status !== 'ACTIVE') {
+    throw new ApiError(403, tipMessages.contributionClosed);
   }
 
   // Create tip with PENDING status

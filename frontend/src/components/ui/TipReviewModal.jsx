@@ -1,181 +1,245 @@
 import { useState } from 'react';
-import { X, AlertCircle, Check } from 'lucide-react';
+import {
+  AlertCircle,
+  Check,
+  Clock3,
+  Lightbulb,
+  Loader2,
+  Map,
+  User,
+  X,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const TipReviewModal = ({ tip, isOpen, onClose, onApprove, onReject, isLoading }) => {
+function formatDate(value) {
+  if (!value) return 'Gần đây';
+  return new Intl.DateTimeFormat('vi-VN', {
+    dateStyle: 'long',
+    timeStyle: 'short',
+  }).format(new Date(value));
+}
+
+export default function TipReviewModal({
+  tip,
+  isOpen,
+  onClose,
+  onApprove,
+  onReject,
+  isLoading,
+}) {
   const [rejectReason, setRejectReason] = useState('');
-  const [isRejecting, setIsRejecting] = useState(false);
+  const [showRejectForm, setShowRejectForm] = useState(false);
 
   if (!isOpen || !tip) return null;
+
+  const closeModal = () => {
+    if (isLoading) return;
+    setRejectReason('');
+    setShowRejectForm(false);
+    onClose();
+  };
 
   const handleApprove = async () => {
     try {
       await onApprove(tip.id);
-      toast.success('Tip đã được duyệt!');
-      setRejectReason('');
-      onClose();
-    } catch (err) {
-      toast.error(err?.message || 'Lỗi khi duyệt tip');
+      toast.success('Đóng góp đã được duyệt và công bố');
+      closeModal();
+    } catch (error) {
+      toast.error(error?.message || 'Không thể duyệt đóng góp');
     }
   };
 
   const handleReject = async () => {
-    if (!rejectReason.trim()) {
-      toast.error('Vui lòng nhập lý do từ chối');
-      return;
-    }
-
-    if (rejectReason.trim().length < 5) {
-      toast.error('Lý do từ chối phải ít nhất 5 ký tự');
+    const reason = rejectReason.trim();
+    if (reason.length < 5) {
+      toast.error('Lý do từ chối phải có ít nhất 5 ký tự');
       return;
     }
 
     try {
-      setIsRejecting(true);
-      await onReject(tip.id, rejectReason);
-      toast.success('Tip đã bị từ chối');
-      setRejectReason('');
-      onClose();
-    } catch (err) {
-      toast.error(err?.message || 'Lỗi khi từ chối tip');
-    } finally {
-      setIsRejecting(false);
+      await onReject(tip.id, reason);
+      toast.success('Đã từ chối đóng góp');
+      closeModal();
+    } catch (error) {
+      toast.error(error?.message || 'Không thể từ chối đóng góp');
     }
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  const contributorName = tip.contributor?.name || 'Học viên ẩn danh';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black opacity-40" onClick={onClose} />
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl z-10 p-6 max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-slate-900">Duyệt Tip</h3>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-700">
-            <X className="w-5 h-5" />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <button
+        type="button"
+        aria-label="Đóng cửa sổ duyệt đóng góp"
+        onClick={closeModal}
+        className="absolute inset-0 bg-slate-950/50 backdrop-blur-sm"
+      />
+
+      <div className="relative z-10 flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-white/20 bg-white shadow-2xl">
+        <div className="flex items-start justify-between gap-4 border-b border-indigo-100 bg-linear-to-r from-indigo-50 via-white to-violet-50 px-5 py-5 sm:px-6">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-600/20">
+              <Lightbulb className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-600">
+                Đóng góp đang chờ duyệt
+              </p>
+              <h2 className="mt-1 text-lg font-bold text-slate-900 sm:text-xl">
+                Xem xét nội dung
+              </h2>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={closeModal}
+            disabled={isLoading}
+            className="rounded-xl p-2 text-slate-400 transition hover:bg-white hover:text-slate-700 disabled:opacity-50"
+          >
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Tip Content */}
-        <div className="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
-          {/* Title */}
-          <h4 className="text-lg font-semibold text-slate-900 mb-2">
-            {tip.title || '(Không có tiêu đề)'}
-          </h4>
-
-          {/* Metadata */}
-          <div className="mb-4 flex flex-wrap gap-4 text-sm text-slate-600">
-            <div>
-              <span className="text-slate-500">Người đóng góp:</span>{' '}
-              <span className="font-medium">
-                {tip.contributor?.name || 'Unknown User'}
+        <div className="overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
+          <div className="flex flex-wrap gap-2 text-xs">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 font-semibold text-amber-700">
+              <Clock3 className="h-3.5 w-3.5" />
+              {formatDate(tip.createdAt)}
+            </span>
+            <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1.5 font-semibold text-indigo-700">
+              <Map className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">
+                {tip.node?.title || 'Nội dung chưa xác định'}
               </span>
-            </div>
-            <div>
-              <span className="text-slate-500">Node:</span>{' '}
-              <span className="font-medium">{tip.node?.title || 'N/A'}</span>
-            </div>
-            <div>
-              <span className="text-slate-500">Ngày gửi:</span>{' '}
-              <span className="font-medium">{formatDate(tip.createdAt)}</span>
-            </div>
+            </span>
           </div>
 
-          {/* Content */}
-          <div className="mt-4 p-3 bg-white rounded-lg border border-slate-200">
-            <p className="text-slate-800 whitespace-pre-wrap">{tip.content}</p>
+          <div className="mt-5">
+            <h3 className="text-xl font-bold leading-snug text-slate-900">
+              {tip.title || 'Đóng góp chưa có tiêu đề'}
+            </h3>
+            {tip.node?.learningPath?.title ? (
+              <p className="mt-1 text-xs font-medium text-indigo-600">
+                {tip.node.learningPath.title}
+              </p>
+            ) : null}
           </div>
 
-          {/* Contributor Avatar & Bio (optional) */}
-          {tip.contributor && (
-            <div className="mt-4 pt-4 border-t border-slate-200 flex items-center gap-3">
-              {tip.contributor.avatar && (
-                <img
-                  src={tip.contributor.avatar}
-                  alt={tip.contributor.name}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-              )}
-              <div>
-                <p className="text-sm font-medium text-slate-900">{tip.contributor.name}</p>
-                <p className="text-xs text-slate-600">{tip.contributor.email}</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Rejection Reason (if showing reject form) */}
-        {isRejecting ? (
-          <div className="mb-6">
-            <label className="block text-sm font-semibold text-slate-900 mb-2">
-              Lý do từ chối <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              placeholder="Nhập lý do từ chối (tối thiểu 5 ký tự)..."
-              className="w-full border border-slate-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none h-24"
-            />
-            <p className="text-xs text-slate-500 mt-1">
-              Mentee sẽ nhận được thông báo với lý do này
+          <div className="mt-5 rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:p-5">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              Nội dung chia sẻ
+            </p>
+            <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-700">
+              {tip.content}
             </p>
           </div>
-        ) : null}
 
-        {/* Action Buttons */}
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            disabled={isLoading || isRejecting}
-            className="flex-1 px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {isRejecting ? 'Quay lại' : 'Đóng'}
-          </button>
+          <div className="mt-5 flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+            {tip.contributor?.avatar ? (
+              <img
+                src={tip.contributor.avatar}
+                alt={contributorName}
+                className="h-11 w-11 rounded-xl object-cover"
+              />
+            ) : (
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700">
+                <User className="h-5 w-5" />
+              </span>
+            )}
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold text-slate-900">
+                {contributorName}
+              </p>
+              <p className="mt-0.5 truncate text-xs text-slate-500">
+                {tip.contributor?.email || 'Không có email'}
+              </p>
+            </div>
+          </div>
 
-          {isRejecting ? (
+          {showRejectForm ? (
+            <div className="mt-5 rounded-2xl border border-rose-100 bg-rose-50/60 p-4">
+              <label
+                htmlFor="tip-reject-reason"
+                className="text-sm font-bold text-slate-900"
+              >
+                Lý do từ chối <span className="text-rose-500">*</span>
+              </label>
+              <textarea
+                id="tip-reject-reason"
+                value={rejectReason}
+                onChange={(event) => setRejectReason(event.target.value)}
+                placeholder="Giải thích rõ nội dung cần cải thiện để học viên có thể đóng góp tốt hơn..."
+                rows={4}
+                maxLength={500}
+                className="mt-2 w-full resize-none rounded-xl border border-rose-200 bg-white p-3 text-sm text-slate-700 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
+              />
+              <div className="mt-2 flex justify-between gap-3 text-[11px] text-slate-500">
+                <span>Học viên sẽ nhận được lý do này.</span>
+                <span>{rejectReason.length}/500</span>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="flex flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50/70 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+          {showRejectForm ? (
             <>
               <button
-                onClick={() => setIsRejecting(false)}
+                type="button"
+                onClick={() => {
+                  setShowRejectForm(false);
+                  setRejectReason('');
+                }}
                 disabled={isLoading}
-                className="flex-1 px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
               >
-                Hủy
+                Quay lại
               </button>
               <button
+                type="button"
                 onClick={handleReject}
                 disabled={isLoading}
-                className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-wait disabled:opacity-60"
               >
-                <AlertCircle className="w-4 h-4" />
-                {isLoading ? 'Đang xử lý...' : 'Từ chối'}
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <AlertCircle className="h-4 w-4" />
+                )}
+                Xác nhận từ chối
               </button>
             </>
           ) : (
             <>
               <button
-                onClick={() => setIsRejecting(true)}
+                type="button"
+                onClick={closeModal}
                 disabled={isLoading}
-                className="flex-1 px-4 py-2 rounded-lg border border-red-300 text-red-700 font-medium hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
+              >
+                Đóng
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowRejectForm(true)}
+                disabled={isLoading}
+                className="rounded-xl border border-rose-200 bg-white px-4 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-50"
               >
                 Từ chối
               </button>
               <button
+                type="button"
                 onClick={handleApprove}
                 disabled={isLoading}
-                className="flex-1 px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-wait disabled:opacity-60"
               >
-                <Check className="w-4 h-4" />
-                {isLoading ? 'Đang xử lý...' : 'Duyệt'}
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Check className="h-4 w-4" />
+                )}
+                Duyệt và công bố
               </button>
             </>
           )}
@@ -183,6 +247,4 @@ const TipReviewModal = ({ tip, isOpen, onClose, onApprove, onReject, isLoading }
       </div>
     </div>
   );
-};
-
-export default TipReviewModal;
+}

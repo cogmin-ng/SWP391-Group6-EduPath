@@ -8,8 +8,14 @@ import TipContributionModal from '../../ui/TipContributionModal';
  * - tips: Array of tips
  * - nodeId: current node id
  * - onRefresh: callback to refresh tips after submission
+ * - canContribute: whether the mentee is actively learning the roadmap
  */
-export default function TipsSection({ tips: initialTips, nodeId, onRefresh }) {
+export default function TipsSection({
+  tips: initialTips,
+  nodeId,
+  onRefresh,
+  canContribute = false,
+}) {
   const [open, setOpen] = useState(false);
   const tips = initialTips || [];
 
@@ -31,12 +37,24 @@ export default function TipsSection({ tips: initialTips, nodeId, onRefresh }) {
           </div>
           <button
             onClick={() => setOpen(true)}
-            className="px-3.5 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 active:scale-95 transition-all shadow-sm flex items-center gap-2 cursor-pointer flex-shrink-0"
+            disabled={!canContribute}
+            title={
+              canContribute
+                ? 'Đóng góp tip'
+                : 'Chỉ có thể đóng góp khi lộ trình đang học'
+            }
+            className="px-3.5 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 active:scale-95 transition-all shadow-sm flex items-center gap-2 cursor-pointer flex-shrink-0 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 disabled:shadow-none disabled:active:scale-100"
           >
             <Plus className="w-4 h-4" />
             Đóng góp
           </button>
         </div>
+
+        {!canContribute ? (
+          <div className="mb-5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+            Lộ trình đã hoàn thành. Bạn chỉ có thể đóng góp tip trong lúc đang học.
+          </div>
+        ) : null}
 
         {/* Tips list */}
         {tipCount > 0 ? (
@@ -67,7 +85,7 @@ export default function TipsSection({ tips: initialTips, nodeId, onRefresh }) {
           </div>
         )}
 
-        {open && (
+        {open && canContribute && (
           <TipContributionModal
             nodeId={nodeId}
             onClose={() => setOpen(false)}

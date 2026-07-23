@@ -811,28 +811,6 @@ exports.reviewRoadmap = async (roadmapId, { status, feedback }) => {
       tx
     );
 
-    if (status === 'APPROVED') {
-      const existingEnrollment = await tx.enrollment.findUnique({
-        where: {
-          userId_learningPathId: {
-            userId: reviewed.mentorId,
-            learningPathId: reviewed.id,
-          },
-        },
-      });
-
-      if (!existingEnrollment) {
-        await tx.enrollment.create({
-          data: {
-            userId: reviewed.mentorId,
-            learningPathId: reviewed.id,
-            status: 'ACTIVE',
-            progressPercent: 0,
-          },
-        });
-      }
-    }
-
     await notifyMentorAboutRoadmapReview(tx, reviewed, status, feedback);
 
     return reviewed;
@@ -906,6 +884,7 @@ exports.getMentorDashboardStats = async (mentorId) => {
     where: {
       learningPath: { mentorId, isDeleted: false },
       isDeleted: false,
+      user: { role: { name: 'MENTEE' }, isDeleted: false },
     },
   });
   const totalStudents = totalStudentsAggr.length;
@@ -915,6 +894,7 @@ exports.getMentorDashboardStats = async (mentorId) => {
     where: {
       learningPath: { mentorId, isDeleted: false },
       isDeleted: false,
+      user: { role: { name: 'MENTEE' }, isDeleted: false },
       enrolledAt: { gte: startOfMonth },
     },
   });
@@ -925,6 +905,7 @@ exports.getMentorDashboardStats = async (mentorId) => {
     where: {
       learningPath: { mentorId, isDeleted: false },
       isDeleted: false,
+      user: { role: { name: 'MENTEE' }, isDeleted: false },
       enrolledAt: { gte: startOfLastMonth, lt: startOfMonth },
     },
   });

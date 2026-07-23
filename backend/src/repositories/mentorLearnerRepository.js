@@ -7,7 +7,10 @@ const activeEnrollmentWhere = (mentorId) => ({
     mentorId,
     isDeleted: false,
   },
-  user: { isDeleted: false },
+  user: {
+    isDeleted: false,
+    role: { name: 'MENTEE' },
+  },
 });
 
 exports.findPage = async (mentorId, { skip, take, search, status }) => {
@@ -18,6 +21,7 @@ exports.findPage = async (mentorId, { skip, take, search, status }) => {
       ? {
           user: {
             isDeleted: false,
+            role: { name: 'MENTEE' },
             OR: [
               { name: { contains: search, mode: 'insensitive' } },
               { email: { contains: search, mode: 'insensitive' } },

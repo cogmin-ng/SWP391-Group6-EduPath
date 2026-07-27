@@ -35,6 +35,7 @@ Những nơi tôi làm nhiều nhất:
 - [EditRoadmapPage.jsx](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/pages/mentor/EditRoadmapPage.jsx)
 - [QuestionBankPage.jsx](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/pages/mentor/QuestionBankPage.jsx)
 - [MentorProfilePage.jsx](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/pages/mentor/MentorProfilePage.jsx)
+- [MentorRoadmapLearningPage.jsx](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/pages/mentor/MentorRoadmapLearningPage.jsx)
 - [roadmapService.js](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/services/roadmapService.js)
 - [questionBankService.js](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/services/questionBankService.js)
 
@@ -63,6 +64,10 @@ Những nơi tôi làm nhiều nhất:
 - [MentorDashboardPage.jsx](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/pages/mentor/MentorDashboardPage.jsx)
 - [roadmapService.js](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/services/roadmapService.js)
 
+#### Nghiệp vụ
+
+Cung cấp cho Mentor một trung tâm điều khiển (Control Panel) để theo dõi tổng quan các chỉ số hoạt động giảng dạy (tổng lộ trình, số lượng mentee đang học, điểm đánh giá trung bình, số đóng góp bài học). Giúp mentor nắm bắt kịp thời các yêu cầu cần phê duyệt (như Mẹo học tập - Tips mà học viên đóng góp) và truy cập nhanh vào các lộ trình đang giảng dạy.
+
 #### Tôi làm gì
 
 Tôi chuyển Mentor Dashboard từ phụ thuộc dữ liệu giả sang sử dụng các API động từ hệ thống.
@@ -88,28 +93,34 @@ Kết quả là:
 
 ---
 
-### 3.2 Xem Lộ Trình (My Roadmaps & Detail)
+### 3.2 Xem Lộ Trình & Xem Trước Với Góc Nhìn Học Viên (My Roadmaps, Detail & Mentee Preview)
 
 #### File code
 
 - [MentorRoadmapsPage.jsx](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/pages/mentor/MentorRoadmapsPage.jsx)
 - [MentorRoadmapDetailPage.jsx](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/pages/mentor/MentorRoadmapDetailPage.jsx)
+- [MentorRoadmapLearningPage.jsx](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/pages/mentor/MentorRoadmapLearningPage.jsx)
+
+#### Nghiệp vụ
+
+Cho phép Mentor quản lý danh mục tất cả lộ trình cá nhân theo từng giai đoạn vòng đời (Bản nháp DRAFT, Đang chờ duyệt PENDING, Đã xuất bản PUBLISHED), xem cấu trúc chi tiết bài giảng và đặc biệt là **trải nghiệm chế độ Xem trước với góc nhìn học viên (Mentee View Preview)** để kiểm tra giao diện học tập, thứ tự các Node, checklist, tài liệu và bài quiz trước khi xuất bản. Hỗ trợ quy trình xóa/ẩn lộ trình an toàn khi đã có học viên đăng ký học.
 
 #### Tôi làm gì
 
-Tôi phát triển luồng xem danh sách lộ trình cá nhân và xem chi tiết lộ trình học tập của mentor.
+Tôi phát triển luồng xem danh sách lộ trình cá nhân, xem chi tiết lộ trình và chế độ xem trước nội dung học tập ở góc nhìn mentee của mentor.
 
 Cụ thể:
 - Trong `MentorRoadmapsPage.jsx`, tôi phân chia giao diện thành 3 tab chính: `Lộ trình nháp` (`DRAFT`), `Đang chờ duyệt` (`PENDING`) và `Đã được duyệt` (`APPROVED`/`PUBLISHED`). Đồng thời, hỗ trợ chức năng xóa lộ trình (`deleteRoadmap`) kèm cảnh báo nếu lộ trình đã có học sinh đang theo học.
 - Trong `MentorRoadmapDetailPage.jsx`, tôi sử dụng `useParams()` để lấy ID lộ trình, gọi `getRoadmapById(roadmapId)` hiển thị tổng quan lộ trình (hình nền, mô tả, tên mentor, số lượng học viên), danh sách chi tiết các Node thuộc chương trình học (`Curriculum Path`) và khu vực xem phản hồi đánh giá của học viên.
+- Trong `MentorRoadmapLearningPage.jsx`, tôi phát triển trang **Xem trước lộ trình dưới góc nhìn Học viên (Mentee Perspective Preview)**. Tại đây, mentor có thể trải nghiệm toàn bộ giao diện bài học của mentee (`NodeHeader`, `NodeSidebar`, `Checklist`, `Materials`, `Quiz`, `Tips`, `Discussion`), chuyển đổi linh hoạt giữa các Node và kiểm tra tính trực quan của toàn bộ nội dung giáo án trước khi đưa vào giảng dạy chính thức.
 
 #### Tôi hoàn thành như thế nào
 
-Tôi đồng bộ hóa các bộ lọc trạng thái và cấu trúc curriculum để mentor xem chính xác cấu trúc bài dạy giống như mentee nhưng có thêm quyền quản trị và chỉnh sửa.
+Tôi đồng bộ hóa các bộ lọc trạng thái, cấu trúc curriculum và xây dựng chế độ Xem trước độc lập (Preview Mode) cách ly dữ liệu tiến độ để mentor vừa có quyền chỉnh sửa/quản trị ở trang Detail, vừa kiểm thử được trải nghiệm học tập chuẩn xác của mentee.
 
 #### Công dụng của code này
 
-- Giúp mentor theo dõi phân phối bài giảng và nắm bắt nhận xét của học viên.
+- Giúp mentor theo dõi phân phối bài giảng, kiểm thử trải nghiệm bài học dưới góc nhìn mentee và nắm bắt nhận xét của học viên.
 - Giúp tổ chức và dọn dẹp các lộ trình cũ/lỗi qua cơ chế xóa an toàn.
 
 ---
@@ -339,6 +350,7 @@ Nếu cần chứng minh contribution bằng code, tôi sẽ mở các file sau:
 - [EditRoadmapPage.jsx](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/pages/mentor/EditRoadmapPage.jsx)
 - [QuestionBankPage.jsx](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/pages/mentor/QuestionBankPage.jsx)
 - [MentorProfilePage.jsx](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/pages/mentor/MentorProfilePage.jsx)
+- [MentorRoadmapLearningPage.jsx](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/pages/mentor/MentorRoadmapLearningPage.jsx)
 
 ### Backend
 
@@ -356,4 +368,6 @@ Nếu cần chứng minh contribution bằng code, tôi sẽ mở các file sau:
 
 ---
 
+## 8. Câu nói ngắn để review
 
+`Em phụ trách hoàn thiện toàn bộ luồng tính năng dành cho Mentor của EduPath theo hướng full-stack. Ở frontend, em phát triển các trang Mentor Dashboard (thống kê động, duyệt nhanh tips), Quản lý lộ trình (lọc theo tab, xem chi tiết, xem trước ở góc nhìn mentee qua MentorRoadmapLearningPage.jsx, tạo mới và chỉnh sửa lộ trình cùng Nodes học tập), Ngân hàng câu hỏi trắc nghiệm và trang Hồ sơ cá nhân tích hợp upload avatar. Ở backend, em viết các API thống kê dashboard, xử lý CRUD lộ trình (lưu nháp, gửi duyệt, xóa/ẩn an toàn), API cho ngân hàng câu hỏi bằng database transaction và API cập nhật thông tin/avatar lên Cloudinary. Ở database, em thiết kế cấu trúc bảng BankQuestion, BankQuestionOption và bổ sung dữ liệu seed phục vụ demo. Kết quả là luồng chuẩn bị bài học và quản lý của Mentor chạy ổn định end-to-end.`

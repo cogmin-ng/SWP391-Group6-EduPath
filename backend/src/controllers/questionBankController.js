@@ -13,6 +13,7 @@ exports.getQuestionBank = asyncHandler(async (req, res) => {
     search: req.query.search || '',
     subjectId: req.query.subjectId || null,
     difficulty: req.query.difficulty || null,
+    excludeIds: req.query.excludeIds || null,
   };
 
   const result = await questionBankService.getQuestionBank(req.user.id, filters);

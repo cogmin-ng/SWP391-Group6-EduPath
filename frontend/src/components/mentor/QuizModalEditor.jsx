@@ -107,10 +107,11 @@ const QuizModalEditor = ({ isOpen, onClose, onSave, initialData, roadmapId, subj
       };
     });
   };
-
   const validateForm = () => {
     if (!quizData.title.trim()) return 'Tiêu đề bài trắc nghiệm là bắt buộc';
-    if (!quizData.passingScore || quizData.passingScore <= 0) return 'Điểm đạt phải lớn hơn 0';
+    if (!quizData.passingScore) {
+      quizData.passingScore = 80;
+    }
     if (quizData.questions.length === 0) return 'Quiz phải có ít nhất 1 câu hỏi';
     
     for (let i = 0; i < quizData.questions.length; i++) {
@@ -220,6 +221,7 @@ const QuizModalEditor = ({ isOpen, onClose, onSave, initialData, roadmapId, subj
         onImport={handleImportQuestions}
         subjectId={finalSubjectId}
         excludeBankQuestionIds={quizData.questions.map(q => q.bankQuestionId).filter(Boolean)}
+        excludeQuestionTexts={quizData.questions.map(q => (q.question || '').trim().toLowerCase()).filter(Boolean)}
       />
     </div>
   );

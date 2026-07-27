@@ -248,6 +248,7 @@ model LearningPath {
   subject   Subject @relation(fields: [subjectId], references: [id])
 
   studyTips String? @db.Text
+  rejectReason String? @db.Text
 
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())

@@ -80,6 +80,10 @@ const CreateRoadmapPage = () => {
   const handleThumbnailChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('Kích thước ảnh không được vượt quá 10MB');
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData(prev => ({ ...prev, thumbnail: reader.result }));
@@ -152,7 +156,7 @@ const CreateRoadmapPage = () => {
       await submitRoadmap(created.id);
 
       toast.success('Đã gửi lộ trình để chờ duyệt');
-      navigate('/mentor/reviews');
+      navigate('/mentor/roadmaps');
     } catch (err) {
       console.error(err);
       toast.error('Lỗi gửi phê duyệt: ' + (err.response?.data?.message || err.message));
@@ -255,7 +259,7 @@ const CreateRoadmapPage = () => {
                     <p className="text-sm font-medium text-slate-600 group-hover:text-indigo-600">
                       Kéo thả hoặc bấm để tải lên
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">PNG, JPG tối đa 2MB</p>
+                    <p className="text-xs text-slate-500 mt-1">PNG, JPG tối đa 10MB</p>
                   </div>
                   <input
                     type="file"

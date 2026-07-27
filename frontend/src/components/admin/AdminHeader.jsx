@@ -33,6 +33,7 @@ export default function AdminHeader() {
   // Notification states
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   // Monitor scroll for shadow effect
   useEffect(() => {
@@ -74,6 +75,7 @@ export default function AdminHeader() {
       }
     }
 
+    setNotificationsOpen(false);
     navigate(route);
   };
 
@@ -151,14 +153,14 @@ export default function AdminHeader() {
           {/* Right Side: Account Actions, Notification, User Profile */}
           <div className="flex items-center gap-4 shrink-0">
             
-            {/* Notifications Dropdown (Hover Group) */}
-            <div className="relative group">
+            {/* Notifications Dropdown */}
+            <div className="relative">
               <button 
+                type="button"
                 onClick={() => {
+                  setNotificationsOpen((prev) => !prev);
+                  setProfileOpen(false);
                   fetchNotifications();
-                  if (unreadCount > 0) {
-                    handleMarkAllAsRead();
-                  }
                 }}
                 className="p-2 hover:bg-slate-100 rounded-xl text-slate-600 relative transition-colors"
               >
@@ -171,49 +173,55 @@ export default function AdminHeader() {
               </button>
 
               {/* Notifications Dropdown Panel */}
-              <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden flex flex-col z-50">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/50">
-                  <span className="font-bold text-slate-800 text-sm">Thông báo</span>
-                  {unreadCount > 0 && (
-                    <button 
-                      onClick={handleMarkAllAsRead} 
-                      className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 transition-colors"
-                    >
-                      <Check className="w-3 h-3" /> Đánh dấu đã đọc
-                    </button>
-                  )}
-                </div>
-                <div className="max-h-72 overflow-y-auto w-full">
-                  {notifications.length === 0 ? (
-                    <div className="px-4 py-8 text-xs text-center text-slate-400 font-medium">
-                      Không có thông báo nào.
-                    </div>
-                  ) : (
-                    <div className="divide-y divide-slate-100">
-                      {notifications.map((notif) => (
-                        <div 
-                          key={notif.id} 
-                          onClick={() => handleNotificationClick(notif)}
-                          className={`px-4 py-3 cursor-pointer transition-colors hover:bg-slate-50 flex flex-col gap-1 ${!notif.isRead ? 'bg-indigo-50/20' : ''}`}
+              {notificationsOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setNotificationsOpen(false)} />
+                  <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden flex flex-col z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+                      <span className="font-bold text-slate-800 text-sm">Thông báo</span>
+                      {unreadCount > 0 && (
+                        <button 
+                          onClick={handleMarkAllAsRead} 
+                          className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 transition-colors"
                         >
-                          <div className="flex items-start justify-between gap-2">
-                            <h4 className={`text-xs ${!notif.isRead ? 'font-bold text-slate-900' : 'font-semibold text-slate-600'}`}>
-                              {notif.title}
-                            </h4>
-                            {!notif.isRead && <span className="w-2 h-2 bg-indigo-500 rounded-full shrink-0 mt-1.5" />}
-                          </div>
-                          <p className={`text-xs leading-relaxed ${!notif.isRead ? 'text-slate-700' : 'text-slate-500'}`}>
-                            {notif.content}
-                          </p>
-                          <span className="text-[10px] text-slate-400 font-medium mt-1">
-                            {new Date(notif.createdAt).toLocaleString('vi-VN')}
-                          </span>
-                        </div>
-                      ))}
+                          <Check className="w-3 h-3" /> Đánh dấu đã đọc
+                        </button>
+                      )}
                     </div>
-                  )}
-                </div>
-              </div>
+                    <div className="max-h-72 overflow-y-auto w-full">
+                      {notifications.length === 0 ? (
+                        <div className="px-4 py-8 text-xs text-center text-slate-400 font-medium">
+                          Không có thông báo nào.
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-slate-100">
+                          {notifications.map((notif) => (
+                            <button
+                              key={notif.id} 
+                              type="button"
+                              onClick={() => handleNotificationClick(notif)}
+                              className={`w-full text-left px-4 py-3 cursor-pointer transition-colors hover:bg-slate-50 flex flex-col gap-1 ${!notif.isRead ? 'bg-indigo-50/20' : ''}`}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <h4 className={`text-xs ${!notif.isRead ? 'font-bold text-slate-900' : 'font-semibold text-slate-600'}`}>
+                                  {notif.title}
+                                </h4>
+                                {!notif.isRead && <span className="w-2 h-2 bg-indigo-500 rounded-full shrink-0 mt-1.5" />}
+                              </div>
+                              <p className={`text-xs leading-relaxed ${!notif.isRead ? 'text-slate-700' : 'text-slate-500'}`}>
+                                {notif.content}
+                              </p>
+                              <span className="text-[10px] text-slate-400 font-medium mt-1">
+                                {new Date(notif.createdAt).toLocaleString('vi-VN')}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>

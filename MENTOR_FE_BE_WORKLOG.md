@@ -63,10 +63,6 @@ Những nơi tôi làm nhiều nhất:
 - [MentorDashboardPage.jsx](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/pages/mentor/MentorDashboardPage.jsx)
 - [roadmapService.js](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/services/roadmapService.js)
 
-#### Nghiệp vụ
-
-Cung cấp cho Mentor một trung tâm điều khiển (Control Panel) để theo dõi tổng quan các chỉ số hoạt động giảng dạy (tổng lộ trình, số lượng mentee đang học, điểm đánh giá trung bình, số đóng góp bài học). Giúp mentor nắm bắt kịp thời các yêu cầu cần phê duyệt (như Mẹo học tập - Tips mà học viên đóng góp) và truy cập nhanh vào các lộ trình đang giảng dạy.
-
 #### Tôi làm gì
 
 Tôi chuyển Mentor Dashboard từ phụ thuộc dữ liệu giả sang sử dụng các API động từ hệ thống.
@@ -99,10 +95,6 @@ Kết quả là:
 - [MentorRoadmapsPage.jsx](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/pages/mentor/MentorRoadmapsPage.jsx)
 - [MentorRoadmapDetailPage.jsx](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/pages/mentor/MentorRoadmapDetailPage.jsx)
 
-#### Nghiệp vụ
-
-Cho phép Mentor quản lý danh mục tất cả lộ trình cá nhân theo từng giai đoạn vòng đời (Bản nháp DRAFT, Đang chờ duyệt PENDING, Đã xuất bản PUBLISHED), xem cấu trúc chi tiết bài giảng và các nhận xét/đánh giá (reviews) của mentee để cải thiện chất lượng nội dung. Hỗ trợ quy trình xóa/ẩn lộ trình an toàn khi đã có học viên đăng ký học.
-
 #### Tôi làm gì
 
 Tôi phát triển luồng xem danh sách lộ trình cá nhân và xem chi tiết lộ trình học tập của mentor.
@@ -129,10 +121,6 @@ Tôi đồng bộ hóa các bộ lọc trạng thái và cấu trúc curriculum 
 - [CreateRoadmapPage.jsx](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/pages/mentor/CreateRoadmapPage.jsx)
 - [EditRoadmapPage.jsx](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/pages/mentor/EditRoadmapPage.jsx)
 - [roadmapService.js](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/services/roadmapService.js)
-
-#### Nghiệp vụ
-
-Quản lý quy trình biên soạn giáo án và thiết kế nội dung học tập. Mentor khởi tạo thông tin chung của lộ trình (chuyên ngành, môn học phụ trách, ảnh thumbnail, phần thưởng XP), sau đó thiết kế từng Node học tập (cột mốc bài học) gồm tài liệu học, danh sách việc cần làm (checklist) và bài kiểm tra (quiz). Hỗ trợ luồng lưu nháp an toàn và gửi Admin phê duyệt trước khi công khai cho học viên.
 
 #### Tôi làm gì
 
@@ -161,10 +149,6 @@ Tôi áp dụng phương pháp truyền trạng thái biểu mẫu hiện tại 
 
 - [QuestionBankPage.jsx](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/pages/mentor/QuestionBankPage.jsx)
 - [questionBankService.js](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/services/questionBankService.js)
-
-#### Nghiệp vụ
-
-Xây dựng kho lưu trữ câu hỏi trắc nghiệm cá nhân phục vụ việc tái sử dụng khi tạo đề thi trắc nghiệm (Quiz). Mentor có thể phân loại câu hỏi theo môn học phụ trách, chọn mức độ khó (Dễ, Trung bình, Khó), thiết lập danh sách các lựa chọn đáp án kèm giải thích chi tiết lý do đúng/sai để mentee ôn tập.
 
 #### Tôi làm gì
 
@@ -196,10 +180,6 @@ Tôi thực hiện kiểm tra biểu mẫu (validation) chặt chẽ trên front
 - [userService.js](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/services/userService.js)
 - [mentorApplicationService.js](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/frontend/src/services/mentorApplicationService.js)
 
-#### Nghiệp vụ
-
-Quản lý thông tin thương hiệu cá nhân của Mentor trên hệ thống (chức danh, tiểu sử chuyên môn, ảnh đại diện, danh sách môn học & chuyên ngành đã được Admin phê duyệt giảng dạy). Giúp học viên và phụ huynh dễ dàng tìm hiểu thông tin, độ tin cậy cũng như năng lực chuyên môn của Mentor.
-
 #### Tôi làm gì
 
 Tôi hoàn thiện trang hiển thị và cập nhật hồ sơ cá nhân nâng cao của mentor.
@@ -230,10 +210,6 @@ Tôi sử dụng cơ chế lưu trữ các tùy biến địa phương (`localSt
 - [roadmap.js (routes)](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/backend/src/routes/roadmap.js)
 - [roadmapService.js (services)](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/backend/src/services/roadmapService.js)
 
-#### Nghiệp vụ
-
-Tính toán tổng hợp số liệu thống kê thời gian thực từ nhiều bảng trong cơ sở dữ liệu (Enrollment, Review, Tip, LearningPath) phục vụ hiển thị Dashboard. Xử lý quy trình thay đổi trạng thái lộ trình (DRAFT -> PENDING -> PUBLISHED / ARCHIVED), bảo vệ quyền lợi của mentee bằng cách lưu trữ (archive) thay vì xóa hoàn toàn các lộ trình đang có người đăng ký học.
-
 #### Tôi làm gì
 
 Tôi xây dựng các API cung cấp số liệu thống kê dashboard và quản lý trạng thái lộ trình của Mentor.
@@ -256,10 +232,6 @@ Cụ thể trong `roadmapService.js`, tôi triển khai:
 
 - [questionBank.js (routes)](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/backend/src/routes/questionBank.js)
 - [questionBankService.js (services)](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/backend/src/services/questionBankService.js)
-
-#### Nghiệp vụ
-
-Bảo mật và phân quyền truy cập tuyệt đối cho phân hệ ngân hàng câu hỏi (chỉ cho phép user có role MENTOR thực thi). Xử lý giao dịch lưu trữ (Prisma Transaction) đồng thời cho câu hỏi và các lựa chọn đáp án, đảm bảo tính toàn vẹn dữ liệu khi tạo mới, cập nhật hoặc xóa mềm câu hỏi.
 
 #### Tôi làm gì
 
@@ -285,10 +257,6 @@ Cụ thể tôi xây dựng:
 - [user.js (routes)](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/backend/src/routes/user.js)
 - [userService.js (services)](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/backend/src/services/userService.js)
 
-#### Nghiệp vụ
-
-Tiếp nhận và lưu trữ tài nguyên đa phương tiện (ảnh đại diện) lên dịch vụ đám mây Cloudinary thông qua CDN tốc độ cao, đồng thời cập nhật thông tin hồ sơ mentor trong cơ sở dữ liệu để hiển thị đồng bộ trên toàn bộ nền tảng.
-
 #### Tôi làm gì
 
 Tôi xử lý API cập nhật thông tin cá nhân và upload ảnh đại diện của mentor.
@@ -312,10 +280,6 @@ Cụ thể:
 
 - [schema.prisma](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/backend/prisma/schema.prisma)
 
-#### Nghiệp vụ
-
-Xây dựng mô hình dữ liệu quan hệ lưu trữ kho câu hỏi trắc nghiệm độc lập của Mentor (BankQuestion và BankQuestionOption), liên kết chặt chẽ với môn học (Subject) và người tạo (User), làm nguồn cấp câu hỏi động để import vào các bài kiểm tra (QuizQuestion).
-
 #### Tôi làm gì
 
 Tôi làm việc dựa trên cấu trúc các bảng hỗ trợ cho ngân hàng câu hỏi gồm:
@@ -335,10 +299,6 @@ Tôi làm việc dựa trên cấu trúc các bảng hỗ trợ cho ngân hàng 
 #### File code
 
 - [seed.js](file:///c:/Users/Administrator/Documents/GitHub/SWP391-Group6-EduPath/SWP391-Group6-EduPath/backend/prisma/seed.js)
-
-#### Nghiệp vụ
-
-Khởi tạo sẵn môi trường dữ liệu kiểm thử chuẩn (tài khoản Mentor mẫu, các môn học được phê duyệt, bộ câu hỏi trắc nghiệm mẫu) phục vụ cho việc kiểm thử tính năng (testing), demo sản phẩm và đánh giá hệ thống.
 
 #### Tôi làm gì
 
@@ -396,6 +356,4 @@ Nếu cần chứng minh contribution bằng code, tôi sẽ mở các file sau:
 
 ---
 
-## 8. Câu nói ngắn để review
 
-`Em phụ trách hoàn thiện toàn bộ luồng tính năng dành cho Mentor của EduPath theo hướng full-stack. Ở frontend, em phát triển các trang Mentor Dashboard (thống kê động, duyệt nhanh tips), Quản lý lộ trình (lọc theo tab, xem chi tiết, tạo mới và chỉnh sửa lộ trình cùng Nodes học tập), Ngân hàng câu hỏi trắc nghiệm và trang Hồ sơ cá nhân tích hợp upload avatar. Ở backend, em viết các API thống kê dashboard, xử lý CRUD lộ trình (lưu nháp, gửi duyệt, xóa/ẩn an toàn), API cho ngân hàng câu hỏi bằng database transaction và API cập nhật thông tin/avatar lên Cloudinary. Ở database, em thiết kế cấu trúc bảng BankQuestion, BankQuestionOption và bổ sung dữ liệu seed phục vụ demo. Kết quả là luồng chuẩn bị bài học và quản lý của Mentor chạy ổn định end-to-end.`

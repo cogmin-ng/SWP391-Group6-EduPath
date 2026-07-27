@@ -26,7 +26,13 @@ exports.findByIdWithDetails = async (id) => {
         include: {
           questions: {
             where: ACTIVE_FILTER,
-            select: { id: true },
+            orderBy: { createdAt: 'asc' },
+            include: {
+              options: {
+                where: ACTIVE_FILTER,
+                orderBy: { id: 'asc' },
+              },
+            },
           },
         },
       },

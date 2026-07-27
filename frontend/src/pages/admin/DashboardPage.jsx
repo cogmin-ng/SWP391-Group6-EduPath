@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Edit3, Camera, Sparkles, MapPin, CalendarDays, X, Shield, Mail } from 'lucide-react';
+import { Edit3, Camera, Sparkles, MapPin, CalendarDays, X, Shield, Mail, Activity, ShieldCheck, Server, Clock } from 'lucide-react';
 import StatsCard from '../../components/admin/StatsCard';
 import { useAuth } from '../../hooks/useAuth';
 import { adminService } from '../../services/adminService';
@@ -37,6 +37,14 @@ const DashboardPage = () => {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [toast, setToast] = useState(null);
+
+  // Live clock state
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const [dashboardStats, setDashboardStats] = useState([
     { id: 1, label: 'Tổng người dùng', value: '...', icon: 'Users', color: 'bg-blue-500', trend: '' },
@@ -293,26 +301,25 @@ const DashboardPage = () => {
           </div>
 
           <div className="hidden lg:flex lg:col-span-5 justify-center items-center">
-            <div className="relative w-full max-w-md h-60 bg-slate-900/30 rounded-2xl flex items-center justify-center border border-white/10">
-              <div className="absolute w-48 h-32 bg-indigo-950/70 border border-indigo-400/30 rounded-lg shadow-2xl flex items-center justify-center overflow-hidden">
-                <div className="absolute top-2 left-3 flex gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-red-400" />
-                  <div className="w-2 h-2 rounded-full bg-yellow-400" />
-                  <div className="w-2 h-2 rounded-full bg-green-400" />
-                </div>
-                <div className="text-left font-mono text-[10px] text-indigo-300 space-y-1.5 p-3 mt-4">
-                  <p className="text-yellow-400">const role = "ADMIN";</p>
-                  <p className="text-sky-300">
-                    import {"{ Dashboard }"} from "edupath";
-                  </p>
-                  <p className="text-emerald-400">
-                    console.log("Manage the platform!");
-                  </p>
-                </div>
+            <div className="relative w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl overflow-hidden flex flex-col items-center justify-center text-center">
+              {/* Background Ambient Glow */}
+              <div className="absolute -top-12 -right-12 w-36 h-36 bg-indigo-400/20 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute -bottom-12 -left-12 w-36 h-36 bg-purple-400/20 rounded-full blur-2xl pointer-events-none" />
+
+              {/* Header Badge */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/15 backdrop-blur-md rounded-full text-xs font-semibold text-white/90 border border-white/15 mb-4">
+                <Clock className="w-4 h-4 text-yellow-300 animate-pulse" />
+                <span>Đồng hồ</span>
               </div>
-              <div className="absolute w-56 h-12 border-[3px] border-violet-400/50 rounded-full rotate-[-15deg] animate-pulse" />
-              <div className="absolute right-4 bottom-4 w-12 h-12 rounded-lg bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-300">
-                <Shield className="w-6 h-6" />
+
+              {/* Live Digital Clock */}
+              <div className="text-4xl sm:text-5xl font-extrabold font-mono tracking-wider text-white drop-shadow-lg my-1">
+                {currentTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </div>
+
+              {/* Live Date */}
+              <div className="text-xs text-blue-100/90 font-medium uppercase tracking-widest mt-2">
+                {currentTime.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}
               </div>
             </div>
           </div>

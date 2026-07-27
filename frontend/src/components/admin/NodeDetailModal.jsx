@@ -253,10 +253,6 @@ const NodeDetailModal = ({ nodeId, nodeTitle, isOpen, onClose }) => {
                           </div>
                         </div>
                         <div className="flex items-center gap-3 mt-3 flex-wrap">
-                          <span className="text-[10px] font-bold text-violet-600 bg-violet-50 px-2 py-0.5 rounded-md border border-violet-100">
-                            <Hash className="w-3 h-3 inline mr-1" />
-                            Điểm đạt: {quiz.passingScore}
-                          </span>
                           <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">
                             <Star className="w-3 h-3 inline mr-1" />
                             {quiz.xpReward || 50} XP

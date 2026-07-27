@@ -56,6 +56,7 @@ const CreateQuizPage = () => {
           questions: quiz.questions.map((q) => ({
             question: q.question || '',
             explanation: q.explanation || '',
+            bankQuestionId: q.bankQuestionId || null,
             options: q.options.map((opt) => ({
               content: opt.content || '',
               isCorrect: opt.isCorrect || false,
@@ -154,8 +155,8 @@ const CreateQuizPage = () => {
     if (!quizData.title.trim()) {
       return 'Tiêu đề bài trắc nghiệm là bắt buộc';
     }
-    if (!quizData.passingScore || quizData.passingScore <= 0) {
-      return 'Điểm đạt phải lớn hơn 0';
+    if (!quizData.passingScore) {
+      quizData.passingScore = 80;
     }
     if (quizData.xpReward < 0) {
       return 'XP Reward phải lớn hơn hoặc bằng 0';
@@ -355,6 +356,7 @@ const CreateQuizPage = () => {
         onImport={handleImportQuestions}
         subjectId={subjectId}
         excludeBankQuestionIds={quizData.questions.map(q => q.bankQuestionId).filter(Boolean)}
+        excludeQuestionTexts={quizData.questions.map(q => (q.question || '').trim().toLowerCase()).filter(Boolean)}
       />
     </div>
   );

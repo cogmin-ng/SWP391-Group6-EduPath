@@ -48,10 +48,6 @@ const QuizSection = ({ quizzes, onAdd, onEdit, onDelete }) => {
                       <span>{quiz.questions?.length || 0} Questions</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Trophy className="w-4 h-4 text-emerald-500" />
-                      <span className="text-emerald-600 font-medium">Pass Score {quiz.passingScore}%</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
                       <Star className="w-4 h-4 text-amber-500" />
                       <span className="text-amber-600 font-medium">{quiz.xpReward ?? 50} XP</span>
                     </div>

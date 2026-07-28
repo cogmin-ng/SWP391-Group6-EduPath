@@ -123,8 +123,8 @@ export default function MentorRoadmapsPage() {
       {(() => {
         const filteredRoadmaps = roadmaps.filter((roadmap) => {
           if (activeTab === 'DRAFT') return roadmap.status === 'DRAFT';
-          if (activeTab === 'PENDING') return roadmap.status === 'PENDING';
-          if (activeTab === 'APPROVED') return roadmap.status === 'APPROVED' || roadmap.status === 'PUBLISHED' || roadmap.status === 'REJECTED';
+          if (activeTab === 'PENDING') return roadmap.status === 'PENDING' || roadmap.status === 'PENDING_DELETE';
+          if (activeTab === 'APPROVED') return roadmap.status === 'APPROVED' || roadmap.status === 'PUBLISHED' || roadmap.status === 'REJECTED' || roadmap.status === 'ARCHIVED';
           return true;
         });
 
@@ -166,16 +166,24 @@ export default function MentorRoadmapsPage() {
                       ? 'bg-emerald-100 text-emerald-700'
                       : roadmap.status === 'PENDING'
                       ? 'bg-amber-100 text-amber-700'
+                      : roadmap.status === 'PENDING_DELETE'
+                      ? 'bg-rose-100 text-rose-700'
                       : roadmap.status === 'REJECTED'
                       ? 'bg-red-100 text-red-700'
+                      : roadmap.status === 'ARCHIVED'
+                      ? 'bg-slate-100 text-slate-700'
                       : 'bg-slate-100 text-slate-600'
                   }`}>
                     {roadmap.status === 'PUBLISHED' || roadmap.status === 'APPROVED'
                       ? 'Đã Phê Duyệt'
                       : roadmap.status === 'PENDING'
                       ? 'Chờ Duyệt'
+                      : roadmap.status === 'PENDING_DELETE'
+                      ? 'Chờ Duyệt Xóa'
                       : roadmap.status === 'REJECTED'
                       ? 'Bị Từ Chối'
+                      : roadmap.status === 'ARCHIVED'
+                      ? 'Đã Lưu Trữ'
                       : 'Nháp'}
                   </span>
                   {roadmap.status === 'REJECTED' && (

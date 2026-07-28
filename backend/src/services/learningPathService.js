@@ -12,6 +12,7 @@ exports.getHotLearningPaths = async ({ page = 1, limit = 9 } = {}) => {
   const learningPaths = await prisma.learningPath.findMany({
     where: {
       isDeleted: false,
+      status: { notIn: ['PENDING_DELETE', 'ARCHIVED', 'DRAFT', 'PENDING', 'REJECTED'] },
       OR: [{ status: 'APPROVED' }, { status: 'PUBLISHED' }, { isPublic: true }],
     },
     include: {
@@ -116,6 +117,7 @@ exports.getExploreLearningPaths = async () => {
   const learningPaths = await prisma.learningPath.findMany({
     where: {
       isDeleted: false,
+      status: { notIn: ['PENDING_DELETE', 'ARCHIVED', 'DRAFT', 'PENDING', 'REJECTED'] },
       OR: [{ status: 'APPROVED' }, { status: 'PUBLISHED' }, { isPublic: true }],
     },
     include: {

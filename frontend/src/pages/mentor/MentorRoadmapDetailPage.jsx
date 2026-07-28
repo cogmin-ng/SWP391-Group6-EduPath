@@ -92,14 +92,22 @@ export default function MentorRoadmapDetailPage() {
                     ? 'bg-emerald-500/20 text-emerald-100'
                     : roadmap.status === 'PENDING'
                     ? 'bg-amber-500/20 text-amber-100'
+                    : roadmap.status === 'PENDING_DELETE'
+                    ? 'bg-rose-500/20 text-rose-100'
+                    : roadmap.status === 'ARCHIVED'
+                    ? 'bg-slate-500/20 text-slate-100'
                     : 'bg-indigo-500 text-indigo-100'
                 }`}>
                   {roadmap.status === 'PUBLISHED' || roadmap.status === 'APPROVED'
                     ? 'Đã Phê Duyệt'
                     : roadmap.status === 'PENDING'
                     ? 'Chờ Duyệt'
+                    : roadmap.status === 'PENDING_DELETE'
+                    ? 'Chờ Duyệt Xóa'
                     : roadmap.status === 'REJECTED'
                     ? 'Bị Từ Chối'
+                    : roadmap.status === 'ARCHIVED'
+                    ? 'Đã Lưu Trữ'
                     : 'Nháp'}
                 </span>
               </div>

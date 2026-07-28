@@ -22,8 +22,30 @@ const getStatusStyles = (status) => {
       return 'bg-rose-50 text-rose-700 border-rose-200';
     case 'PENDING':
       return 'bg-amber-50 text-amber-700 border-amber-200';
+    case 'PENDING_DELETE':
+      return 'bg-rose-50 text-rose-700 border-rose-200';
+    case 'ARCHIVED':
+      return 'bg-slate-50 text-slate-700 border-slate-200';
     default:
       return 'bg-slate-50 text-slate-700 border-slate-200';
+  }
+};
+
+const getStatusText = (status) => {
+  switch (status) {
+    case 'APPROVED':
+    case 'PUBLISHED':
+      return 'Đã phê duyệt';
+    case 'REJECTED':
+      return 'Từ chối';
+    case 'PENDING':
+      return 'Chờ phê duyệt';
+    case 'PENDING_DELETE':
+      return 'Chờ duyệt xóa';
+    case 'ARCHIVED':
+      return 'Đã lưu trữ';
+    default:
+      return status;
   }
 };
 
@@ -51,7 +73,7 @@ const RoadmapDetailModal = ({
   if (!isOpen || !roadmap) return null;
 
   const nodes = roadmap.nodes || [];
-  const isPending = roadmap.status === 'PENDING';
+  const isPending = roadmap.status === 'PENDING' || roadmap.status === 'PENDING_DELETE';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -66,7 +88,7 @@ const RoadmapDetailModal = ({
                   roadmap.status
                 )}`}
               >
-                {roadmap.status}
+                {getStatusText(roadmap.status)}
               </span>
               {roadmap.subject?.name && (
                 <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold uppercase tracking-wider border border-slate-200">
@@ -245,7 +267,7 @@ const RoadmapDetailModal = ({
           </div>
         </div>
 
-        {/* Footer actions (only for PENDING roadmaps) */}
+        {/* Footer actions (only for PENDING or PENDING_DELETE roadmaps) */}
         {isPending && (
           <div className="sticky bottom-0 flex gap-3 p-6 bg-white border-t border-slate-100">
             <button
@@ -254,7 +276,7 @@ const RoadmapDetailModal = ({
               className="flex-1 py-3 bg-white text-rose-600 border-2 border-rose-600 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               <XCircle className="w-4 h-4" />
-              Từ chối
+              {roadmap.status === 'PENDING_DELETE' ? 'Từ chối xóa' : 'Từ chối'}
             </button>
             <button
               onClick={() => onApprove(roadmap.id)}
@@ -262,7 +284,7 @@ const RoadmapDetailModal = ({
               className="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               <CheckCircle2 className="w-4 h-4" />
-              {isProcessing ? 'Đang xử lý...' : 'Phê duyệt'}
+              {isProcessing ? 'Đang xử lý...' : (roadmap.status === 'PENDING_DELETE' ? 'Duyệt xóa' : 'Phê duyệt')}
             </button>
           </div>
         )}

@@ -155,6 +155,12 @@ const RoadmapApprovalPage = () => {
       case 'PENDING':
       case 'Pending':
         return 'Chờ phê duyệt';
+      case 'PENDING_DELETE':
+      case 'Pending_Delete':
+        return 'Chờ duyệt xóa';
+      case 'ARCHIVED':
+      case 'Archived':
+        return 'Đã lưu trữ';
       default:
         return status;
     }
@@ -172,6 +178,12 @@ const RoadmapApprovalPage = () => {
       case 'PENDING':
       case 'Pending':
         return 'bg-amber-50 text-amber-700 border-amber-100';
+      case 'PENDING_DELETE':
+      case 'Pending_Delete':
+        return 'bg-rose-50 text-rose-700 border-rose-100';
+      case 'ARCHIVED':
+      case 'Archived':
+        return 'bg-slate-100 text-slate-700 border-slate-200';
       default:
         return 'bg-slate-50 text-slate-700 border-slate-100';
     }
@@ -243,8 +255,10 @@ const RoadmapApprovalPage = () => {
           >
             <option value="ALL">Trạng thái (Tất cả)</option>
             <option value="PENDING">Chờ phê duyệt</option>
+            <option value="PENDING_DELETE">Chờ duyệt xóa</option>
             <option value="APPROVED">Đã phê duyệt</option>
             <option value="REJECTED">Bị từ chối</option>
+            <option value="ARCHIVED">Đã lưu trữ</option>
           </select>
 
           <div className="relative flex items-center">
@@ -419,7 +433,7 @@ const RoadmapApprovalPage = () => {
                   <Eye className="w-4 h-4 group-hover:scale-110 transition-transform" />
                   Xem chi tiết
                 </button>
-                {selectedRoadmap.status === 'PENDING' && (
+                {(selectedRoadmap.status === 'PENDING' || selectedRoadmap.status === 'PENDING_DELETE') && (
                   <>
                     <button
                       onClick={() => handleReview(selectedRoadmap.id, 'APPROVED')}
@@ -427,7 +441,7 @@ const RoadmapApprovalPage = () => {
                       className="w-full py-4 bg-emerald-600 text-white rounded-[1.25rem] text-sm font-black flex items-center justify-center gap-3 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl shadow-emerald-200 group"
                     >
                       <CheckCircle2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                      {processing ? 'Đang xử lý...' : 'Phê duyệt Lộ trình'}
+                      {processing ? 'Đang xử lý...' : (selectedRoadmap.status === 'PENDING_DELETE' ? 'Duyệt xóa Lộ trình' : 'Phê duyệt Lộ trình')}
                     </button>
                     <button
                       onClick={() => handleOpenRejectModal(selectedRoadmap)}
@@ -435,7 +449,7 @@ const RoadmapApprovalPage = () => {
                       className="w-full py-4 bg-white text-rose-600 border-2 border-rose-600 rounded-[1.25rem] text-sm font-black flex items-center justify-center gap-3 hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all group"
                     >
                       <XCircle className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                      Từ chối Lộ trình
+                      {selectedRoadmap.status === 'PENDING_DELETE' ? 'Từ chối xóa Lộ trình' : 'Từ chối Lộ trình'}
                     </button>
                   </>
                 )}

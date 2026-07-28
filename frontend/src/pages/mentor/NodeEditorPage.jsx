@@ -5,7 +5,7 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Textarea from '../../components/ui/Textarea';
 import NodeDetailEditor from '../../components/mentor/NodeDetailEditor';
-import { parseDurationValue, serializeDurationValue } from '../../utils/roadmapDuration';
+import { parseDurationValue, serializeDurationValue, normalizeDurationParts } from '../../utils/roadmapDuration';
 
 const NodeEditorPage = () => {
   const { roadmapId, nodeId } = useParams();
@@ -72,23 +72,27 @@ const NodeEditorPage = () => {
 
   const handleDurationPartChange = (field, value) => {
     const nextValue = Math.max(0, Number(value) || 0);
+    const rawParts = {
+      ...nodeData.durationParts,
+      [field]: nextValue,
+    };
+    const normalizedParts = normalizeDurationParts(rawParts);
     setNodeData((prev) => ({
       ...prev,
-      durationParts: {
-        ...prev.durationParts,
-        [field]: nextValue,
-      },
-      duration: serializeDurationValue({
-        months: field === 'months' ? nextValue : prev.durationParts.months,
-        weeks: field === 'weeks' ? nextValue : prev.durationParts.weeks,
-        days: field === 'days' ? nextValue : prev.durationParts.days,
-      }),
+      durationParts: normalizedParts,
+      duration: serializeDurationValue(normalizedParts),
     }));
   };
 
   const handleSaveNode = () => {
     if (!nodeData.title.trim()) {
       setError('Vui lòng nhập Tên Node.');
+      return;
+    }
+
+    const { months = 0, weeks = 0, days = 0 } = nodeData.durationParts || {};
+    if (months === 0 && weeks === 0 && days === 0) {
+      setError('Vui lòng nhập thời lượng học cho Node (tối thiểu 1 ngày, 1 tuần hoặc 1 tháng).');
       return;
     }
 

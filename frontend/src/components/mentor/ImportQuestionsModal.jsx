@@ -3,7 +3,7 @@ import { Search, Loader2, HelpCircle, BookOpen, AlertCircle } from 'lucide-react
 import toast from 'react-hot-toast';
 import { getQuestionBank } from '../../services/questionBankService';
 
-export default function ImportQuestionsModal({ isOpen, onClose, onImport, subjectId, excludeBankQuestionIds = [] }) {
+export default function ImportQuestionsModal({ isOpen, onClose, onImport, subjectId, excludeBankQuestionIds = [], excludeQuestionTexts = [] }) {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
@@ -22,7 +22,8 @@ export default function ImportQuestionsModal({ isOpen, onClose, onImport, subjec
         take,
         search,
         subjectId: subjectId || undefined,
-        difficulty: difficulty || undefined
+        difficulty: difficulty || undefined,
+        excludeIds: excludeBankQuestionIds.length > 0 ? excludeBankQuestionIds.join(',') : undefined
       });
       setQuestions(data.questions || []);
       setTotal(data.total || 0);
@@ -36,7 +37,7 @@ export default function ImportQuestionsModal({ isOpen, onClose, onImport, subjec
 
   useEffect(() => {
     fetchQuestions();
-  }, [isOpen, skip, search, difficulty, subjectId]);
+  }, [isOpen, skip, search, difficulty, subjectId, excludeBankQuestionIds]);
 
   // Reset selection when modal opens
   useEffect(() => {
@@ -136,7 +137,7 @@ export default function ImportQuestionsModal({ isOpen, onClose, onImport, subjec
               <Loader2 className="w-8 h-8 text-indigo-500 animate-spin mb-2" />
               <span className="text-sm text-slate-500">Đang tải câu hỏi...</span>
             </div>
-          ) : questions.filter(q => !excludeBankQuestionIds.includes(q.id)).length === 0 ? (
+          ) : questions.filter(q => !excludeQuestionTexts.includes(q.question.trim().toLowerCase())).length === 0 ? (
             <div className="text-center py-12">
               <HelpCircle className="w-12 h-12 text-slate-300 mx-auto mb-3" />
               <p className="text-sm text-slate-500 font-medium">Không tìm thấy câu hỏi phù hợp hoặc tất cả đã được thêm vào Quiz.</p>
@@ -144,7 +145,7 @@ export default function ImportQuestionsModal({ isOpen, onClose, onImport, subjec
           ) : (
             <div className="space-y-3">
               {questions
-                .filter(q => !excludeBankQuestionIds.includes(q.id))
+                .filter(q => !excludeQuestionTexts.includes(q.question.trim().toLowerCase()))
                 .map((q) => {
                   const isSelected = selectedIds.includes(q.id);
                 return (

@@ -13,12 +13,25 @@ const msg = {
  * Get paginated questions from the mentor's bank.
  */
 exports.getQuestionBank = async (mentorId, filters = {}) => {
-  const { skip = 0, take = 20, search = '', subjectId, difficulty } = filters;
+  const { skip = 0, take = 20, search = '', subjectId, difficulty, excludeIds } = filters;
 
   const whereClause = {
     creatorId: mentorId,
     ...ACTIVE_FILTER,
   };
+
+  if (excludeIds) {
+    const ids = Array.isArray(excludeIds)
+      ? excludeIds
+      : typeof excludeIds === 'string'
+        ? excludeIds.split(',').filter(Boolean)
+        : [];
+    if (ids.length > 0) {
+      whereClause.id = {
+        notIn: ids,
+      };
+    }
+  }
 
   if (search.trim()) {
     whereClause.question = {

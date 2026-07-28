@@ -418,6 +418,7 @@ exports.syncQuizzes = async (nodeId, quizzes, tx = prisma) => {
             create: quizData.questions.map((q) => ({
               question: q.question,
               explanation: q.explanation || null,
+              bankQuestionId: q.bankQuestionId || null,
               options: {
                 create: q.options.map((opt) => ({
                   content: opt.content,
@@ -441,6 +442,7 @@ exports.syncQuizzes = async (nodeId, quizzes, tx = prisma) => {
             create: quizData.questions.map((q) => ({
               question: q.question,
               explanation: q.explanation || null,
+              bankQuestionId: q.bankQuestionId || null,
               options: {
                 create: q.options.map((opt) => ({
                   content: opt.content,

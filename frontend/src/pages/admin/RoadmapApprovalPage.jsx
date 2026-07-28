@@ -21,6 +21,7 @@ import {
 import toast from 'react-hot-toast';
 import { getPendingRoadmaps, getRoadmapStatsByAdmin, reviewRoadmap } from '../../services/roadmapService';
 import RoadmapDetailModal from '../../components/admin/RoadmapDetailModal';
+import RejectRoadmapModal from '../../components/admin/RejectRoadmapModal';
 
 const RoadmapApprovalPage = () => {
   const [selectedRoadmap, setSelectedRoadmap] = useState(null);
@@ -33,6 +34,8 @@ const RoadmapApprovalPage = () => {
   const [loading, setLoading] = useState(true);
   const [detailOpen, setDetailOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [rejectTargetRoadmap, setRejectTargetRoadmap] = useState(null);
 
   const fetchStats = async () => {
     try {
@@ -95,9 +98,6 @@ const RoadmapApprovalPage = () => {
 
   const handleReview = async (roadmapId, status, feedback = '') => {
     const isReject = status === 'REJECTED';
-    if (isReject && !window.confirm('Bạn có chắc muốn từ chối lộ trình này?')) {
-      return;
-    }
 
     try {
       setProcessing(true);
@@ -106,6 +106,8 @@ const RoadmapApprovalPage = () => {
         `Lộ trình đã được ${isReject ? 'từ chối' : 'phê duyệt'} thành công!`
       );
       setDetailOpen(false);
+      setRejectModalOpen(false);
+      setRejectTargetRoadmap(null);
       // Refresh data
       fetchStats();
       fetchRoadmaps();
@@ -114,6 +116,23 @@ const RoadmapApprovalPage = () => {
       toast.error(err?.message || 'Có lỗi xảy ra khi thực hiện đánh giá!');
     } finally {
       setProcessing(false);
+    }
+  };
+
+  const handleOpenRejectModal = (roadmapOrId) => {
+    if (!roadmapOrId) return;
+    if (typeof roadmapOrId === 'string') {
+      const found = roadmaps.find((r) => r.id === roadmapOrId);
+      setRejectTargetRoadmap(found || selectedRoadmap);
+    } else {
+      setRejectTargetRoadmap(roadmapOrId);
+    }
+    setRejectModalOpen(true);
+  };
+
+  const handleConfirmReject = (reason) => {
+    if (rejectTargetRoadmap) {
+      handleReview(rejectTargetRoadmap.id, 'REJECTED', reason);
     }
   };
 
@@ -411,7 +430,7 @@ const RoadmapApprovalPage = () => {
                       {processing ? 'Đang xử lý...' : 'Phê duyệt Lộ trình'}
                     </button>
                     <button
-                      onClick={() => handleReview(selectedRoadmap.id, 'REJECTED')}
+                      onClick={() => handleOpenRejectModal(selectedRoadmap)}
                       disabled={processing}
                       className="w-full py-4 bg-white text-rose-600 border-2 border-rose-600 rounded-[1.25rem] text-sm font-black flex items-center justify-center gap-3 hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all group"
                     >
@@ -441,8 +460,21 @@ const RoadmapApprovalPage = () => {
         isOpen={detailOpen}
         onClose={() => setDetailOpen(false)}
         onApprove={(id) => handleReview(id, 'APPROVED')}
-        onReject={(id) => handleReview(id, 'REJECTED')}
+        onReject={(roadmap) => handleOpenRejectModal(roadmap)}
         isProcessing={processing}
+      />
+
+      {/* Reject Reason Modal */}
+      <RejectRoadmapModal
+        isOpen={rejectModalOpen}
+        onClose={() => {
+          setRejectModalOpen(false);
+          setRejectTargetRoadmap(null);
+        }}
+        onConfirm={handleConfirmReject}
+        roadmapTitle={rejectTargetRoadmap?.title}
+        mentorName={rejectTargetRoadmap?.mentor?.name}
+        loading={processing}
       />
     </div>
   );

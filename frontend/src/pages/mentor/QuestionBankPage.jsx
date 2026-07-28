@@ -340,18 +340,16 @@ export default function QuestionBankPage() {
                       return (
                         <div
                           key={opt.id}
-                          className={`p-3.5 rounded-xl border text-sm flex items-center gap-3 transition-all duration-200 ${
-                            opt.isCorrect
+                          className={`p-3.5 rounded-xl border text-sm flex items-center gap-3 transition-all duration-200 ${opt.isCorrect
                               ? 'bg-emerald-50/60 border-emerald-200 text-emerald-800 font-medium shadow-sm shadow-emerald-50'
                               : 'bg-slate-50/40 border-slate-150 text-slate-700 hover:bg-slate-50 hover:border-slate-200'
-                          }`}
+                            }`}
                         >
                           <span
-                            className={`w-6 h-6 flex items-center justify-center text-xs font-bold rounded-full flex-shrink-0 transition-colors ${
-                              opt.isCorrect
+                            className={`w-6 h-6 flex items-center justify-center text-xs font-bold rounded-full flex-shrink-0 transition-colors ${opt.isCorrect
                                 ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-250'
                                 : 'bg-slate-200 text-slate-600'
-                            }`}
+                              }`}
                           >
                             {optionLetter}
                           </span>
@@ -490,23 +488,21 @@ export default function QuestionBankPage() {
                           className="sr-only"
                         />
                         <div
-                          className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
-                            opt.isCorrect
+                          className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${opt.isCorrect
                               ? 'border-emerald-500 bg-emerald-500 text-white'
                               : 'border-slate-300 bg-white text-transparent hover:border-slate-400'
-                          }`}
+                            }`}
                           title="Đánh dấu đáp án đúng"
                         >
                           <svg className="w-3.5 h-3.5 fill-current stroke-current" viewBox="0 0 20 20">
-                            <path d="M0 11l2-2 5 5L18 3l2 2L7 18z"/>
+                            <path d="M0 11l2-2 5 5L18 3l2 2L7 18z" />
                           </svg>
                         </div>
                       </label>
 
                       {/* Letter Badge (A, B, C, D...) */}
-                      <span className={`w-6 h-6 flex items-center justify-center text-xs font-bold rounded-full flex-shrink-0 transition-colors ${
-                        opt.isCorrect ? 'bg-emerald-500 text-white shadow-sm' : 'bg-slate-200 text-slate-600'
-                      }`}>
+                      <span className={`w-6 h-6 flex items-center justify-center text-xs font-bold rounded-full flex-shrink-0 transition-colors ${opt.isCorrect ? 'bg-emerald-500 text-white shadow-sm' : 'bg-slate-200 text-slate-600'
+                        }`}>
                         {String.fromCharCode(65 + idx)}
                       </span>
 
@@ -517,11 +513,10 @@ export default function QuestionBankPage() {
                         onChange={(e) => handleOptionContentChange(idx, e.target.value)}
                         placeholder={`Nhập nội dung đáp án ${idx + 1}`}
                         required={idx < 2} // at least 2 are required
-                        className={`flex-1 px-3 py-2 border rounded-xl text-sm focus:outline-none transition-all ${
-                          opt.isCorrect
+                        className={`flex-1 px-3 py-2 border rounded-xl text-sm focus:outline-none transition-all ${opt.isCorrect
                             ? 'border-emerald-250 bg-emerald-50/15 focus:border-emerald-550 focus:ring-2 focus:ring-emerald-100/60'
                             : 'border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 bg-white'
-                        }`}
+                          }`}
                       />
 
                       {/* Remove Option Button */}

@@ -50,6 +50,7 @@ export default function MentorProfilePage() {
   // Dynamic advisor application details state
   const [application, setApplication] = useState(null);
   const [loadingApp, setLoadingApp] = useState(true);
+  const [majors, setMajors] = useState([]);
 
   const baseProfile = {
     name: authUser?.name || 'Dr. Aris Thorne',
@@ -114,11 +115,14 @@ export default function MentorProfilePage() {
   }));
 
   // Map application details if available, falling back to base/local overrides
+  const matchedMajor = (majors || []).find(m => m.id === application?.specialization);
+  const specializationName = matchedMajor ? matchedMajor.name : (application?.specialization || '');
+
   const profile = {
     ...baseProfile,
     title: profileData.title || baseProfile.title,
     location: profileData.location || baseProfile.location,
-    major: application?.specialization || profileData.major || baseProfile.major,
+    major: specializationName || profileData.major || baseProfile.major,
     termStatus: application?.currentSemester || profileData.termStatus || baseProfile.termStatus,
     specialties: application?.approvedSubjects && application.approvedSubjects.length > 0
       ? application.approvedSubjects.map(sub => ({ label: sub.name, color: 'bg-indigo-50 text-indigo-700 border-indigo-200/50' }))
@@ -180,6 +184,15 @@ export default function MentorProfilePage() {
       } finally {
         setLoadingApp(false);
       }
+
+      try {
+        const majorsData = await mentorApplicationService.getMajors();
+        if (majorsData) {
+          setMajors(majorsData);
+        }
+      } catch (err) {
+        console.error('Failed to fetch majors list:', err);
+      }
     };
 
     fetchDashboardData();
@@ -210,7 +223,7 @@ export default function MentorProfilePage() {
       title: profile.title,
       bio: profile.bio,
       location: profile.location,
-      major: application?.specialization || profile.major,
+      major: specializationName || profile.major,
       termStatus: application?.currentSemester || profile.termStatus,
     });
     setIsEditModalOpen(true);

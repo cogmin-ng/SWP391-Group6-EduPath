@@ -18,6 +18,7 @@ import {
   Eye
 } from 'lucide-react';
 import MentorRequestDetailModal from '../../components/admin/MentorRequestDetailModal';
+import RejectReasonModal from '../../components/admin/RejectReasonModal';
 
 const MentorRequestPage = () => {
   const [requests, setRequests] = useState([]);
@@ -29,6 +30,11 @@ const MentorRequestPage = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [availableMajors, setAvailableMajors] = useState([]);
+
+  // Rejection reason modal state
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejectTargetRequest, setRejectTargetRequest] = useState(null);
+  const [rejectLoading, setRejectLoading] = useState(false);
 
   useEffect(() => {
     fetchRequests();
@@ -66,7 +72,11 @@ const MentorRequestPage = () => {
       setAvailableMajors(majorsData || []);
       setRequests(formattedRequests);
       if (formattedRequests.length > 0) {
-        setSelectedRequest(formattedRequests[0]);
+        setSelectedRequest(prev => {
+          if (!prev) return formattedRequests[0];
+          const matched = formattedRequests.find(r => r.id === prev.id);
+          return matched || formattedRequests[0];
+        });
       }
     } catch (error) {
       console.error('Failed to fetch applications', error);
@@ -75,12 +85,29 @@ const MentorRequestPage = () => {
     }
   };
 
-  const handleStatusUpdate = async (id, status) => {
+  const handleStatusUpdate = async (id, status, rejectReason = null) => {
     try {
-      await mentorApplicationService.updateApplicationStatus(id, status);
-      fetchRequests();
+      setRejectLoading(true);
+      await mentorApplicationService.updateApplicationStatus(id, status, rejectReason);
+      await fetchRequests();
+      setIsRejectModalOpen(false);
+      setRejectTargetRequest(null);
+      setIsModalOpen(false);
     } catch (error) {
       console.error('Failed to update status', error);
+    } finally {
+      setRejectLoading(false);
+    }
+  };
+
+  const handleOpenRejectModal = (req) => {
+    setRejectTargetRequest(req || selectedRequest);
+    setIsRejectModalOpen(true);
+  };
+
+  const handleConfirmReject = (reason) => {
+    if (rejectTargetRequest) {
+      handleStatusUpdate(rejectTargetRequest.id, 'REJECTED', reason);
     }
   };
 
@@ -317,7 +344,7 @@ const MentorRequestPage = () => {
                       Chấp nhận yêu cầu
                     </button>
                     <button
-                      onClick={() => handleStatusUpdate(selectedRequest.id, 'REJECTED')}
+                      onClick={() => handleOpenRejectModal(selectedRequest)}
                       className="w-full py-2.5 text-rose-600 font-bold text-sm hover:bg-rose-50 rounded-lg transition-all">
                       Từ chối yêu cầu
                     </button>
@@ -341,10 +368,20 @@ const MentorRequestPage = () => {
           handleStatusUpdate(id, 'APPROVED');
           setIsModalOpen(false);
         }}
-        onReject={(id) => {
-          handleStatusUpdate(id, 'REJECTED');
-          setIsModalOpen(false);
+        onReject={(req) => {
+          handleOpenRejectModal(req || selectedRequest);
         }}
+      />
+
+      <RejectReasonModal
+        isOpen={isRejectModalOpen}
+        onClose={() => {
+          setIsRejectModalOpen(false);
+          setRejectTargetRequest(null);
+        }}
+        onConfirm={handleConfirmReject}
+        requestName={rejectTargetRequest?.name}
+        loading={rejectLoading}
       />
     </div>
   );

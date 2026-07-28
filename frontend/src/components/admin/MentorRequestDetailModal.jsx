@@ -124,7 +124,7 @@ const MentorRequestDetailModal = ({
         {request.rawStatus === 'PENDING' && (
           <div className="sticky bottom-0 flex gap-3 p-6 bg-white border-t border-slate-100">
             <button
-              onClick={() => onReject(request.id)}
+              onClick={() => onReject(request)}
               className="flex-1 py-3 bg-white text-rose-600 border-2 border-rose-600 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-rose-50 transition-all"
             >
               <XCircle className="w-4 h-4" />

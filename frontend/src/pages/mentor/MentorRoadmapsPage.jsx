@@ -124,7 +124,7 @@ export default function MentorRoadmapsPage() {
         const filteredRoadmaps = roadmaps.filter((roadmap) => {
           if (activeTab === 'DRAFT') return roadmap.status === 'DRAFT';
           if (activeTab === 'PENDING') return roadmap.status === 'PENDING';
-          if (activeTab === 'APPROVED') return roadmap.status === 'APPROVED' || roadmap.status === 'PUBLISHED';
+          if (activeTab === 'APPROVED') return roadmap.status === 'APPROVED' || roadmap.status === 'PUBLISHED' || roadmap.status === 'REJECTED';
           return true;
         });
 
@@ -178,6 +178,14 @@ export default function MentorRoadmapsPage() {
                       ? 'Bị Từ Chối'
                       : 'Nháp'}
                   </span>
+                  {roadmap.status === 'REJECTED' && (
+                    <div className="mt-2 p-2.5 bg-rose-50 border border-rose-100 rounded-xl text-xs text-rose-800">
+                      <span className="font-bold text-[11px] block text-rose-900 mb-0.5">Lý do từ chối:</span>
+                      <p className="text-slate-700 text-xs line-clamp-3 leading-relaxed">
+                        {roadmap.rejectReason || 'Chưa có lý do chi tiết từ Admin.'}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="p-3 bg-slate-50 border-t border-slate-100 flex gap-2">

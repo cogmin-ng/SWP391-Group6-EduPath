@@ -802,12 +802,17 @@ exports.reviewRoadmap = async (roadmapId, { status, feedback }) => {
       return parentReviewed;
     }
 
+    const updateData = {
+      status,
+      updatedAt: new Date(),
+    };
+    if (status === 'REJECTED') {
+      updateData.rejectReason = feedback || null;
+    }
+
     const reviewed = await roadmapRepository.update(
       roadmapId,
-      {
-        status,
-        updatedAt: new Date(),
-      },
+      updateData,
       tx
     );
 

@@ -249,7 +249,7 @@ const RoadmapDetailModal = ({
         {isPending && (
           <div className="sticky bottom-0 flex gap-3 p-6 bg-white border-t border-slate-100">
             <button
-              onClick={() => onReject(roadmap.id)}
+              onClick={() => onReject(roadmap)}
               disabled={isProcessing}
               className="flex-1 py-3 bg-white text-rose-600 border-2 border-rose-600 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >

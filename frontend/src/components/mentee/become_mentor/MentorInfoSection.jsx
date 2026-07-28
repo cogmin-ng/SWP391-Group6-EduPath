@@ -1,6 +1,5 @@
 import { ChevronDown, UserCircle } from "lucide-react";
 import {
-  SPECIALIZATION_OPTIONS,
   SEMESTER_OPTIONS,
 } from "../../../mock/becomeMentorData";
 
@@ -50,10 +49,7 @@ export default function MentorInfoSection({ register, errors, specializationOpti
                 <option value="" disabled hidden>
                   Chọn chuyên ngành
                 </option>
-                {(specializationOptions && specializationOptions.length > 0
-                  ? specializationOptions
-                  : SPECIALIZATION_OPTIONS
-                ).map((opt) => (
+                {(specializationOptions || []).map((opt) => (
                   <option key={opt.id ?? opt.value} value={opt.id ?? opt.value}>
                     {opt.name ?? opt.label}
                   </option>

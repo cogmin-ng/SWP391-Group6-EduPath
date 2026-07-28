@@ -21,12 +21,15 @@ export default function RoadmapDetailPage() {
   const [loading, setLoading] = useState(true);
   const [favorited, setFavorited] = useState(() => isFavorited(slug));
 
+  const [pageError, setPageError] = useState(null); // null | '403' | '404' | 'error'
+
   useEffect(() => {
     let isMounted = true;
 
     const loadRoadmap = async () => {
       try {
         setLoading(true);
+        setPageError(null);
         const data = await getRoadmapBySlug(slug);
         if (!isMounted) return;
         setRoadmap(data);
@@ -35,6 +38,14 @@ export default function RoadmapDetailPage() {
       } catch (error) {
         if (!isMounted) return;
         console.error('Failed to load roadmap detail:', error);
+        const status = error?.response?.status;
+        if (status === 403) {
+          setPageError('403');
+        } else if (status === 404) {
+          setPageError('404');
+        } else {
+          setPageError('error');
+        }
         setRoadmap(null);
         setEnrolled(false);
       } finally {
@@ -92,6 +103,29 @@ export default function RoadmapDetailPage() {
         <p className="text-sm text-slate-500">Đang tải chi tiết lộ trình...</p>
       </div>
     );
+  }
+
+  if (pageError === '403') {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4 px-4">
+        {isAuthenticated ? <MenteeHeader /> : <Navbar />}
+        <div className="mt-24 text-center max-w-md">
+          <div className="text-6xl mb-4">🔒</div>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Lộ trình không khả dụng</h1>
+          <p className="text-slate-500 mb-6">Lộ trình này hiện không còn công khai hoặc đã bị lưu trữ. Vui lòng khám phá các lộ trình khác.</p>
+          <button
+            onClick={() => navigate('/explore')}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold transition"
+          >
+            Khám phá lộ trình khác
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (pageError === '404' || (!roadmapView && pageError)) {
+    return <Navigate to="/explore" replace />;
   }
 
   if (!roadmapView) {

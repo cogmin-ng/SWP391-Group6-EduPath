@@ -38,6 +38,7 @@ const STATUS_STYLES = {
   APPROVED: 'bg-emerald-50 text-emerald-700',
   PUBLISHED: 'bg-indigo-50 text-indigo-700',
   PENDING: 'bg-amber-50 text-amber-700',
+  PENDING_DELETE: 'bg-rose-50 text-rose-700',
   DRAFT: 'bg-slate-100 text-slate-600',
   REJECTED: 'bg-rose-50 text-rose-700',
 };
@@ -46,6 +47,7 @@ const STATUS_LABELS = {
   APPROVED: 'Đã duyệt',
   PUBLISHED: 'Đã xuất bản',
   PENDING: 'Chờ duyệt',
+  PENDING_DELETE: 'Chờ duyệt xóa',
   DRAFT: 'Bản nháp',
   REJECTED: 'Bị từ chối',
 };
@@ -170,7 +172,7 @@ export default function MentorDashboardPage() {
   const pendingRoadmaps = useMemo(
     () =>
       roadmaps
-        .filter((roadmap) => roadmap.status === 'PENDING')
+        .filter((roadmap) => roadmap.status === 'PENDING' || roadmap.status === 'PENDING_DELETE')
         .map((roadmap) => ({
           id: roadmap.id,
           title: roadmap.title,
@@ -377,7 +379,7 @@ export default function MentorDashboardPage() {
                   >
                     Xem chi tiết
                   </button>
-                  {roadmap.status !== 'PENDING' ? (
+                  {roadmap.status !== 'PENDING' && roadmap.status !== 'PENDING_DELETE' ? (
                     <button
                       type="button"
                       onClick={() =>

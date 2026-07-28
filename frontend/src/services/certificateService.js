@@ -1,19 +1,12 @@
 import api from './api';
-import { mockCertificates } from '../mock/certificateData';
 
 /**
  * Get all certificates for the current mentee.
  * Falls back to mock data if the API is not available.
  */
 export const getMyCertificates = async () => {
-  try {
-    const res = await api.get('/certificates/my');
-    return res.data.data;
-  } catch (err) {
-    // TODO: Remove mock fallback when backend API is ready
-    console.warn('Certificate API not available, using mock data:', err.message);
-    return mockCertificates;
-  }
+  const res = await api.get('/certificates/my');
+  return res.data.data;
 };
 
 /**
@@ -21,16 +14,8 @@ export const getMyCertificates = async () => {
  * Falls back to mock data if the API is not available.
  */
 export const getCertificateById = async (id) => {
-  try {
-    const res = await api.get(`/certificates/${id}`);
-    return res.data.data;
-  } catch (err) {
-    // TODO: Remove mock fallback when backend API is ready
-    console.warn('Certificate API not available, using mock data:', err.message);
-    const cert = mockCertificates.find((c) => c.id === id);
-    if (!cert) throw new Error('Certificate not found');
-    return cert;
-  }
+  const res = await api.get(`/certificates/${id}`);
+  return res.data.data;
 };
 
 /**

@@ -8,14 +8,7 @@
 /*  Dropdown options                                                   */
 /* ------------------------------------------------------------------ */
 
-export const SPECIALIZATION_OPTIONS = [
-  { value: "", label: "Chọn chuyên ngành" },
-  { value: "information-technology", label: "Công nghệ thông tin" },
-  { value: "computer-science", label: "Khoa học máy tính" },
-  { value: "communication-technology", label: "Công nghệ truyền thông" },
-  { value: "business-administration", label: "Quản trị kinh doanh" },
-  { value: "languages", label: "Ngôn ngữ" },
-];
+
 
 export const SEMESTER_OPTIONS = [
   { value: "", label: "Chọn kỳ học" },

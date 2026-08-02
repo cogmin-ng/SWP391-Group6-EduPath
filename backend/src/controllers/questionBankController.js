@@ -16,7 +16,10 @@ exports.getQuestionBank = asyncHandler(async (req, res) => {
     excludeIds: req.query.excludeIds || null,
   };
 
-  const result = await questionBankService.getQuestionBank(req.user.id, filters);
+  const result = await questionBankService.getQuestionBank(
+    req.user.id,
+    filters
+  );
 
   return sendSuccess(res, {
     message: 'Question bank retrieved successfully',
@@ -29,7 +32,10 @@ exports.getQuestionBank = asyncHandler(async (req, res) => {
  * Create a new question in the bank.
  */
 exports.createBankQuestion = asyncHandler(async (req, res) => {
-  const question = await questionBankService.createBankQuestion(req.body, req.user.id);
+  const question = await questionBankService.createBankQuestion(
+    req.body,
+    req.user.id
+  );
 
   return sendSuccess(res, {
     statusCode: 201,
@@ -43,7 +49,11 @@ exports.createBankQuestion = asyncHandler(async (req, res) => {
  * Update a question details or options.
  */
 exports.updateBankQuestion = asyncHandler(async (req, res) => {
-  const question = await questionBankService.updateBankQuestion(req.params.id, req.body, req.user.id);
+  const question = await questionBankService.updateBankQuestion(
+    req.params.id,
+    req.body,
+    req.user.id
+  );
 
   return sendSuccess(res, {
     message: 'Question updated successfully',

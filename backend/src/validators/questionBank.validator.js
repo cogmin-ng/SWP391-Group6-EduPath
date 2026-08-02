@@ -13,10 +13,14 @@ const createQuestionSchema = Joi.object({
     'string.empty': 'Question content is required',
   }),
   explanation: Joi.string().trim().allow('', null).optional(),
-  difficulty: Joi.string().valid('DE', 'TRUNG_BINH', 'KHO').default('TRUNG_BINH'),
+  difficulty: Joi.string()
+    .valid('DE', 'TRUNG_BINH', 'KHO')
+    .default('TRUNG_BINH'),
   subjectId: Joi.string().trim().required().messages({
     'string.empty': 'Subject ID is required',
   }),
+  learningPathId: Joi.string().trim().allow('', null).optional(),
+  nodeId: Joi.string().trim().allow('', null).optional(),
   options: Joi.array()
     .items(bankQuestionOptionSchema)
     .min(2)
@@ -27,7 +31,9 @@ const createQuestionSchema = Joi.object({
 }).custom((value, helpers) => {
   const correctCount = value.options.filter((opt) => opt.isCorrect).length;
   if (correctCount !== 1) {
-    return helpers.message({ custom: 'A question must have exactly one correct option' });
+    return helpers.message({
+      custom: 'A question must have exactly one correct option',
+    });
   }
   return value;
 });
@@ -37,15 +43,16 @@ const updateQuestionSchema = Joi.object({
   explanation: Joi.string().trim().allow('', null).optional(),
   difficulty: Joi.string().valid('DE', 'TRUNG_BINH', 'KHO').optional(),
   subjectId: Joi.string().trim().optional(),
-  options: Joi.array()
-    .items(bankQuestionOptionSchema)
-    .min(2)
-    .optional(),
+  learningPathId: Joi.string().trim().allow('', null).optional(),
+  nodeId: Joi.string().trim().allow('', null).optional(),
+  options: Joi.array().items(bankQuestionOptionSchema).min(2).optional(),
 }).custom((value, helpers) => {
   if (value.options) {
     const correctCount = value.options.filter((opt) => opt.isCorrect).length;
     if (correctCount !== 1) {
-      return helpers.message({ custom: 'A question must have exactly one correct option' });
+      return helpers.message({
+        custom: 'A question must have exactly one correct option',
+      });
     }
   }
   return value;

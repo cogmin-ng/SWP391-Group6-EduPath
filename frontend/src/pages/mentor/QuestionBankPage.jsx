@@ -3,11 +3,14 @@ import { Search, Plus, Pencil, Trash2, HelpCircle, ArrowRight, Loader2, BookOpen
 import toast from 'react-hot-toast';
 import { getQuestionBank, createQuestion, updateQuestion, deleteQuestion } from '../../services/questionBankService';
 import { subjectService } from '../../services/subjectService';
+import api from '../../services/api';
 
 export default function QuestionBankPage() {
   const [questions, setQuestions] = useState([]);
   const [total, setTotal] = useState(0);
   const [subjects, setSubjects] = useState([]);
+  const [learningPaths, setLearningPaths] = useState([]);
+  const [nodes, setNodes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -15,6 +18,8 @@ export default function QuestionBankPage() {
   const [search, setSearch] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState('');
+  const [selectedLearningPathFilter, setSelectedLearningPathFilter] = useState('');
+  const [selectedNodeFilter, setSelectedNodeFilter] = useState('');
   const [skip, setSkip] = useState(0);
   const take = 10;
 
@@ -26,6 +31,8 @@ export default function QuestionBankPage() {
     explanation: '',
     difficulty: 'TRUNG_BINH',
     subjectId: '',
+    learningPathId: '',
+    nodeId: '',
     options: [
       { content: '', isCorrect: true },
       { content: '', isCorrect: false },
@@ -36,10 +43,33 @@ export default function QuestionBankPage() {
 
   const loadInitialData = async () => {
     try {
-      const subData = await subjectService.getAllSubjects();
-      setSubjects(subData || []);
+      const [subData, roadmapData] = await Promise.all([
+        subjectService.getAllSubjects(),
+        api.get('/roadmaps/mentor?take=100').then((res) => res.data.data?.roadmaps || [])
+      ]);
+      // Filter subjects to only include those with learning paths for this mentor
+      const mentorSubjectIds = new Set((roadmapData || []).map(r => r.subjectId));
+      const filteredSubjects = (subData || []).filter(s => mentorSubjectIds.has(s.id));
+      setSubjects(filteredSubjects);
+      setLearningPaths(roadmapData || []);
     } catch (err) {
-      console.error('Failed to load subjects:', err);
+      console.error('Failed to load initial data:', err);
+    }
+  };
+
+  const loadNodesForLearningPath = async (learningPathId) => {
+    if (!learningPathId) {
+      setNodes([]);
+      return;
+    }
+
+    try {
+      const res = await api.get(`/roadmaps/${learningPathId}`);
+      const roadmap = res.data.data;
+      setNodes(roadmap?.nodes || []);
+    } catch (err) {
+      console.error('Failed to load nodes:', err);
+      setNodes([]);
     }
   };
 
@@ -52,6 +82,8 @@ export default function QuestionBankPage() {
         search,
         subjectId: selectedSubject || undefined,
         difficulty: selectedDifficulty || undefined
+        ,learningPathId: selectedLearningPathFilter || undefined,
+        nodeId: selectedNodeFilter || undefined
       });
       setQuestions(data.questions || []);
       setTotal(data.total || 0);
@@ -69,7 +101,15 @@ export default function QuestionBankPage() {
 
   useEffect(() => {
     fetchQuestions();
-  }, [skip, search, selectedSubject, selectedDifficulty]);
+  }, [skip, search, selectedSubject, selectedDifficulty, selectedLearningPathFilter, selectedNodeFilter]);
+
+  // When subject filter changes, reset learningPath and node filters
+  useEffect(() => {
+    setSelectedLearningPathFilter('');
+    setSelectedNodeFilter('');
+    setNodes([]);
+    // refetch will occur via dependency on selectedSubject
+  }, [selectedSubject]);
 
   const handleOpenAddModal = () => {
     setEditingQuestion(null);
@@ -78,6 +118,8 @@ export default function QuestionBankPage() {
       explanation: '',
       difficulty: 'TRUNG_BINH',
       subjectId: subjects[0]?.id || '',
+      learningPathId: '',
+      nodeId: '',
       options: [
         { content: '', isCorrect: true },
         { content: '', isCorrect: false },
@@ -85,22 +127,32 @@ export default function QuestionBankPage() {
         { content: '', isCorrect: false },
       ]
     });
+    setNodes([]);
     setIsModalOpen(true);
   };
 
-  const handleOpenEditModal = (q) => {
+  const handleOpenEditModal = async (q) => {
     setEditingQuestion(q);
     setModalForm({
       question: q.question,
       explanation: q.explanation || '',
       difficulty: q.difficulty,
       subjectId: q.subjectId,
+      learningPathId: q.learningPath?.id || '',
+      nodeId: q.node?.id || '',
       options: q.options.map(opt => ({
         id: opt.id,
         content: opt.content,
         isCorrect: opt.isCorrect
       }))
     });
+
+    if (q.learningPath?.id) {
+      await loadNodesForLearningPath(q.learningPath.id);
+    } else {
+      setNodes([]);
+    }
+
     setIsModalOpen(true);
   };
 
@@ -162,6 +214,8 @@ export default function QuestionBankPage() {
         explanation: modalForm.explanation.trim() || null,
         difficulty: modalForm.difficulty,
         subjectId: modalForm.subjectId,
+        learningPathId: modalForm.learningPathId || null,
+        nodeId: modalForm.nodeId || null,
         options: nonBlankOptions.map(opt => ({
           content: opt.content.trim(),
           isCorrect: opt.isCorrect
@@ -247,6 +301,35 @@ export default function QuestionBankPage() {
 
         <div>
           <select
+            value={selectedLearningPathFilter}
+            onChange={(e) => { const v = e.target.value; setSelectedLearningPathFilter(v); setSelectedNodeFilter(''); setSkip(0); if (v) loadNodesForLearningPath(v); else setNodes([]); }}
+            className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:outline-none transition-all bg-white cursor-pointer"
+          >
+            <option value="">Tất cả lộ trình</option>
+            {learningPaths
+              .filter((path) => !selectedSubject || String(path.subjectId) === String(selectedSubject))
+              .map((path) => (
+                <option key={path.id} value={path.id}>{path.title}</option>
+              ))}
+          </select>
+        </div>
+
+        <div>
+          <select
+            value={selectedNodeFilter}
+            onChange={(e) => { setSelectedNodeFilter(e.target.value); setSkip(0); }}
+            disabled={!selectedLearningPathFilter || nodes.length === 0}
+            className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:outline-none transition-all bg-white cursor-pointer disabled:bg-slate-100 disabled:cursor-not-allowed"
+          >
+            <option value="">{selectedLearningPathFilter ? 'Chọn node' : 'Chọn lộ trình trước'}</option>
+            {nodes.map((node) => (
+              <option key={node.id} value={node.id}>{node.title}</option>
+              ))}
+            </select>
+          </div>
+
+        <div>
+          <select
             value={selectedSubject}
             onChange={(e) => { setSelectedSubject(e.target.value); setSkip(0); }}
             className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:outline-none transition-all duration-200 bg-white cursor-pointer"
@@ -308,6 +391,18 @@ export default function QuestionBankPage() {
                       <BookOpen size={13} />
                       {q.subject.name}
                     </span>
+                    {q.learningPath?.title && (
+                      <span className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 border border-emerald-100/50 px-3 py-1 rounded-full font-semibold">
+                        <ArrowRight size={13} />
+                        {q.learningPath.title}
+                      </span>
+                    )}
+                    {q.node?.title && (
+                      <span className="flex items-center gap-1.5 text-xs text-sky-700 bg-sky-50 border border-sky-100/50 px-3 py-1 rounded-full font-semibold">
+                        <ArrowRight size={13} />
+                        {q.node.title}
+                      </span>
+                    )}
                   </div>
 
                   {/* Action Group */}
@@ -421,17 +516,21 @@ export default function QuestionBankPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1.5">Môn học</label>
-                  <select
-                    value={modalForm.subjectId}
-                    onChange={(e) => setModalForm(prev => ({ ...prev, subjectId: e.target.value }))}
-                    required
-                    className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:outline-none transition-all bg-white cursor-pointer"
-                  >
-                    <option value="">Chọn môn học</option>
-                    {subjects.map(s => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
-                    ))}
-                  </select>
+                          <select
+                            value={modalForm.subjectId}
+                            onChange={(e) => {
+                              const subj = e.target.value;
+                              setModalForm(prev => ({ ...prev, subjectId: subj, learningPathId: '', nodeId: '' }));
+                              setNodes([]);
+                            }}
+                            required
+                            className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:outline-none transition-all bg-white cursor-pointer"
+                          >
+                            <option value="">Chọn môn học</option>
+                            {subjects.map(s => (
+                              <option key={s.id} value={s.id}>{s.name}</option>
+                            ))}
+                          </select>
                 </div>
 
                 <div>
@@ -444,6 +543,48 @@ export default function QuestionBankPage() {
                     <option value="DE">Dễ</option>
                     <option value="TRUNG_BINH">Trung bình</option>
                     <option value="KHO">Khó</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Learning Path / Node */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1.5">Lộ trình học tập</label>
+                  <select
+                    value={modalForm.learningPathId}
+                    onChange={(e) => {
+                      const nextPathId = e.target.value;
+                      setModalForm(prev => ({ ...prev, learningPathId: nextPathId, nodeId: '' }));
+                      if (nextPathId) {
+                        loadNodesForLearningPath(nextPathId);
+                      } else {
+                        setNodes([]);
+                      }
+                    }}
+                    className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:outline-none transition-all bg-white cursor-pointer"
+                  >
+                    <option value="">Không gắn vào lộ trình</option>
+                    {learningPaths
+                      .filter((path) => !modalForm.subjectId || String(path.subjectId) === String(modalForm.subjectId))
+                      .map((path) => (
+                        <option key={path.id} value={path.id}>{path.title}</option>
+                      ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1.5">Node trong lộ trình</label>
+                  <select
+                    value={modalForm.nodeId}
+                    onChange={(e) => setModalForm(prev => ({ ...prev, nodeId: e.target.value }))}
+                    disabled={!modalForm.learningPathId || nodes.length === 0}
+                    className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:outline-none transition-all bg-white cursor-pointer disabled:bg-slate-100 disabled:cursor-not-allowed"
+                  >
+                    <option value="">{modalForm.learningPathId ? 'Chọn node' : 'Chọn lộ trình trước'}</option>
+                    {nodes.map((node) => (
+                      <option key={node.id} value={node.id}>{node.title}</option>
+                    ))}
                   </select>
                 </div>
               </div>

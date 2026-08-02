@@ -263,6 +263,7 @@ model LearningPath {
   enrollments  Enrollment[]
   certificates Certificate[]
   reviews      Review[]
+  bankQuestions BankQuestion[]
 }
 
 model Node {
@@ -285,6 +286,7 @@ model Node {
   materials  Material[]
   quizzes    Quiz[]
   tips       Tip[]
+  bankQuestions BankQuestion[]
 
   comments NodeComment[]
 
@@ -651,26 +653,34 @@ enum QuestionDifficulty {
 }
 
 model BankQuestion {
-  id          String             @id @default(cuid())
-  question    String             @db.Text
-  explanation String?            @db.Text
-  difficulty  QuestionDifficulty @default(TRUNG_BINH)
+  id                String             @id @default(cuid())
+  question          String             @db.Text
+  explanation       String?            @db.Text
+  difficulty        QuestionDifficulty @default(TRUNG_BINH)
 
-  subjectId   String
-  subject     Subject            @relation(fields: [subjectId], references: [id])
+  subjectId         String
+  subject           Subject            @relation(fields: [subjectId], references: [id])
 
-  creatorId   String
-  creator     User               @relation("BankQuestionCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  learningPathId    String?
+  learningPath      LearningPath?      @relation(fields: [learningPathId], references: [id], onDelete: SetNull)
 
-  isDeleted   Boolean            @default(false)
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
+  nodeId            String?
+  node              Node?              @relation(fields: [nodeId], references: [id], onDelete: SetNull)
 
-  options     BankQuestionOption[]
-  quizQuestions QuizQuestion[]
+  creatorId         String
+  creator           User               @relation("BankQuestionCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+
+  isDeleted         Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  options           BankQuestionOption[]
+  quizQuestions     QuizQuestion[]
 
   @@index([subjectId])
   @@index([creatorId])
+  @@index([learningPathId])
+  @@index([nodeId])
 }
 
 model BankQuestionOption {

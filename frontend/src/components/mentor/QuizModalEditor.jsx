@@ -6,7 +6,7 @@ import AddQuestionButton from './quiz/AddQuestionButton';
 import { getRoadmapById } from '../../services/roadmapService';
 import ImportQuestionsModal from './ImportQuestionsModal';
 
-const QuizModalEditor = ({ isOpen, onClose, onSave, initialData, roadmapId, subjectId }) => {
+const QuizModalEditor = ({ isOpen, onClose, onSave, initialData, roadmapId, nodeId, subjectId }) => {
   const [quizData, setQuizData] = useState(initialData || {
     title: '',
     description: '',
@@ -220,6 +220,8 @@ const QuizModalEditor = ({ isOpen, onClose, onSave, initialData, roadmapId, subj
         onClose={() => setIsImportModalOpen(false)}
         onImport={handleImportQuestions}
         subjectId={finalSubjectId}
+        learningPathId={roadmapId}
+        nodeId={nodeId}
         excludeBankQuestionIds={quizData.questions.map(q => q.bankQuestionId).filter(Boolean)}
         excludeQuestionTexts={quizData.questions.map(q => (q.question || '').trim().toLowerCase()).filter(Boolean)}
       />

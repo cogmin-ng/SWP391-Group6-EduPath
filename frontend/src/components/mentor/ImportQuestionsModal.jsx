@@ -2,16 +2,47 @@ import { useEffect, useState } from 'react';
 import { Search, Loader2, HelpCircle, BookOpen, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getQuestionBank } from '../../services/questionBankService';
+import api from '../../services/api';
 
-export default function ImportQuestionsModal({ isOpen, onClose, onImport, subjectId, excludeBankQuestionIds = [], excludeQuestionTexts = [] }) {
+export default function ImportQuestionsModal({ isOpen, onClose, onImport, subjectId, learningPathId, nodeId, excludeBankQuestionIds = [], excludeQuestionTexts = [] }) {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [difficulty, setDifficulty] = useState('');
+  const [selectedLearningPathFilter, setSelectedLearningPathFilter] = useState(learningPathId || '');
+  const [selectedNodeFilter, setSelectedNodeFilter] = useState(nodeId || '');
+  const [learningPaths, setLearningPaths] = useState([]);
+  const [nodes, setNodes] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   const [total, setTotal] = useState(0);
   const [skip, setSkip] = useState(0);
   const take = 15;
+
+  const loadLearningPaths = async () => {
+    try {
+      const res = await api.get('/roadmaps/mentor?take=100');
+      const paths = (res.data.data?.roadmaps || []).filter(
+        p => !subjectId || p.subjectId === subjectId
+      );
+      setLearningPaths(paths);
+    } catch (err) {
+      console.error('Failed to load learning paths:', err);
+    }
+  };
+
+  const loadNodesForPath = async (pathId) => {
+    if (!pathId) {
+      setNodes([]);
+      return;
+    }
+    try {
+      const res = await api.get(`/roadmaps/${pathId}`);
+      setNodes(res.data.data?.nodes || []);
+    } catch (err) {
+      console.error('Failed to load nodes:', err);
+      setNodes([]);
+    }
+  };
 
   const fetchQuestions = async () => {
     if (!isOpen) return;
@@ -23,6 +54,8 @@ export default function ImportQuestionsModal({ isOpen, onClose, onImport, subjec
         search,
         subjectId: subjectId || undefined,
         difficulty: difficulty || undefined,
+        learningPathId: selectedLearningPathFilter || undefined,
+        nodeId: selectedNodeFilter || undefined,
         excludeIds: excludeBankQuestionIds.length > 0 ? excludeBankQuestionIds.join(',') : undefined
       });
       setQuestions(data.questions || []);
@@ -37,7 +70,16 @@ export default function ImportQuestionsModal({ isOpen, onClose, onImport, subjec
 
   useEffect(() => {
     fetchQuestions();
-  }, [isOpen, skip, search, difficulty, subjectId, excludeBankQuestionIds]);
+  }, [isOpen, skip, search, difficulty, subjectId, selectedLearningPathFilter, selectedNodeFilter, excludeBankQuestionIds]);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadLearningPaths();
+      if (learningPathId) {
+        loadNodesForPath(learningPathId);
+      }
+    }
+  }, [isOpen, subjectId, learningPathId]);
 
   // Reset selection when modal opens
   useEffect(() => {
@@ -46,8 +88,10 @@ export default function ImportQuestionsModal({ isOpen, onClose, onImport, subjec
       setSkip(0);
       setSearch('');
       setDifficulty('');
+      setSelectedLearningPathFilter(learningPathId || '');
+      setSelectedNodeFilter(nodeId || '');
     }
-  }, [isOpen]);
+  }, [isOpen, learningPathId, nodeId]);
 
   const handleToggleSelect = (qId) => {
     setSelectedIds(prev =>
@@ -105,28 +149,58 @@ export default function ImportQuestionsModal({ isOpen, onClose, onImport, subjec
         </div>
 
         {/* Filters */}
-        <div className="p-4 border-b border-slate-100 flex-shrink-0 grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="relative sm:col-span-2">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Tìm kiếm nội dung câu hỏi..."
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setSkip(0); }}
-              className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 focus:outline-none transition"
-            />
+        <div className="p-4 border-b border-slate-100 flex-shrink-0 space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="relative sm:col-span-2">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm nội dung câu hỏi..."
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setSkip(0); }}
+                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 focus:outline-none transition"
+              />
+            </div>
+            <div>
+              <select
+                value={difficulty}
+                onChange={(e) => { setDifficulty(e.target.value); setSkip(0); }}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 focus:outline-none transition bg-white"
+              >
+                <option value="">Tất cả độ khó</option>
+                <option value="DE">Dễ</option>
+                <option value="TRUNG_BINH">Trung bình</option>
+                <option value="KHO">Khó</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <select
-              value={difficulty}
-              onChange={(e) => { setDifficulty(e.target.value); setSkip(0); }}
-              className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 focus:outline-none transition bg-white"
-            >
-              <option value="">Tất cả độ khó</option>
-              <option value="DE">Dễ</option>
-              <option value="TRUNG_BINH">Trung bình</option>
-              <option value="KHO">Khó</option>
-            </select>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <select
+                value={selectedLearningPathFilter}
+                onChange={(e) => { const v = e.target.value; setSelectedLearningPathFilter(v); setSelectedNodeFilter(''); setSkip(0); if (v) loadNodesForPath(v); else setNodes([]); }}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 focus:outline-none transition bg-white"
+              >
+                <option value="">Tất cả lộ trình</option>
+                {learningPaths.map((path) => (
+                  <option key={path.id} value={path.id}>{path.title}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <select
+                value={selectedNodeFilter}
+                onChange={(e) => { setSelectedNodeFilter(e.target.value); setSkip(0); }}
+                disabled={!selectedLearningPathFilter || nodes.length === 0}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 focus:outline-none transition bg-white disabled:bg-slate-100 disabled:cursor-not-allowed"
+              >
+                <option value="">{selectedLearningPathFilter ? 'Tất cả node' : 'Chọn lộ trình trước'}</option>
+                {nodes.map((node) => (
+                  <option key={node.id} value={node.id}>{node.title}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 

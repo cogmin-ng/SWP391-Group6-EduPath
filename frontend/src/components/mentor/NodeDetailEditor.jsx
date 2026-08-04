@@ -63,6 +63,7 @@ const NodeDetailEditor = ({
         onSave={handleSaveQuiz}
         initialData={editingQuiz}
         roadmapId={roadmapId}
+        nodeId={nodeId}
         subjectId={subjectId}
       />
     </div>
